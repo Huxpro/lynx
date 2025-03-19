@@ -87,6 +87,14 @@
   _fileUrl = url;
 }
 
+- (void)updateDataWithTemplateData:(LynxTemplateData*)data {
+  [_initData updateWithTemplateData:data];
+}
+
+- (void)resetDataWithTemplateData:(LynxTemplateData*)data {
+  _initData = data;
+}
+
 - (nonnull NSString*)getURL {
   return _fileUrl;
 }

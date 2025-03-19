@@ -957,6 +957,9 @@ LYNX_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder*)aDecoder)
 #pragma mark - Update data
 
 - (void)updateMetaData:(LynxUpdateMeta*)meta {
+  if (meta.data) {
+    [_devTool onUpdateDataWithTemplateData:meta.data];
+  }
   if (meta.data || meta.globalProps) {
     __weak LynxTemplateRender* weakSelf = self;
     [self
@@ -1018,6 +1021,7 @@ LYNX_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder*)aDecoder)
 
 - (void)updateDataWithTemplateData:(LynxTemplateData*)data {
   if (data) {
+    [_devTool onUpdateDataWithTemplateData:data];
     [self executeUpdateDataSafely:^() {
       lynx::lepus::Value value = *LynxGetLepusValueFromTemplateData(data);
       std::shared_ptr<lynx::tasm::TemplateData> ptr = std::make_shared<lynx::tasm::TemplateData>(
@@ -1034,6 +1038,7 @@ LYNX_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder*)aDecoder)
 
 - (void)resetDataWithTemplateData:(LynxTemplateData*)data {
   if (data) {
+    [_devTool onResetDataWithTemplateData:data];
     [self executeUpdateDataSafely:^() {
       lynx::lepus::Value value = *LynxGetLepusValueFromTemplateData(data);
       std::shared_ptr<lynx::tasm::TemplateData> ptr = std::make_shared<lynx::tasm::TemplateData>(

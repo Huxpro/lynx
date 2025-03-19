@@ -127,6 +127,18 @@
   [_logBoxProxy reloadLynxView];
 }
 
+- (void)onUpdateDataWithTemplateData:(LynxTemplateData *)data {
+  if (_reloader != nil) {
+    [_reloader updateDataWithTemplateData:data];
+  }
+}
+
+- (void)onResetDataWithTemplateData:(LynxTemplateData *)data {
+  if (_reloader != nil) {
+    [_reloader resetDataWithTemplateData:data];
+  }
+}
+
 - (void)onStandaloneRuntimeLoadFromURL:(NSString *)url {
   [_reloader loadFromURL:url initData:[[LynxTemplateData alloc] initWithDictionary:@{}]];
 }
