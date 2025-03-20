@@ -6,6 +6,7 @@ package com.lynx.devtool.helper;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.os.HandlerThread;
+import android.util.DisplayMetrics;
 import android.view.Choreographer;
 import android.view.View;
 import androidx.annotation.NonNull;
@@ -14,6 +15,7 @@ import com.lynx.devtoolwrapper.IDevToolDelegate;
 import com.lynx.devtoolwrapper.ScreenshotBitmapHandler;
 import com.lynx.tasm.base.LLog;
 import com.lynx.tasm.utils.BitmapUtils;
+import com.lynx.tasm.utils.DisplayMetricsHolder;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -246,8 +248,9 @@ public class ScreenCapturer extends FrameCapturer {
     int originalWidth = bitmap.getWidth();
     int originalHeight = bitmap.getHeight();
     float scale = getScale(originalWidth, originalHeight, maxWidth, maxHeight);
-    mScreenMetadata.mDeviceWidth = originalWidth;
-    mScreenMetadata.mDeviceHeight = originalHeight;
+    DisplayMetrics dm = DisplayMetricsHolder.getScreenDisplayMetrics();
+    mScreenMetadata.mDeviceWidth = originalWidth / dm.density;
+    mScreenMetadata.mDeviceHeight = originalHeight / dm.density;
     mScreenMetadata.mPageScaleFactor = 1;
     try {
       Matrix matrix = new Matrix();

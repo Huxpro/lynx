@@ -4,11 +4,9 @@
 package com.lynx.devtool.helper;
 
 import android.graphics.Bitmap;
-import android.util.DisplayMetrics;
 import com.lynx.devtool.DevToolPlatformAndroidDelegate;
 import com.lynx.devtoolwrapper.IDevToolDelegate;
 import com.lynx.tasm.LynxView;
-import com.lynx.tasm.utils.DisplayMetricsHolder;
 import java.lang.ref.WeakReference;
 
 public class ScreenCastHelper {
@@ -44,13 +42,12 @@ public class ScreenCastHelper {
           public void onNewScreenshotBitmapData(String screenData, long timeCost) {
             ScreenCapturer.ScreenMetadata metadata =
                 ScreenCapturer.getInstance().getScreenMetadata();
-            DisplayMetrics dm = DisplayMetricsHolder.getScreenDisplayMetrics();
             // nanosecond to millisecond
             float time = (float) (((double) timeCost) / 1E6);
             DevToolPlatformAndroidDelegate platformDelegate = mPlatformDelegate.get();
             if (platformDelegate != null) {
               platformDelegate.sendScreenCast(
-                  screenData, metadata, metadata.mPageScaleFactor * dm.density, time);
+                  screenData, metadata, metadata.mPageScaleFactor, time);
             }
           }
         });

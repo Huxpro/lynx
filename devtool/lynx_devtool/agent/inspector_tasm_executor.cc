@@ -1815,96 +1815,102 @@ Json::Value InspectorTasmExecutor::GetComputedStyleOfNode(tasm::Element* ptr) {
 
     ReplaceDefaultComputedStyle(
         dict, ElementInspector::GetInlineStyleSheet(ptr).css_properties_);
-    std::vector<double> box_info = GetBoxModel(ptr);
-    if (box_info.size() == 34) {
-      dict["width"] = lynx::tasm::CSSDecoder::ToPxValue(box_info[0]);
-      dict["height"] = lynx::tasm::CSSDecoder::ToPxValue(box_info[1]);
-
-      // clang-format off
-      //margin 26-33 border 18-25 padding 10-17 content 2-9
-      /* 
-
-         (26,27)---------------------------------------------------(28,29)
-            |   (18,19) ------------------------------------(20,21)   |
-            |      |    (10,11)--------------------(12,13)     |      |
-            |      |       |       (2,3) ------(4,5)  |        |      |
-            |      |       |         |           |    |        |      |
-            |      |       |         |           |    |        |      |
-            |      |       |       (8,9)-------(6,7)  |        |      |
-            |      |    (16,17)--------------------(14,15)     |      |
-            |   (24,25)-------------------------------------(22,23)   |
-         (32,33)---------------------------------------------------(30,31)
-
-       */
-      // clang-format on
-      // margin
-      dict["margin-left"] =
-          lynx::tasm::CSSDecoder::ToPxValue(box_info[18] - box_info[26]);
-      dict["margin-top"] =
-          lynx::tasm::CSSDecoder::ToPxValue(box_info[19] - box_info[27]);
-      dict["margin-right"] =
-          lynx::tasm::CSSDecoder::ToPxValue(box_info[28] - box_info[20]);
-      dict["margin-bottom"] =
-          lynx::tasm::CSSDecoder::ToPxValue(box_info[33] - box_info[25]);
-      if (dict["margin-left"] == dict["margin-right"] &&
-          dict["margin-left"] == dict["margin-top"] &&
-          dict["margin-left"] == dict["margin-bottom"]) {
-        dict["margin"] = dict["margin-left"];
-      } else {
-        std::ostringstream margin_str;
-        margin_str << dict["margin-top"] << " " << dict["margin-right"] << " "
-                   << dict["margin-bottom"] << " " << dict["margin-left"];
-        dict["margin"] = margin_str.str();
-      }
-
-      // border
-      dict["border-left-width"] =
-          lynx::tasm::CSSDecoder::ToPxValue(box_info[10] - box_info[18]);
-      dict["border-right-width"] =
-          lynx::tasm::CSSDecoder::ToPxValue(box_info[20] - box_info[12]);
-      dict["border-top-width"] =
-          lynx::tasm::CSSDecoder::ToPxValue(box_info[11] - box_info[19]);
-      dict["border-bottom-width"] =
-          lynx::tasm::CSSDecoder::ToPxValue(box_info[25] - box_info[17]);
-
-      if (dict["border-left"] == dict["border-right"] &&
-          dict["border-left"] == dict["border-top"] &&
-          dict["border-left"] == dict["border-bottom"]) {
-        dict["border"] = dict["border-left"];
-      } else {
-        std::ostringstream margin_str;
-        margin_str << dict["border-top"] << " " << dict["border-right"] << " "
-                   << dict["border-bottom"] << " " << dict["border-left"];
-        dict["border"] = margin_str.str();
-      }
-
-      // padding
-      dict["padding-left"] =
-          lynx::tasm::CSSDecoder::ToPxValue(box_info[2] - box_info[10]);
-      dict["padding-top"] =
-          lynx::tasm::CSSDecoder::ToPxValue(box_info[3] - box_info[11]);
-      dict["padding-right"] =
-          lynx::tasm::CSSDecoder::ToPxValue(box_info[12] - box_info[4]);
-      dict["padding-bottom"] =
-          lynx::tasm::CSSDecoder::ToPxValue(box_info[17] - box_info[9]);
-
-      if (dict["padding-left"] == dict["padding-right"] &&
-          dict["padding-left"] == dict["padding-top"] &&
-          dict["padding-left"] == dict["padding-bottom"]) {
-        dict["padding"] = dict["padding-left"];
-      } else {
-        std::ostringstream margin_str;
-        margin_str << dict["padding-top"] << " " << dict["padding-right"] << " "
-                   << dict["padding-bottom"] << " " << dict["padding-left"];
-        dict["border"] = margin_str.str();
-      }
-    }
 
     auto* element_manager = ptr->element_manager();
+
     if (element_manager) {
+      const float layouts_unit_per_px =
+          element_manager->GetLynxEnvConfig().LayoutsUnitPerPx();
+      std::vector<double> box_info = GetBoxModel(ptr);
+      if (box_info.size() == 34) {
+        dict["width"] = lynx::tasm::CSSDecoder::ToPxValue(box_info[0] /
+                                                          layouts_unit_per_px);
+        dict["height"] = lynx::tasm::CSSDecoder::ToPxValue(box_info[1] /
+                                                           layouts_unit_per_px);
+
+        // clang-format off
+            //margin 26-33 border 18-25 padding 10-17 content 2-9
+            /*
+
+               (26,27)---------------------------------------------------(28,29)
+                  |   (18,19) ------------------------------------(20,21)   |
+                  |      |    (10,11)--------------------(12,13)     |      |
+                  |      |       |       (2,3) ------(4,5)  |        |      |
+                  |      |       |         |           |    |        |      |
+                  |      |       |         |           |    |        |      |
+                  |      |       |       (8,9)-------(6,7)  |        |      |
+                  |      |    (16,17)--------------------(14,15)     |      |
+                  |   (24,25)-------------------------------------(22,23)   |
+               (32,33)---------------------------------------------------(30,31)
+
+             */
+        // clang-format on
+        // margin
+        dict["margin-left"] = lynx::tasm::CSSDecoder::ToPxValue(
+            (box_info[18] - box_info[26]) / layouts_unit_per_px);
+        dict["margin-top"] = lynx::tasm::CSSDecoder::ToPxValue(
+            (box_info[19] - box_info[27]) / layouts_unit_per_px);
+        dict["margin-right"] = lynx::tasm::CSSDecoder::ToPxValue(
+            (box_info[28] - box_info[20]) / layouts_unit_per_px);
+        dict["margin-bottom"] = lynx::tasm::CSSDecoder::ToPxValue(
+            (box_info[33] - box_info[25]) / layouts_unit_per_px);
+        if (dict["margin-left"] == dict["margin-right"] &&
+            dict["margin-left"] == dict["margin-top"] &&
+            dict["margin-left"] == dict["margin-bottom"]) {
+          dict["margin"] = dict["margin-left"];
+        } else {
+          std::ostringstream margin_str;
+          margin_str << dict["margin-top"] << " " << dict["margin-right"] << " "
+                     << dict["margin-bottom"] << " " << dict["margin-left"];
+          dict["margin"] = margin_str.str();
+        }
+
+        // border
+        dict["border-left-width"] = lynx::tasm::CSSDecoder::ToPxValue(
+            (box_info[10] - box_info[18]) / layouts_unit_per_px);
+        dict["border-right-width"] = lynx::tasm::CSSDecoder::ToPxValue(
+            (box_info[20] - box_info[12]) / layouts_unit_per_px);
+        dict["border-top-width"] = lynx::tasm::CSSDecoder::ToPxValue(
+            (box_info[11] - box_info[19]) / layouts_unit_per_px);
+        dict["border-bottom-width"] = lynx::tasm::CSSDecoder::ToPxValue(
+            (box_info[25] - box_info[17]) / layouts_unit_per_px);
+
+        if (dict["border-left"] == dict["border-right"] &&
+            dict["border-left"] == dict["border-top"] &&
+            dict["border-left"] == dict["border-bottom"]) {
+          dict["border"] = dict["border-left"];
+        } else {
+          std::ostringstream margin_str;
+          margin_str << dict["border-top"] << " " << dict["border-right"] << " "
+                     << dict["border-bottom"] << " " << dict["border-left"];
+          dict["border"] = margin_str.str();
+        }
+
+        // padding
+        dict["padding-left"] = lynx::tasm::CSSDecoder::ToPxValue(
+            (box_info[2] - box_info[10]) / layouts_unit_per_px);
+        dict["padding-top"] = lynx::tasm::CSSDecoder::ToPxValue(
+            (box_info[3] - box_info[11]) / layouts_unit_per_px);
+        dict["padding-right"] = lynx::tasm::CSSDecoder::ToPxValue(
+            (box_info[12] - box_info[4]) / layouts_unit_per_px);
+        dict["padding-bottom"] = lynx::tasm::CSSDecoder::ToPxValue(
+            (box_info[17] - box_info[9]) / layouts_unit_per_px);
+
+        if (dict["padding-left"] == dict["padding-right"] &&
+            dict["padding-left"] == dict["padding-top"] &&
+            dict["padding-left"] == dict["padding-bottom"]) {
+          dict["padding"] = dict["padding-left"];
+        } else {
+          std::ostringstream margin_str;
+          margin_str << dict["padding-top"] << " " << dict["padding-right"]
+                     << " " << dict["padding-bottom"] << " "
+                     << dict["padding-left"];
+          dict["border"] = margin_str.str();
+        }
+      }
+
       dict["font-size"] = lynx::tasm::CSSDecoder::ToPxValue(
-          ptr->GetFontSize() /
-          element_manager->GetLynxEnvConfig().LayoutsUnitPerPx());
+          ptr->GetFontSize() / layouts_unit_per_px);
     }
 
     for (const auto& pair : dict) {
