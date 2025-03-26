@@ -4968,136 +4968,159 @@ RENDERER_FUNCTION_CC(FiberCreateElementWithProperties) {
 
   // properties array
   CONVERT_ARG(arg1, 1);
-  if (!arg1->IsArrayOrJSArray()) {
-    RenderWarning("args[1] is param_bundle, need array.");
+  if (!arg1->IsArrayOrJSArray() && !arg1->IsEmpty()) {
+    RenderWarning("args[1] is param_bundle, need array or null.");
     RETURN_UNDEFINED();
   }
-  if (arg1->Array()->size() != 7) {
-    // [0] String -> id
-    // [1] String -> tag
-    // [2] String -> class
-    // [3] Array -> event
-    // [4] Object -> style
-    // [5] Object -> attribute
-    // [6] Object  -> builtin attribute
-    if (arg1->GetProperty(0).IsString()) {
-      element->SetIdSelector(arg1->GetProperty(0).String());
-    } else {
-      RenderWarning("param_bundle[0] is id, need a String.");
-      RETURN_UNDEFINED();
-    }
-    if (!arg1->GetProperty(1).IsString()) {
-      RenderWarning("param_bundle[1] is tag, need a String.");
-      RETURN_UNDEFINED();
-    }
-    if (arg1->GetProperty(2).IsString()) {
-      element->OnClassChanged(element->classes(),
-                              {arg1->GetProperty(2).String()});
-      element->SetClass(arg1->String());
-    } else {
-      RenderWarning("param_bundle[2] is class, need a String.");
-      RETURN_UNDEFINED();
-    }
-    if (arg1->GetProperty(3).IsArrayOrJSArray()) {
-      auto callbacks = arg1->GetProperty(3);
-      element->RemoveAllEvents();
+  if (arg1->IsArrayOrJSArray()) {
+    if (arg1->Array()->size() == 7) {
+      // [0] String -> id
+      // [1] String -> tag
+      // [2] String -> class
+      // [3] Array  -> event
+      // [4] Object -> style
+      // [5] Object -> attribute
+      // [6] Object -> builtin attribute
 
-      ForEachLepusValue(callbacks, [element, LEPUS_CONTEXT()](
-                                       const lepus::Value& index,
-                                       const lepus::Value& value) {
-        BASE_STATIC_STRING_DECL(kName, "name");
-        BASE_STATIC_STRING_DECL(kType, "type");
-        BASE_STATIC_STRING_DECL(kFunction, "function");
+      // Handle 1st param: id.
+      auto param_0 = arg1->GetProperty(0);
+      if (param_0.IsString()) {
+        element->SetIdSelector(param_0.String());
+      } else if (!param_0.IsEmpty()) {
+        RenderWarning("param_bundle[0] is id, need a String or null.");
+        RETURN_UNDEFINED();
+      }
 
-        const auto& name = value.GetProperty(kName);
-        const auto& type = value.GetProperty(kType);
-        const auto& callback = value.GetProperty(kFunction);
+      // Handle 2nd param: tag.
+      auto param_1 = arg1->GetProperty(1);
+      if (param_1.IsString()) {
+        // PlaceHolder only now.
+      } else if (!param_1.IsEmpty()) {
+        RenderWarning("param_bundle[1] is tag, need a String or null.");
+        RETURN_UNDEFINED();
+      }
 
-        if (!name.IsString()) {
-          LOGW("FiberSetEvents' "
-               << value.Number()
-               << " parameter must contain name, and name must be string.");
-        }
-        if (!type.IsString()) {
-          LOGW("FiberSetEvents' "
-               << value.Number()
-               << " parameter must contain type, and type must be string.");
-        }
-        if (callback.IsString()) {
-          element->SetJSEventHandler(name.String(), type.String(),
-                                     callback.String());
-        } else if (callback.IsCallable()) {
-          element->SetLepusEventHandler(name.String(), type.String(),
-                                        lepus::Value(), callback);
-        } else if (callback.IsObject()) {
-          BASE_STATIC_STRING_DECL(kValue, "value");
+      // Handle 3rd param: class.
+      auto param_2 = arg1->GetProperty(2);
+      if (param_2.IsString()) {
+        element->OnClassChanged(element->classes(), {param_2.String()});
+        element->SetClass(param_2.String());
+      } else if (!param_2.IsEmpty()) {
+        RenderWarning("param_bundle[2] is class, need a String or null.");
+        RETURN_UNDEFINED();
+      }
 
-          const auto& obj_type = callback.GetProperty(kType).String().str();
-          const auto& value = callback.GetProperty(kValue);
-          if (obj_type == tasm::kWorklet) {
-            // worklet event
-            element->SetWorkletEventHandler(name.String(), type.String(), value,
-                                            LEPUS_CONTEXT());
+      // Handle 4th param: event.
+      auto param_3 = arg1->GetProperty(3);
+      if (param_3.IsArrayOrJSArray()) {
+        auto callbacks = param_3;
+        element->RemoveAllEvents();
+
+        ForEachLepusValue(callbacks, [element, LEPUS_CONTEXT()](
+                                         const lepus::Value& index,
+                                         const lepus::Value& value) {
+          BASE_STATIC_STRING_DECL(kName, "name");
+          BASE_STATIC_STRING_DECL(kType, "type");
+          BASE_STATIC_STRING_DECL(kFunction, "function");
+
+          const auto& name = value.GetProperty(kName);
+          const auto& type = value.GetProperty(kType);
+          const auto& callback = value.GetProperty(kFunction);
+
+          if (!name.IsString()) {
+            LOGW("FiberSetEvents' "
+                 << value.Number()
+                 << " parameter must contain name, and name must be string.");
           }
+          if (!type.IsString()) {
+            LOGW("FiberSetEvents' "
+                 << value.Number()
+                 << " parameter must contain type, and type must be string.");
+          }
+          if (callback.IsString()) {
+            element->SetJSEventHandler(name.String(), type.String(),
+                                       callback.String());
+          } else if (callback.IsCallable()) {
+            element->SetLepusEventHandler(name.String(), type.String(),
+                                          lepus::Value(), callback);
+          } else if (callback.IsObject()) {
+            BASE_STATIC_STRING_DECL(kValue, "value");
 
-        } else {
-          LOGW("FiberSetEvents' " << value.Number()
-                                  << " parameter must contain callback, and "
-                                     "callback must be string or callable.");
-        }
-      });
-    } else {
-      RenderWarning("param_bundle[3] is event, need an Array.");
-    }
-
-    if (arg1->GetProperty(4).IsObject()) {
-      tasm::ForEachLepusValue(
-          arg1->GetProperty(4),
-          [&element](const lepus::Value& key, const lepus::Value& value) {
-            auto id = CSSProperty::GetPropertyID(
-                base::CamelCaseToDashCase(key.String().str()));
-            if (CSSProperty::IsPropertyValid(id)) {
-              element->SetStyle(id, value);
+            const auto& obj_type = callback.GetProperty(kType).String().str();
+            const auto& value = callback.GetProperty(kValue);
+            if (obj_type == tasm::kWorklet) {
+              // worklet event
+              element->SetWorkletEventHandler(name.String(), type.String(),
+                                              value, LEPUS_CONTEXT());
             }
-          });
-    } else if (arg1->GetProperty(4).IsString()) {
-      // string style TBD.
-    } else {
-      RenderWarning("param_bundle[4] is style, need an Object or an Array.");
-      RETURN_UNDEFINED();
-    }
 
-    if (arg1->GetProperty(5).IsObject()) {
-      tasm::ForEachLepusValue(
-          arg1->GetProperty(5),
-          [&element](const lepus::Value& key, const lepus::Value& value) {
-            if (key.IsString()) {
-              element->SetAttribute(key.String(), value);
-            }
-          });
-    } else {
-      RenderWarning("param_bundle[5] is attribute, need an Object.");
-      RETURN_UNDEFINED();
-    }
+          } else {
+            LOGW("FiberSetEvents' " << value.Number()
+                                    << " parameter must contain callback, and "
+                                       "callback must be string or callable.");
+          }
+        });
+      } else if (!param_3.IsEmpty()) {
+        RenderWarning("param_bundle[3] is event, need an Array or null.");
+        RETURN_UNDEFINED();
+      }
 
-    if (arg1->GetProperty(6).IsObject()) {
-      tasm::ForEachLepusValue(
-          arg1->GetProperty(6),
-          [&element](const lepus::Value& key, const lepus::Value& value) {
-            if (key.IsNumber()) {
-              element->SetBuiltinAttribute(
-                  static_cast<ElementBuiltInAttributeEnum>(key.Number()),
-                  value);
-            }
-          });
+      // Handle 5th param: style.
+      auto param_4 = arg1->GetProperty(4);
+      if (param_4.IsObject()) {
+        tasm::ForEachLepusValue(param_4, [&element](const lepus::Value& key,
+                                                    const lepus::Value& value) {
+          auto id = CSSProperty::GetPropertyID(
+              base::CamelCaseToDashCase(key.String().str()));
+          if (CSSProperty::IsPropertyValid(id)) {
+            element->SetStyle(id, value);
+          }
+        });
+      } else if (param_4.IsString()) {
+        // string style TBD.
+      } else if (!param_4.IsEmpty()) {
+        RenderWarning(
+            "param_bundle[4] is style, need an Object or an Array or null.");
+        RETURN_UNDEFINED();
+      }
+
+      // Handle 6th param: attribute.
+      auto param_5 = arg1->GetProperty(5);
+      if (param_5.IsObject()) {
+        tasm::ForEachLepusValue(param_5, [&element](const lepus::Value& key,
+                                                    const lepus::Value& value) {
+          if (key.IsString()) {
+            element->SetAttribute(key.String(), value);
+          }
+        });
+      } else if (!param_5.IsEmpty()) {
+        RenderWarning("param_bundle[5] is attribute, need an Object or null.");
+        RETURN_UNDEFINED();
+      }
+
+      // Handle 7th param: builtin attribute.
+      auto param_6 = arg1->GetProperty(6);
+      if (param_6.IsObject()) {
+        tasm::ForEachLepusValue(param_6, [&element](const lepus::Value& key,
+                                                    const lepus::Value& value) {
+          if (key.IsNumber()) {
+            element->SetBuiltinAttribute(
+                static_cast<ElementBuiltInAttributeEnum>(key.Number()), value);
+          }
+        });
+      } else if (!param_6.IsEmpty()) {
+        RenderWarning(
+            "param_bundle[6] is builtin attribute, need an Object or null.");
+        RETURN_UNDEFINED();
+      }
     } else {
-      RenderWarning("param_bundle[6] is builtin attribute, need an Object.");
+      RenderWarning("args[1] is param_bundle, need 7 params.");
       RETURN_UNDEFINED();
     }
   }
   CONVERT_ARG(arg2, 2);
-  if (!arg2->IsObject()) {
-    RenderWarning("args[2] is options, need object.");
+  if (!arg2->IsObject() && !arg2->IsEmpty()) {
+    RenderWarning("args[2] is options, need object or null.");
     RETURN_UNDEFINED();
   }
 
