@@ -564,7 +564,43 @@ void TemplateBinaryWriter::EncodeCustomSection() {
           return;
         }
 
-        EncodeValue(&content_iter->second, false);
+        constexpr char kCustomSectionEncoding[] = "encoding";
+        auto encoding_iter = section_table->find(kCustomSectionEncoding);
+        CustomSectionEncodingType encoding_type =
+            CustomSectionEncodingType::STRING;
+        if (encoding_iter != section_table->end()) {
+          if (encoding_iter->second.IsString() &&
+              encoding_iter->second.StdString() == "JsBytecode") {
+            encoding_type = CustomSectionEncodingType::JS_BYTECODE;
+            // currently only support lepusng
+            if (!context_->IsLepusNGContext()) {
+              throw lepus::CompileException(
+                  "CustomSections's encoding:JS_BYTECODE only support "
+                  "LepusNG!");
+            }
+            section_table->Erase(kCustomSectionEncoding);
+            section_table->SetValue(kCustomSectionEncoding,
+                                    static_cast<int>(encoding_type));
+          }
+        }
+
+        if (encoding_type == CustomSectionEncodingType::STRING) {
+          EncodeValue(&content_iter->second, false);
+        } else if (encoding_type == CustomSectionEncodingType::JS_BYTECODE) {
+          auto error = lepus::BytecodeGenerator::GenerateBytecode(
+              context_, content_iter->second.StdString(),
+              compile_options_.target_sdk_version_);
+          if (!error.empty()) {
+            throw lepus::CompileException(error.c_str());
+          }
+          if (context_->IsLepusNGContext()) {
+            auto debug_info = GetDebugInfo();
+            lepus_debug_info_.AddDebugInfo(
+                it.name.GetString(), debug_info,
+                static_cast<lepus::QuickContext*>(context_));
+          }
+          ContextBinaryWriter::encode();
+        }
 
         // Record end, update start, and write these info into route.
         end = stream()->size() - descriptor_offset;

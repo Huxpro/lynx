@@ -73,6 +73,8 @@ enum PageSection {
 
 enum DynamicComponentSection { DYNAMIC_MOULD, DYNAMIC_CONTEXT, DYNAMIC_CONFIG };
 
+enum class CustomSectionEncodingType { STRING, JS_BYTECODE };
+
 struct Range {
   uint32_t start;
   uint32_t end;
