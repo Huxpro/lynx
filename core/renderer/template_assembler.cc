@@ -1192,6 +1192,34 @@ void TemplateAssembler::AddFont(const lepus::Value& font) {
   page_proxy()->element_manager()->AddFontFace(font);
 }
 
+void TemplateAssembler::SetLazyBundleLoader(
+    const std::shared_ptr<LazyBundleLoader>& loader) {
+  component_loader_ = loader;
+  element_manager_delegate_.SetBundleLoader(loader);
+}
+
+void TemplateAssembler::DidLoadBundle(
+    LazyBundleLoader::CallBackInfo callback_info,
+    PipelineOptions& pipeline_options) {
+  switch (callback_info.bundle_type) {
+    case LazyBundleLoader::BundleLoadType::kLazyBundle:
+      DidLoadComponent(std::move(callback_info), pipeline_options);
+      break;
+    case LazyBundleLoader::BundleLoadType::kPreloadLazyBundle:
+      DidPreloadComponent(std::move(callback_info));
+      break;
+    case LazyBundleLoader::BundleLoadType::kFrame: {
+      if (callback_info.Success() && callback_info.bundle) {
+        element_manager_delegate_.DidFrameBundleLoaded(
+            callback_info.component_url, std::move(*callback_info.bundle));
+      }
+      break;
+    }
+    default:
+      break;
+  }
+}
+
 void TemplateAssembler::DidPreloadComponent(
     LazyBundleLoader::CallBackInfo callback_info) {
   if (callback_info.Success()) {

@@ -311,13 +311,9 @@ void LynxEngine::DidLoadComponentFromJS(
                                        pipeline_options);
 }
 
-void LynxEngine::DidPreloadComponent(
+void LynxEngine::DidLoadBundle(
     lynx::tasm::LazyBundleLoader::CallBackInfo callback_info) {
-  tasm_->DidPreloadComponent(std::move(callback_info));
-}
-
-void LynxEngine::DidLoadComponent(
-    lynx::tasm::LazyBundleLoader::CallBackInfo callback_info) {
+  // TODO(zhoupeng.z): add timing for frame
   tasm::timing::LongTaskMonitor::Scope longTaskScope(
       tasm_->GetPageOptions(), tasm::timing::kNativeFuncTask,
       tasm::timing::kTaskNameLynxEngineDidLoadComponent,
@@ -328,7 +324,7 @@ void LynxEngine::DidLoadComponent(
                                pipeline_options.pipeline_origin,
                                pipeline_options.pipeline_start_timestamp);
   }
-  tasm_->DidLoadComponent(std::move(callback_info), pipeline_options);
+  tasm_->DidLoadBundle(std::move(callback_info), pipeline_options);
 }
 
 std::unique_ptr<lepus_value> LynxEngine::GetCurrentData() {

@@ -28,7 +28,7 @@ std::string ConstructErrorMessage(const std::string& error_info) {
   return kFormatErrorMessageBegin + error_info;
 }
 
-void DecodeComponent(LazyBundleLoader::CallBackInfo& callback_info) {
+void DecodeBundle(LazyBundleLoader::CallBackInfo& callback_info) {
   if (callback_info.bundle) {
     // if already got a template bundle object.
     return;
@@ -36,7 +36,8 @@ void DecodeComponent(LazyBundleLoader::CallBackInfo& callback_info) {
   if (callback_info.Success()) {
     auto reader =
         LynxBinaryReader::CreateLynxBinaryReader(std::move(callback_info.data));
-    reader.SetIsCardType(false);
+    reader.SetIsCardType(callback_info.bundle_type ==
+                         LazyBundleLoader::BundleLoadType::kFrame);
     if (reader.Decode()) {
       callback_info.bundle = reader.GetTemplateBundle();
     } else {
@@ -67,16 +68,31 @@ void LazyBundleLoader::DidLoadComponent(
   callback_info.sync = SyncRequiring(callback_info.component_url);
 
   if (!callback_info.sync && enable_component_async_decode_) {
-    DecodeComponent(callback_info);
+    DecodeBundle(callback_info);
   }
 
   if (engine_actor_) {
+    callback_info.bundle_type = BundleLoadType::kLazyBundle;
     engine_actor_->Act(
         [this, callback_info = std::move(callback_info)](auto& engine) mutable {
           EndRecordRequireTime(callback_info);
           // require end. remove from requiring urls.
           requiring_urls_.erase(callback_info.component_url);
-          engine->DidLoadComponent(std::move(callback_info));
+          engine->DidLoadBundle(std::move(callback_info));
+        });
+  }
+}
+
+void LazyBundleLoader::DidLoadFrameBundle(
+    LazyBundleLoader::CallBackInfo callback_info) {
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, "LazyBundleLoader::DidLoadBundle", "url",
+              callback_info.component_url);
+  if (engine_actor_) {
+    engine_actor_->Act(
+        [callback_info = std::move(callback_info)](auto& engine) mutable {
+          // TODO(zhoupeng.z): decode template bundle in child thread.
+          DecodeBundle(callback_info);
+          engine->DidLoadBundle(std::move(callback_info));
         });
   }
 }
@@ -96,6 +112,35 @@ bool LazyBundleLoader::RequireTemplateCollected(RadonLazyComponent* lazy_bundle,
   } else {
     return false;
   }
+}
+
+void LazyBundleLoader::LoadFrameBundle(const std::string& src) {
+  if (!resource_loader_) {
+    LOGE("failed to query bundle, resource_loader is null");
+    return;
+  }
+  auto request = pub::LynxResourceRequest{src, pub::LynxResourceType::kFrame};
+  resource_loader_->LoadResource(
+      request, true,
+      [src, weak_self = weak_from_this()](pub::LynxResourceResponse& response) {
+        auto self = weak_self.lock();
+        if (!self) {
+          return;
+        }
+        std::optional<std::string> err_msg = std::nullopt;
+        if (!response.Success()) {
+          err_msg = std::move(response.err_msg);
+        }
+        std::optional<LynxTemplateBundle> bundle = std::nullopt;
+        if (response.bundle != nullptr) {
+          bundle = *static_cast<LynxTemplateBundle*>(response.bundle);
+        }
+        auto callback_info = LazyBundleLoader::CallBackInfo{
+            std::move(src), std::move(response.data), std::move(bundle),
+            err_msg};
+        callback_info.bundle_type = BundleLoadType::kFrame;
+        self->DidLoadFrameBundle(std::move(callback_info));
+      });
 }
 
 void LazyBundleLoader::MarkComponentLoading(const std::string& url) {
@@ -204,7 +249,7 @@ void LazyBundleLoader::DidPreloadTemplate(
     LazyBundleLoader::CallBackInfo callback_info) {
   TRACE_EVENT(LYNX_TRACE_CATEGORY, DYNAMIC_COMPONENT_DID_PRELOAD, "url",
               callback_info.component_url);
-  DecodeComponent(callback_info);
+  DecodeBundle(callback_info);
 
 #ifdef OS_ANDROID
   // TODO(zhoupeng): Currently, there is no easy way to get JsEngineType, so
@@ -217,9 +262,10 @@ void LazyBundleLoader::DidPreloadTemplate(
 #endif
 
   if (engine_actor_) {
+    callback_info.bundle_type = BundleLoadType::kPreloadLazyBundle;
     engine_actor_->ActAsync(
         [callback_info = std::move(callback_info)](auto& engine) mutable {
-          engine->DidPreloadComponent(std::move(callback_info));
+          engine->DidLoadBundle(std::move(callback_info));
         });
   }
 }

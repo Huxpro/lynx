@@ -150,10 +150,7 @@ class LynxEngine {
   void DidLoadComponentFromJS(
       tasm::LazyBundleLoader::CallBackInfo callback_info);
 
-  void DidPreloadComponent(
-      lynx::tasm::LazyBundleLoader::CallBackInfo callback_info);
-
-  void DidLoadComponent(lynx::tasm::LazyBundleLoader::CallBackInfo);
+  void DidLoadBundle(lynx::tasm::LazyBundleLoader::CallBackInfo);
 
   std::unique_ptr<lepus_value> GetCurrentData();
 

@@ -4,6 +4,8 @@
 
 package com.lynx.tasm.core.resource;
 
+import static com.lynx.tasm.core.resource.LynxResourceLoader.LYNX_RESOURCE_TYPE_FRAME;
+
 import com.lynx.tasm.LynxInfoReportHelper;
 import com.lynx.tasm.TemplateBundle;
 import com.lynx.tasm.service.LynxServiceCenter;
@@ -19,12 +21,19 @@ import com.lynx.tasm.service.security.SecurityResult;
 class TemplateResourceCallback extends GuardedResourceCallback {
   private final long mResponseHandler;
   private final LynxInfoReportHelper mReportHelper;
+  private final int mResourceType;
 
   public TemplateResourceCallback(
       String url, long responseHandler, LynxInfoReportHelper reportHelper) {
+    this(url, responseHandler, reportHelper, -1);
+  }
+
+  public TemplateResourceCallback(
+      String url, long responseHandler, LynxInfoReportHelper reportHelper, int resourceType) {
     super(url);
     mResponseHandler = responseHandler;
     mReportHelper = reportHelper;
+    mResourceType = resourceType;
   }
 
   public void onTemplateLoaded(
@@ -45,8 +54,11 @@ class TemplateResourceCallback extends GuardedResourceCallback {
       ILynxSecurityService securityService =
           LynxServiceCenter.inst().getService(ILynxSecurityService.class);
       if (securityService != null) {
-        SecurityResult result = securityService.verifyTASM(
-            null, data, mUrl, ILynxSecurityService.LynxTasmType.TYPE_DYNAMIC_COMPONENT);
+        final boolean isLazyBundle = mResourceType != LYNX_RESOURCE_TYPE_FRAME;
+        // TODO(zhoupeng.z): add new TASM type for frame
+        SecurityResult result = securityService.verifyTASM(null, data, mUrl,
+            isLazyBundle ? ILynxSecurityService.LynxTasmType.TYPE_DYNAMIC_COMPONENT
+                         : ILynxSecurityService.LynxTasmType.TYPE_TEMPLATE);
         if (!result.isVerified()) {
           success = false;
           errorMsg = "tasm verify failed, url: " + mUrl;

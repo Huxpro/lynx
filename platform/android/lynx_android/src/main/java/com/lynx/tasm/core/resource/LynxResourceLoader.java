@@ -34,10 +34,11 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 
 public class LynxResourceLoader {
-  static final int LYNX_RESOURCE_TYPE_JS_LAZY_BUNDLE = 7;
-  static final int LYNX_RESOURCE_TYPE_EXTERNAL_JS = 9;
-  static final int LYNX_RESOURCE_TYPE_TEMPLATE_LAZY_BUNDLE = 10;
-  static final int LYNX_RESOURCE_TYPE_ASSETS = 11;
+  private static final int LYNX_RESOURCE_TYPE_JS_LAZY_BUNDLE = 7;
+  private static final int LYNX_RESOURCE_TYPE_EXTERNAL_JS = 9;
+  private static final int LYNX_RESOURCE_TYPE_TEMPLATE_LAZY_BUNDLE = 10;
+  private static final int LYNX_RESOURCE_TYPE_ASSETS = 11;
+  static final int LYNX_RESOURCE_TYPE_FRAME = 15;
   static final String CORE_JS = "assets://lynx_core.js";
   static final String CORE_DEBUG_JS = "lynx_core_dev.js";
   static final String FILE_SCHEME = "file://";
@@ -108,7 +109,7 @@ public class LynxResourceLoader {
         break;
       case LYNX_RESOURCE_TYPE_JS_LAZY_BUNDLE:
         // 1. try to use LynxTemplateResourceFetcher
-        if (fetchTemplateByGenericTemplateFetcher(responseHandler, url)) {
+        if (fetchTemplateByGenericTemplateFetcher(responseHandler, url, type)) {
           break;
         }
         // 2. try to use LynxResourceProvider
@@ -120,11 +121,15 @@ public class LynxResourceLoader {
         break;
       case LYNX_RESOURCE_TYPE_TEMPLATE_LAZY_BUNDLE:
         // 1. try to use LynxTemplateResourceFetcher
-        if (fetchTemplateByGenericTemplateFetcher(responseHandler, url)) {
+        if (fetchTemplateByGenericTemplateFetcher(responseHandler, url, type)) {
           break;
         }
         // 2. try to use LynxExternalResourceFetcherWrapper
         fetchTemplateByFetcherWrapper(responseHandler, url);
+        break;
+      case LYNX_RESOURCE_TYPE_FRAME:
+        // 1. frame only support LynxTemplateResourceFetcher
+        fetchTemplateByGenericTemplateFetcher(responseHandler, url, type);
         break;
       default:
         InvokeNativeCallbackWithBytes(
@@ -330,17 +335,18 @@ public class LynxResourceLoader {
   }
 
   /**
-   * fetch lazy bundle template by LynxTemplateResourceFetcher
+   * fetch lazy bundle or frame template by LynxTemplateResourceFetcher
    * @return whether the request has been sent, to determine whether using another loader
    */
-  private boolean fetchTemplateByGenericTemplateFetcher(long responseHandler, String url) {
+  private boolean fetchTemplateByGenericTemplateFetcher(
+      long responseHandler, String url, int resourceType) {
     boolean hasTemplateFetcher = mTemplateLoaderHelper.hasTemplateFetcher();
     LLog.i(TAG, "Generic template fetcher existed: " + hasTemplateFetcher);
     if (!hasTemplateFetcher) {
       return false;
     }
     final TemplateResourceCallback callback =
-        new TemplateResourceCallback(url, responseHandler, mReportHelper);
+        new TemplateResourceCallback(url, responseHandler, mReportHelper, resourceType);
     mTemplateLoaderHelper.fetchTemplateByGenericTemplateFetcher(url, callback);
     return true;
   }

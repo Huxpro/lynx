@@ -75,8 +75,6 @@ class LynxResourceLoaderDarwin : public pub::LynxResourceLoader {
                                             id<LynxErrorReceiverProtocol> weakErrorReceiver,
                                             CopyableClosure callback);
 
-  void VerifyLynxTemplateResource(const std::string& url, pub::LynxResourceResponse& response);
-
   LynxProviderRegistry* _providerRegistry;
   LynxExternalResourceFetcherWrapper* _fetcher_wrapper;
   id<LynxTemplateResourceFetcher> _templateResourceFetcher;
