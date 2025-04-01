@@ -155,6 +155,12 @@ class LynxEngine {
 
   void DidLoadComponent(lynx::tasm::LazyBundleLoader::CallBackInfo);
 
+  /**
+   * Receive bundle resource, only support frame bundle currently
+   * TODO(zhoupeng.z): collapse interface with `DidLoadComponent`
+   */
+  void DidLoadBundle(lynx::tasm::LazyBundleLoader::CallBackInfo);
+
   std::unique_ptr<lepus_value> GetCurrentData();
 
   lepus::Value GetPageDataByKey(const std::vector<std::string>& keys);

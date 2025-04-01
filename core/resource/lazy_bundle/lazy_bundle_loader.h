@@ -27,6 +27,8 @@ class LynxEngine;
 
 namespace tasm {
 
+// TODO(zhoupeng.z): this loader helps to load LazyBundle and Frame bundle,
+// should be renamed with EngineLoader
 class LazyBundleLoader : public std::enable_shared_from_this<LazyBundleLoader> {
   using UrlToLifecycleOptionMap = std::unordered_map<
       std::string, std::vector<std::unique_ptr<LazyBundleLifecycleOption>>>;
@@ -127,6 +129,12 @@ class LazyBundleLoader : public std::enable_shared_from_this<LazyBundleLoader> {
 
   virtual void RequireTemplate(RadonLazyComponent* lazy_bundle,
                                const std::string& url, int instance_id);
+
+  /**
+   * Load bundle for frame
+   */
+  void LoadFrameBundle(const std::string& src);
+  void DidLoadFrameBundle(LazyBundleLoader::CallBackInfo);
 
   void DidLoadComponent(LazyBundleLoader::CallBackInfo);
 

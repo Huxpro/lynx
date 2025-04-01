@@ -284,6 +284,12 @@ class TemplateAssembler final
   void DidLoadComponent(LazyBundleLoader::CallBackInfo callback_info,
                         PipelineOptions& pipeline_options);
 
+  /**
+   * Receive bundle resource, only support frame bundle currently
+   * TODO(zhoupeng.z): collapse interface with `DidLoadComponent`
+   */
+  void DidLoadBundle(LazyBundleLoader::CallBackInfo callback_info);
+
   void LoadComponentWithCallbackInfo(
       LazyBundleLoader::CallBackInfo callback_info,
       PipelineOptions& pipeline_options);
@@ -538,9 +544,7 @@ class TemplateAssembler final
                                   [component_path][name] = processor;
   }
 
-  void SetLazyBundleLoader(std::shared_ptr<LazyBundleLoader> loader) {
-    component_loader_ = loader;
-  }
+  void SetLazyBundleLoader(const std::shared_ptr<LazyBundleLoader>& loader);
 
   void SetLocale(const std::string& locale) { locale_ = locale; }
 

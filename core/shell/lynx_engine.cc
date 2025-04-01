@@ -331,6 +331,11 @@ void LynxEngine::DidLoadComponent(
   tasm_->DidLoadComponent(std::move(callback_info), pipeline_options);
 }
 
+void LynxEngine::DidLoadBundle(
+    lynx::tasm::LazyBundleLoader::CallBackInfo callback_info) {
+  tasm_->DidLoadBundle(std::move(callback_info));
+}
+
 std::unique_ptr<lepus_value> LynxEngine::GetCurrentData() {
   return tasm_->GetCurrentData();
 }

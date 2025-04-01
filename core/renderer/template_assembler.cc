@@ -1192,6 +1192,12 @@ void TemplateAssembler::AddFont(const lepus::Value& font) {
   page_proxy()->element_manager()->AddFontFace(font);
 }
 
+void TemplateAssembler::SetLazyBundleLoader(
+    const std::shared_ptr<LazyBundleLoader>& loader) {
+  element_manager_delegate_.SetBundleLoader(loader);
+  component_loader_ = loader;
+}
+
 void TemplateAssembler::DidPreloadComponent(
     LazyBundleLoader::CallBackInfo callback_info) {
   if (callback_info.Success()) {
@@ -1229,6 +1235,15 @@ void TemplateAssembler::DidLoadComponent(
     page_proxy()->element_manager()->OnPatchFinish(pipeline_options);
     page_proxy()->element_manager()->painting_context()->Flush();
   }
+}
+
+void TemplateAssembler::DidLoadBundle(
+    LazyBundleLoader::CallBackInfo callback_info) {
+  if (callback_info.Success()) {
+    element_manager_delegate_.DidFrameBundleLoaded(
+        callback_info.component_url, std::move(*callback_info.bundle));
+  }
+  // TODO(zhoupeng.z): report error about loading frame bundle
 }
 
 void TemplateAssembler::LoadComponentWithCallbackInfo(

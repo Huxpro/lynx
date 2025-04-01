@@ -20,8 +20,10 @@ void ElementManagerDelegateImpl::LoadFrameBundle(const std::string &src,
     element->DidBundleLoaded(src, bundle->second);
     return;
   }
-  frame_element_set_.emplace(element);
-  // TODO(zhoupeng.z): query bundle for frame
+  if (bundle_loader_) {
+    frame_element_set_.emplace(element);
+    bundle_loader_->LoadFrameBundle(src);
+  }
 }
 
 void ElementManagerDelegateImpl::DidFrameBundleLoaded(
