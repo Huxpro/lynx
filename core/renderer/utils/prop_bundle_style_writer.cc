@@ -742,6 +742,31 @@ void PropBundleStyleWriter::WriteListCrossAxisGap(
           style->GetLayoutComputedStyle()->GetListCrossAxisGap()));
 }
 
+void PropBundleStyleWriter::WriteOffsetPath(
+    PropBundle* bundle, starlight::ComputedCSSStyle* style) {
+  auto path = style->GetOffsetPath();
+  if (path.get()) {
+    bundle->SetPropsByID(CSSPropertyID::kPropertyIDOffsetPath,
+                         pub::ValueImplLepus(lepus::Value(path)));
+  } else {
+    bundle->SetPropsByID(
+        CSSPropertyID::kPropertyIDOffsetPath,
+        pub::ValueImplLepus(lepus::Value(lepus::CArray::Create())));
+  }
+}
+
+void PropBundleStyleWriter::WriteOffsetDistance(
+    PropBundle* bundle, starlight::ComputedCSSStyle* style) {
+  bundle->SetPropsByID(CSSPropertyID::kPropertyIDOffsetDistance,
+                       style->GetOffsetDistance());
+}
+
+void PropBundleStyleWriter::WriteOffsetRotate(
+    PropBundle* bundle, starlight::ComputedCSSStyle* style) {
+  bundle->SetPropsByID(CSSPropertyID::kPropertyIDOffsetRotate,
+                       style->GetOffsetRotate());
+}
+
 void PropBundleStyleWriter::WriteTextStroke(
     PropBundle* bundle, starlight::ComputedCSSStyle* style) {
   LOGE(

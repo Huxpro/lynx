@@ -45,10 +45,12 @@
 #import <Lynx/LynxView+Internal.h>
 #import <Lynx/LynxView.h>
 #import <Lynx/UIView+Lynx.h>
+#import "LBSCoreGraphicsPathParser.h"
 #import "LynxEventHandler+Internal.h"
 #import "LynxFeatureCounter.h"
 #import "LynxFilterUtil.h"
 #import "LynxGestureArenaManager.h"
+#import "LynxOffsetCalculator.h"
 #import "LynxTemplateRender+Internal.h"
 #import "LynxUI+Gesture.h"
 #import "LynxUI+Private.h"
@@ -180,6 +182,7 @@ short const OVERFLOW_HIDDEN_VAL = 0x00;
   _enableReuseAnimationState = YES;
   _enableExposureUIMargin = kLynxPropUndefined;
   _animationInfos = nil;
+  _isAutoOffsetRotate = YES;
 }
 
 - (instancetype)init {
@@ -409,11 +412,34 @@ short const OVERFLOW_HIDDEN_VAL = 0x00;
   if ([self shouldReDoTransform]) {
     [self applyTransform];
   }
-  // 2. Apply transition
+  // 2. Apply offset
+  if (_offsetHasChanged) {
+    CGFloat rotateDeg = _offsetRotate;
+    CGPoint resultPoint = CGPointZero;
+    if (_offsetPathRef == nil) {
+      // When offset-path is not exist, offset will not apply.
+      resultPoint = CGPointZero;
+      rotateDeg = 0;
+    } else {
+      if (_isAutoOffsetRotate) {
+        // offset-rotate is auto
+        resultPoint = [LynxOffsetCalculator pointAtProgress:_offsetDistance
+                                                     onPath:_offsetPathRef
+                                                withTangent:&rotateDeg];
+      } else {
+        resultPoint = [LynxOffsetCalculator pointAtProgress:_offsetDistance
+                                                     onPath:_offsetPathRef
+                                                withTangent:NULL];
+      }
+    }
+    [self applyOffset:resultPoint andRotate:rotateDeg];
+    _offsetHasChanged = NO;
+  }
+  // 3. Apply transition
   if (_transitionAnimationManager) {
     [_transitionAnimationManager applyTransitionAnimation];
   }
-  // 3. Apply keyframe
+  // 4. Apply keyframe
   if (nil != _animationManager) {
     [_animationManager notifyAnimationUpdated];
   }
@@ -1283,6 +1309,9 @@ LYNX_PROPS_GROUP_DECLARE(
     LYNX_PROP_DECLARE("background-clip", setBackgroundClip, NSArray*),
     LYNX_PROP_DECLARE("background-capInsets", setBackgroundCapInsets, NSString*),
     LYNX_PROP_DECLARE("clip-path", setClipPath, NSArray*),
+    LYNX_PROP_DECLARE("offset-path", setOffsetPath, NSArray*),
+    LYNX_PROP_DECLARE("offset-distance", setOffsetDistance, CGFLoat),
+    LYNX_PROP_DECLARE("offset-rotate", setOffsetRotate, CGFLoat),
     LYNX_PROP_DECLARE("opacity", setOpacity, CGFloat),
     LYNX_PROP_DECLARE("visibility", setVisibility, LynxVisibilityType),
     LYNX_PROP_DECLARE("direction", setLynxDirection, LynxDirectionType),
@@ -3812,6 +3841,70 @@ LYNX_PROP_DEFINE("clip-path", setClipPath, NSArray*) {
   }];
 }
 
+LYNX_PROP_DEFINE("offset-path", setOffsetPath, NSArray*) {
+  if (requestReset || !value || [value count] < 1) {
+    _offsetPath = nil;
+    _offsetPathRef = nil;
+    _offsetHasChanged = YES;
+    return;
+  }
+  _offsetHasChanged = YES;
+  LynxBasicShapeType type = [[value objectAtIndex:0] intValue];
+  switch (type) {
+    case LynxBasicShapeTypeCircle:
+    case LynxBasicShapeTypeInset:
+      _offsetPath = LBSCreateBasicShapeFromArray(value);
+      break;
+    case LynxBasicShapeTypePath: {
+      if ([value count] != 2) {
+        // Native parse error occurss. Reset the path.
+        _offsetPath = nil;
+        _offsetPathRef = nil;
+        break;
+      }
+      id data = [value objectAtIndex:1];
+      if (![data isKindOfClass:[NSString class]]) {
+        _offsetPath = nil;
+        _offsetPathRef = nil;
+        break;
+      }
+      _offsetPath = LBSCreateBasicShapeFromPathData((NSString*)data);
+      const char* cData = [(NSString*)data UTF8String];
+      _offsetPathRef = LBSCreatePathFromData(cData);
+      break;
+    }
+    default:
+      _offsetPath = nil;
+      _offsetPathRef = nil;
+  };
+}
+
+LYNX_PROP_DEFINE("offset-distance", setOffsetDistance, CGFloat) {
+  if (requestReset) {
+    value = 0;
+    _offsetHasChanged = YES;
+  }
+  if (_offsetDistance != value) {
+    _offsetDistance = value;
+    _offsetHasChanged = YES;
+  }
+}
+
+LYNX_PROP_DEFINE("offset-rotate", setOffsetRotate, CGFloat) {
+  if (requestReset) {
+    value = -1024.0;
+    _isAutoOffsetRotate = YES;
+    _offsetHasChanged = YES;
+  }
+  if (_offsetRotate != value) {
+    _offsetRotate = value;
+    if (_offsetRotate != -1024.0) {
+      _isAutoOffsetRotate = NO;
+    }
+    _offsetHasChanged = YES;
+  }
+}
+
 /**
  * @name: copyable
  * @description: Allowing copy LynxUI from one to another at native
@@ -3935,6 +4028,28 @@ LYNX_PROP_DEFINE("hit-slop", setHitSlop, NSObject*) {
       _hitSlopRight != ptValue) {
     _hitSlopTop = _hitSlopBottom = _hitSlopLeft = _hitSlopRight = ptValue;
   }
+}
+
+- (void)applyOffset:(CGPoint)resultPoint andRotate:(CGFloat)rotateDeg toLayer:(CALayer*)layer {
+  if (layer) {
+    CGPoint newPosition = layer.position;
+    newPosition.x += resultPoint.x;
+    newPosition.y += resultPoint.y;
+    layer.position = newPosition;
+    layer.transform =
+        CATransform3DConcat(layer.transform, CATransform3DMakeRotation(rotateDeg, 0, 0, 1));
+  }
+}
+
+- (void)applyOffset:(CGPoint)resultPoint andRotate:(CGFloat)rotateDeg {
+  // Move backgroundManager.borderLayer
+  [self applyOffset:resultPoint andRotate:rotateDeg toLayer:_backgroundManager.borderLayer];
+  // Move backgroundManager.backgroundLayer.
+  [self applyOffset:resultPoint andRotate:rotateDeg toLayer:_backgroundManager.backgroundLayer];
+  // Move backgroundManager.maskLayer.
+  [self applyOffset:resultPoint andRotate:rotateDeg toLayer:_backgroundManager.maskLayer];
+  // Move view.layer.
+  [self applyOffset:resultPoint andRotate:rotateDeg toLayer:self.view.layer];
 }
 
 @end

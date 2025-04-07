@@ -239,6 +239,8 @@ subspec_target("lynx") {
     "ui/LynxFilterUtil.m",
     "ui/LynxGlobalObserver.m",
     "ui/LynxLayer.m",
+    "ui/LynxOffsetCalculator.h",
+    "ui/LynxOffsetCalculator.mm",
     "ui/LynxRootUI.m",
     "ui/LynxScrollEventManager.mm",
     "ui/LynxScrollListener.m",

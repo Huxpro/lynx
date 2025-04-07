@@ -2424,6 +2424,10 @@ public class LynxNinePatchImageProcessor : NSObject, <LynxImageProcessor> {
   public instancetype LynxNinePatchImageProcessor::initWithCapInsets:capInsetsScale:(UIEdgeInsets capInsets,[capInsetsScale] CGFloat capInsetsScale);
 }
 
+public class LynxOffsetCalculator : NSObject {
+  public CGPoint LynxOffsetCalculator::pointAtProgress:onPath:withTangent:(CGFloat progress,[onPath] CGPathRef path,[withTangent] nullable CGFloat *tangent);
+}
+
 public class LynxPageReloadHelper : NSObject, <LynxPageReloadHelperProto> {
   public void LynxPageReloadHelper()::onTemplateLoadSuccess:(nullable NSData *tem);
   public NSString *_Nullable LynxPageReloadHelper()::getTemplateJsInfo:withSize:(uint32_t offset, [withSize] uint32_t size);
@@ -3441,6 +3445,12 @@ public class LynxUI : <__covariant V UIView> {
   public NSDictionary* LynxUI::dataset dataset;
   public NSString* LynxUI::tagName tagName;
   public LynxBasicShape* LynxUI::clipPath clipPath;
+  public LynxBasicShape* LynxUI::offsetPath offsetPath;
+  public CGPathRef LynxUI::offsetPathRef offsetPathRef;
+  public CGFloat LynxUI::offsetDistance offsetDistance;
+  public CGFloat LynxUI::offsetRotate offsetRotate;
+  public BOOL LynxUI::isAutoOffsetRotate isAutoOffsetRotate;
+  public BOOL LynxUI::offsetHasChanged offsetHasChanged;
   public LynxUIContext* LynxUI::context context;
   public CGRect LynxUI::frame frame;
   public CGRect LynxUI::updatedFrame updatedFrame;
@@ -4611,6 +4621,11 @@ public class PaintingContextProxy : NSObject, <LynxShadowNodeDelegate> {
   public instancetype PaintingContextProxy::initWithPaintingContext:(lynx::tasm::PaintingContextDarwin *paintingContext);
   public BOOL PaintingContextProxy::isLayoutFinish();
   public void PaintingContextProxy::resetLayoutStatus();
+}
+
+public class PathLengthCache : NSObject {
+  public CGFloat PathLengthCache::totalLength totalLength;
+  public NSMutableArray<NSNumber *>* PathLengthCache::segmentLengths segmentLengths;
 }
 
 public class ShareElementPair : NSObject {

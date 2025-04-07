@@ -52,6 +52,12 @@ typedef void (^LynxNodeReadyBlock)(LynxUI*);
 @property(nonatomic, readonly, copy) NSDictionary* dataset;
 @property(nonatomic, copy) NSString* tagName;
 @property(nonatomic, strong, nullable) LynxBasicShape* clipPath;
+@property(nonatomic, strong, nullable) LynxBasicShape* offsetPath;
+@property(nonatomic, readwrite) CGPathRef offsetPathRef;
+@property(nonatomic, readwrite) CGFloat offsetDistance;
+@property(nonatomic, readwrite) CGFloat offsetRotate;
+@property(nonatomic) BOOL isAutoOffsetRotate;
+@property(nonatomic) BOOL offsetHasChanged;
 
 // Context info
 @property(nonatomic, weak, readonly) LynxUIContext* context;
