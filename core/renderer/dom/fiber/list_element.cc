@@ -142,9 +142,13 @@ void ListElement::ParallelFlushAsRoot() {
 int32_t ListElement::ComponentAtIndex(uint32_t index, int64_t operationId,
                                       bool enable_reuse_notification) {
   TRACE_EVENT(LYNX_TRACE_CATEGORY, LIST_ELEMENT_RENDER_COMPONENT,
-              [this](lynx::perfetto::EventContext ctx) {
+              [this, instance_id = tasm_->GetInstanceId()](
+                  lynx::perfetto::EventContext ctx) {
                 UpdateTraceDebugInfo(ctx.event());
+                ctx.event()->add_debug_annotations("instance_id",
+                                                   std::to_string(instance_id));
               });
+
   tasm::timing::LongTaskMonitor::Scope longTaskScope(
       tasm_->GetPageOptions(), tasm::timing::kListNodeTask,
       tasm::timing::kTaskNameListElementComponentAtIndex);

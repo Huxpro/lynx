@@ -197,7 +197,11 @@ public class UIBody extends UIGroup<UIBodyView> {
 
     @Override
     protected void dispatchDraw(final Canvas canvas) {
-      TraceEvent.beginSection(TraceEventDef.LYNX_TEMPLATE_RENDER_DRAW);
+      if (TraceEvent.enableTrace()) {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("instance_id", String.valueOf(mInstanceId));
+        TraceEvent.beginSection(TraceEventDef.LYNX_TEMPLATE_RENDER_DRAW, map);
+      }
       boolean needLongTaskMonitor = false;
       TimingCollector timingCollector = mTimingCollector.get();
       LynxLongTaskMonitor.willProcessTask("LynxTemplateRender.Draw", mInstanceId);

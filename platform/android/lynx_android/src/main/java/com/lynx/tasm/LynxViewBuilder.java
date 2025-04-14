@@ -497,7 +497,6 @@ public class LynxViewBuilder {
     LynxViewConfigProcessor.parseForLynxViewBuilder(lynxViewConfig, this);
     LynxView lynxView = new LynxView(context, this);
     TraceEvent.endSection(TraceEventDef.LYNXVIEW_BUILDER_BUILD);
-
     return lynxView;
   }
 

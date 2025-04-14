@@ -107,10 +107,14 @@ void PageElement::PostResolveTaskToThreadPool(
   std::future<ParallelFlushReturn> future = promise.get_future();
 
   auto task_info_ptr = fml::MakeRefCounted<base::OnceTask<ParallelFlushReturn>>(
-      [promise = std::move(promise),
-       task = std::move(remaining_task)]() mutable {
+      [promise = std::move(promise), task = std::move(remaining_task),
+       instance_id = element_manager_->GetInstanceId()]() mutable {
         TRACE_EVENT(LYNX_TRACE_CATEGORY,
-                    FIBER_ELEMENT_PREPARE_FOR_CRATE_OR_UPDATE_ASYNC);
+                    FIBER_ELEMENT_PREPARE_FOR_CRATE_OR_UPDATE_ASYNC,
+                    [instance_id](lynx::perfetto::EventContext ctx) {
+                      ctx.event()->add_debug_annotations(
+                          "instance_id", std::to_string(instance_id));
+                    });
         promise.set_value(std::move(task));
       },
       std::move(future));

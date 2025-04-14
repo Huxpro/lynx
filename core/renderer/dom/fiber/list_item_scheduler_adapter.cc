@@ -97,8 +97,16 @@ void ListItemSchedulerAdapter::PostResolveElementTree(
         fml::MakeRefCounted<base::OnceTask<ParallelFlushReturn>>(
             [this, promise = std::move(promise)]() mutable {
               TRACE_EVENT(LYNX_TRACE_CATEGORY,
-                          LIST_SCHEDULER_ADAPTER_ASYNC_FLUSH, "list_item",
-                          std::to_string(render_root_->impl_id()));
+                          LIST_SCHEDULER_ADAPTER_ASYNC_FLUSH,
+                          [instance_id =
+                               render_root_->element_manager()->GetInstanceId(),
+                           impl_id = render_root_->impl_id()](
+                              lynx::perfetto::EventContext ctx) {
+                            ctx.event()->add_debug_annotations(
+                                "instance_id", std::to_string(instance_id));
+                            ctx.event()->add_debug_annotations(
+                                "list_item", std::to_string(impl_id));
+                          });
               batch_rendering_ = true;
               render_root_->FlushActions();
               batch_rendering_ = false;

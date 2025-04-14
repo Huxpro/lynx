@@ -578,7 +578,7 @@ public class LynxUIOwner {
         String traceEvent = null;
         if (TraceEvent.enableTrace()) {
           traceEvent = TraceEventDef.UI_OWNER_CREATE_VIEW_ASYNC + tagName;
-          TraceEvent.beginSection(traceEvent);
+          traceBeginWithInstanceId(traceEvent);
         }
         final LynxBaseUI[] ui = new LynxBaseUI[1];
         ui[0] = createViewInterval(
@@ -593,7 +593,7 @@ public class LynxUIOwner {
             String traceEvent = null;
             if (TraceEvent.enableTrace()) {
               traceEvent = TraceEventDef.UI_OWNER_CREATE_VIEW_ASYNC_AFTER + tagName;
-              TraceEvent.beginSection(traceEvent);
+              traceBeginWithInstanceId(traceEvent);
             }
             ui[0] = afterConsumeInitialProps(ui[0], proxy, initialProps);
             // Report the usage of the component.
@@ -628,6 +628,16 @@ public class LynxUIOwner {
       return futureTask;
     }
     return LynxThreadPool.postUIOperationTask(createViewAsyncTask);
+  }
+
+  private void traceBeginWithInstanceId(String traceEvent) {
+    if (mContext != null) {
+      HashMap<String, String> args = new HashMap<>();
+      args.put("instance_id", String.valueOf(mContext.getInstanceId()));
+      TraceEvent.beginSection(traceEvent, args);
+    } else {
+      TraceEvent.beginSection(traceEvent);
+    }
   }
 
   private LynxBaseUI consumeInitialProps(LynxBaseUI ui, @Nullable StylesDiffMap initialProps) {
