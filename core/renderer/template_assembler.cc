@@ -614,7 +614,7 @@ void TemplateAssembler::UpdateTemplate(
   if (EnableFiberArch()) {
     if (update_page_option.reload_template ||
         pipeline_options.need_timestamps) {
-      tasm::TimingCollector::Instance()->Mark(tasm::timing::kMtsRenderStart);
+      tasm::TimingCollector::Instance()->Mark(tasm::timing::kCreateVdomStart);
     }
 
     auto options = update_page_option.ToLepusValue();
@@ -636,6 +636,7 @@ void TemplateAssembler::UpdateTemplate(
 
     if (!update_page_option.reload_template &&
         pipeline_options.need_timestamps) {
+      tasm::TimingCollector::Instance()->Mark(tasm::timing::kCreateVdomEnd);
       tasm::TimingCollector::Instance()->Mark(tasm::timing::kMtsRenderEnd);
     }
 
@@ -658,7 +659,7 @@ void TemplateAssembler::UpdateTemplate(
 void TemplateAssembler::RenderTemplateForFiber(
     const std::shared_ptr<TemplateEntry>& card, const TemplateData& data,
     PipelineOptions& pipeline_options) {
-  tasm::TimingCollector::Instance()->Mark(tasm::timing::kMtsRenderStart);
+  tasm::TimingCollector::Instance()->Mark(tasm::timing::kCreateVdomStart);
 
   lepus::Value render_options(lepus::Dictionary::Create());
   if (EnableDataProcessorOnJs()) {
@@ -705,6 +706,7 @@ void TemplateAssembler::RenderTemplateForFiber(
     page_proxy()->element_manager()->ClearExtremeParsedStyles();
   }
 
+  tasm::TimingCollector::Instance()->Mark(tasm::timing::kCreateVdomEnd);
   tasm::TimingCollector::Instance()->Mark(tasm::timing::kMtsRenderEnd);
 
   pipeline_options.is_first_screen = true;
@@ -975,6 +977,9 @@ void TemplateAssembler::LoadTemplateInternal(
     TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, VM_EXECUTE);
 
     // Before vm execute template, do some preparation. Only timing actions now.
+    if (pipeline_options.need_timestamps) {
+      tasm::TimingCollector::Instance()->Mark(tasm::timing::kMtsRenderStart);
+    }
     OnVMExecute();
 
     // Get VM & exec VM.
@@ -1084,6 +1089,9 @@ void TemplateAssembler::ReloadTemplate(
   // SETUP_SET_INIT_DATA_START, SETUP_SET_INIT_DATA_END
   tasm::TimingCollector::Instance()->Mark(tasm::timing::kParseStart);
   tasm::TimingCollector::Instance()->Mark(tasm::timing::kParseEnd);
+  if (pipeline_options.need_timestamps) {
+    tasm::TimingCollector::Instance()->Mark(tasm::timing::kMtsRenderStart);
+  }
   tasm::TimingCollector::Instance()->MarkFrameworkTiming(
       tasm::timing::kVmExecuteStart);
   tasm::TimingCollector::Instance()->MarkFrameworkTiming(

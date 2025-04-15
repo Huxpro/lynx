@@ -22,6 +22,7 @@
 #include "core/runtime/vm/lepus/context.h"
 #include "core/services/feature_count/global_feature_counter.h"
 #include "core/services/timing_handler/timing_constants.h"
+#include "core/services/timing_handler/timing_constants_deprecated.h"
 
 namespace lynx {
 namespace tasm {
@@ -870,9 +871,11 @@ void RadonComponent::Refresh(const DispatchOption& option,
   RenderOption renderOption;
   if (pipeline_options.need_timestamps) {
     tasm::TimingCollector::Instance()->Mark(tasm::timing::kMtsRenderStart);
+    tasm::TimingCollector::Instance()->Mark(tasm::timing::kCreateVdomStart);
   }
   RenderRadonComponentIfNeeded(renderOption);
   if (pipeline_options.need_timestamps) {
+    tasm::TimingCollector::Instance()->Mark(tasm::timing::kCreateVdomEnd);
     tasm::TimingCollector::Instance()->Mark(tasm::timing::kMtsRenderEnd);
     tasm::TimingCollector::Instance()->Mark(tasm::timing::kResolveStart);
     page_proxy_->element_manager()

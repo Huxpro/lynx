@@ -4,6 +4,7 @@
 
 #include "core/services/timing_handler/timing_utils.h"
 
+#include <list>
 #include <string>
 #include <unordered_map>
 
@@ -27,20 +28,23 @@ namespace timing {
  * compatible with the classic onSetup/onUpdate API.
  *
  * @param timing_key The input timing key to be converted.
+ * @param polyfill_key The output timing key that is populated with the
+ * corresponding polyfill key.
  * @return The corresponding polyfill timing key.
  */
-TimestampKey GetPolyfillTimingKey(const TimestampKey& timing_key) {
+bool TryUpdatePolyfillTimingKey(const TimestampKey& timing_key,
+                                std::string& polyfill_key) {
   static const lynx::base::NoDestructor<
       std::unordered_map<TimestampKey, TimestampKey>>
-      keyMap{
+      keysAllowedForPolyfill{
           {{kLoadBundleStart, kLoadBundleStartPolyfill},
            {kLoadBundleEnd, kLoadBundleEndPolyfill},
            {kParseStart, kParseStartPolyfill},
            {kParseEnd, kParseEndPolyfill},
            {kResolveStart, kResolveStartPolyfill},
            {kResolveEnd, kResolveEndPolyfill},
-           {kMtsRenderStart, kMtsRenderStartPolyfill},
-           {kMtsRenderEnd, kMtsRenderEndPolyfill},
+           {kCreateVdomStart, kCreateVdomStart},
+           {kCreateVdomEnd, kCreateVdomEnd},
            {kVmExecuteStart, kVmExecuteStartPolyfill},
            {kVmExecuteEnd, kVmExecuteEndPolyfill},
            {kPaintEnd, kPaintEndPolyfill},
@@ -78,11 +82,27 @@ TimestampKey GetPolyfillTimingKey(const TimestampKey& timing_key) {
            {kOpenTime, kOpenTimePolyfill},
            {kContainerInitStart, kContainerInitStartPolyfill},
            {kContainerInitEnd, kContainerInitEndPolyfill}}};
-  auto it = keyMap->find(timing_key);
-  if (it != keyMap->end()) {
-    return it->second;
+  static const lynx::base::NoDestructor<std::list<TimestampKey>>
+      keysNotAllowedForPolyfill{
+          std::initializer_list<TimestampKey>{kMtsRenderStart, kMtsRenderEnd}};
+
+  auto it_allowedPolyfill = keysAllowedForPolyfill->find(timing_key);
+  if (it_allowedPolyfill != keysAllowedForPolyfill->end()) {
+    polyfill_key = it_allowedPolyfill->second;
+    return true;
   }
-  return timing_key;
+
+  auto it_notAllowedPolyfill =
+      std::find(keysNotAllowedForPolyfill->begin(),
+                keysNotAllowedForPolyfill->end(), timing_key);
+  if (it_notAllowedPolyfill == keysNotAllowedForPolyfill->end()) {
+    // If no polyfill rule is matched, the original string is used by default,
+    // unless there is a prohibition rule in the keysNotAllowedForPolyfill.
+    polyfill_key = timing_key;
+    return true;
+  }
+  // Returns false and don't modify polyfill_key if polyfill is not allowed.
+  return false;
 }
 }  // namespace timing
 }  // namespace tasm

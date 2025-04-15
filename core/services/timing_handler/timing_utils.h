@@ -20,7 +20,8 @@ constexpr TimestampMsFraction ConvertUsToDouble(TimestampUs us_timestamp) {
   return static_cast<double>(us_timestamp) / 1000.0;
 }
 
-TimestampKey GetPolyfillTimingKey(const TimestampKey& key);
+bool TryUpdatePolyfillTimingKey(const TimestampKey& key,
+                                TimestampKey& polyfill_key);
 
 }  // namespace timing
 }  // namespace tasm

@@ -65,7 +65,12 @@ void TimingHandler::SetTiming(TimestampKey& timing_key,
     LOGE("Invalid timing key or timestamp in TimingHandler::SetTiming");
     return;
   }
-  TimestampKey polyfillKey = GetPolyfillTimingKey(timing_key);
+  handler_ng_.SetTiming(timing_key, us_timestamp, pipeline_id);
+
+  TimestampKey polyfillKey = "";
+  if (!TryUpdatePolyfillTimingKey(timing_key, polyfillKey)) {
+    return;
+  }
   if (IsInitTiming(polyfillKey)) {
     ProcessInitTiming(polyfillKey, us_timestamp);
   } else if (IsExtraTiming(polyfillKey)) {
@@ -73,17 +78,18 @@ void TimingHandler::SetTiming(TimestampKey& timing_key,
   } else if (!pipeline_id.empty()) {
     ProcessPipelineTiming(polyfillKey, us_timestamp, pipeline_id);
   }
-
-  handler_ng_.SetTiming(timing_key, us_timestamp, pipeline_id);
 }
 
 void TimingHandler::SetTimingWithTimingFlag(
     const tasm::timing::TimingFlag& timing_flag,
     const std::string& timestamp_key, tasm::timing::TimestampUs timestamp) {
-  TimestampKey polyfillKey = GetPolyfillTimingKey(timestamp_key);
-  timing_info_.SetTimingWithTimingFlag(timing_flag, polyfillKey, timestamp);
-
   handler_ng_.SetTimingWithTimingFlag(timing_flag, timestamp_key, timestamp);
+
+  TimestampKey polyfillKey = "";
+  if (!TryUpdatePolyfillTimingKey(timestamp_key, polyfillKey)) {
+    return;
+  }
+  timing_info_.SetTimingWithTimingFlag(timing_flag, polyfillKey, timestamp);
 }
 
 // Internal methods for checking which timing type.

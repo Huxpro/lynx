@@ -24,7 +24,7 @@
 #include "core/services/long_task_timing/long_task_monitor.h"
 #include "core/services/timing_handler/timing.h"
 #include "core/services/timing_handler/timing_constants.h"
-
+#include "core/services/timing_handler/timing_constants_deprecated.h"
 namespace lynx {
 namespace tasm {
 
@@ -333,6 +333,7 @@ bool RadonPage::UpdatePage(const lepus::Value &table,
     TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, RADON_UPDATE_PAGE_DIFF);
     if (update_page_option.update_first_time) {
       tasm::TimingCollector::Instance()->Mark(tasm::timing::kMtsRenderStart);
+      tasm::TimingCollector::Instance()->Mark(tasm::timing::kCreateVdomStart);
       lepus::Value p1(this);
       lepus::Value p2(true);
       std::string ss = "$renderPage" + std::to_string(this->node_index_);
@@ -349,6 +350,7 @@ bool RadonPage::UpdatePage(const lepus::Value &table,
       dispatched_ = false;
       // Before lynx 2.1, $renderPage accept only the previous two params.
       context_->Call(ss, p1, p2, data_);
+      tasm::TimingCollector::Instance()->Mark(tasm::timing::kCreateVdomEnd);
       tasm::TimingCollector::Instance()->Mark(tasm::timing::kMtsRenderEnd);
       // when the page is first updated
       tasm::TimingCollector::Instance()->Mark(tasm::timing::kResolveStart);
@@ -373,6 +375,7 @@ bool RadonPage::UpdatePage(const lepus::Value &table,
       }
       if (pipeline_options.need_timestamps) {
         tasm::TimingCollector::Instance()->Mark(tasm::timing::kMtsRenderStart);
+        tasm::TimingCollector::Instance()->Mark(tasm::timing::kCreateVdomStart);
       }
       /*
        * original_radon_children will save the original children of a radon
@@ -398,6 +401,7 @@ bool RadonPage::UpdatePage(const lepus::Value &table,
         EXEC_EXPR_FOR_INSPECTOR(NotifyElementNodeSetted());
       }
       if (pipeline_options.need_timestamps) {
+        tasm::TimingCollector::Instance()->Mark(tasm::timing::kCreateVdomEnd);
         tasm::TimingCollector::Instance()->Mark(tasm::timing::kMtsRenderEnd);
         page_proxy_->element_manager()
             ->painting_context()

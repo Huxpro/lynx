@@ -50,8 +50,8 @@ static constexpr const char kTemplateBundleParseEndPolyfill[] =
 static constexpr const char kPaintEndPolyfill[] = "draw_end";  // paint
 static constexpr const char kVmExecuteStartPolyfill[] = "lepus_excute_start";
 static constexpr const char kVmExecuteEndPolyfill[] = "lepus_excute_end";
-static constexpr const char kMtsRenderStartPolyfill[] = "create_vdom_start";
-static constexpr const char kMtsRenderEndPolyfill[] = "create_vdom_end";
+static constexpr const char kCreateVdomStart[] = "create_vdom_start";
+static constexpr const char kCreateVdomEnd[] = "create_vdom_end";
 static constexpr const char kPaintingUiOperationExecuteStartPolyfill[] =
     "ui_operation_flush_start";
 static constexpr const char kLayoutUiOperationExecuteEndPolyfill[] =
