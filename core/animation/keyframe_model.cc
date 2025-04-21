@@ -16,9 +16,14 @@
 
 #include "base/include/log/logging.h"
 #include "core/animation/animation_curve.h"
+#include "core/services/event_report/event_tracker.h"
 
 namespace lynx {
 namespace animation {
+
+static constexpr int64_t kFifteenMinutesInSeconds = 900;
+static constexpr int64_t kThirtyMinutesInSeconds = 1800;
+static constexpr int64_t kOneHourInSeconds = 3600;
 
 fml::TimeDelta KeyframeModel::GetRepeatDuration() const {
   if (animation_data_->iteration_count == 0) {
@@ -171,8 +176,24 @@ fml::TimeDelta KeyframeModel::CalculateActiveTime(
 }
 
 fml::TimeDelta KeyframeModel::TrimTimeToCurrentIteration(
-    fml::TimePoint monotonic_time, int& current_iteration_count) const {
+    fml::TimePoint monotonic_time, int& current_iteration_count,
+    bool&& need_report_over_time) const {
   fml::TimeDelta active_time = CalculateActiveTime(monotonic_time);
+  if (need_report_over_time == true &&
+      active_time.ToSeconds() > kThirtyMinutesInSeconds) {
+    need_report_over_time = false;
+    if (tasm::LynxEnv::GetInstance().EnableAnimationInfoReport()) {
+      tasm::report::EventTracker::OnEvent(
+          [css_animation_name = animation_data_->name.str()](
+              tasm::report::MoveOnlyEvent& event) {
+            event.SetName("lynxsdk_animation_report_event");
+            event.SetProps("report_event_type",
+                           "css_animation_time_out_30_minutes");
+            event.SetProps("css_animation_name", css_animation_name);
+            event.SetProps("total_duration_seconds", kThirtyMinutesInSeconds);
+          });
+    }
+  }
   fml::TimeDelta start_offset = fml::TimeDelta();
 
   // Return start offset if we are before the start of the keyframe model

@@ -393,5 +393,9 @@ bool LynxEnv::EnableAnimationVsyncOnUIThread() {
   return GetBoolEnv(Key::ENABLE_ANIMATION_VSYNC_ON_UI_THREAD, false);
 }
 
+bool LynxEnv::EnableAnimationInfoReport() {
+  return GetBoolEnv(Key::ENABLE_ANIMATION_INFO_REPORT, true);
+}
+
 }  // namespace tasm
 }  // namespace lynx

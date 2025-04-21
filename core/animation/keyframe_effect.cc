@@ -49,7 +49,7 @@ void KeyframeEffect::TickKeyframeModel(fml::TimePoint monotonic_time) {
   tasm::StyleMap style_map;
   bool should_send_start_event = false;
   bool should_send_end_event = false;
-
+  bool has_checked_over_time = false;
   style_map.reserve(keyframe_models_.size());
   for (auto& keyframe_model : keyframe_models_) {
     // #1. Update the model state and collect animation event information.
@@ -64,8 +64,16 @@ void KeyframeEffect::TickKeyframeModel(fml::TimePoint monotonic_time) {
     // The counter records whether the iteration_count has changed.
     int temp_count = current_iteration_count_;
     // #2.1 Calculate trimmed time to current iteration
-    fml::TimeDelta trimmed = keyframe_model->TrimTimeToCurrentIteration(
-        monotonic_time, current_iteration_count_);
+    fml::TimeDelta trimmed;
+    if (has_checked_over_time == false) {
+      trimmed = keyframe_model->TrimTimeToCurrentIteration(
+          monotonic_time, current_iteration_count_,
+          std::move(need_report_over_time_));
+      has_checked_over_time = true;
+    } else {
+      trimmed = keyframe_model->TrimTimeToCurrentIteration(
+          monotonic_time, current_iteration_count_, false);
+    }
     if (current_iteration_count_ != temp_count) {
       animation_->SendIterationEvent();
     }

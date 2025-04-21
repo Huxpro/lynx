@@ -65,7 +65,8 @@ class KeyframeModel {
   fml::TimeDelta CalculateActiveTime(fml::TimePoint monotonic_time) const;
 
   fml::TimeDelta TrimTimeToCurrentIteration(fml::TimePoint monotonic_time,
-                                            int& current_iteration_count) const;
+                                            int& current_iteration_count,
+                                            bool&& need_report_over_time) const;
 
   AnimationCurve* curve() { return curve_.get(); }
   const AnimationCurve* curve() const { return curve_.get(); }

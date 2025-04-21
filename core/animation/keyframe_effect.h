@@ -74,6 +74,7 @@ class KeyframeEffect {
   std::vector<std::unique_ptr<KeyframeModel>> keyframe_models_;
   AnimationDelegate* animation_delegate_;
   Animation* animation_{nullptr};
+  bool need_report_over_time_ = true;
 };
 
 }  // namespace animation
