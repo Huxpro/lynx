@@ -45,7 +45,8 @@ public class AndroidScrollView extends NestedScrollView implements IDrawChildHoo
   private boolean mIsDownEventHandled = true;
   // Whether to consume gestures
   private Boolean mConsumeGesture = null;
-
+  // whether to intercept gestures to parents and children's gesture
+  private Boolean mInterceptGesture = null;
   private UIScrollView mUIScrollView;
   private LinearLayout mLinearLayout;
   private boolean isLinearLayoutExist = false;
@@ -237,6 +238,10 @@ public class AndroidScrollView extends NestedScrollView implements IDrawChildHoo
     }
   }
 
+  public void interceptGesture(boolean interceptGesture) {
+    mInterceptGesture = interceptGesture;
+  }
+
   public AndroidScrollView(Context context, UIScrollView uiScrollView) {
     super(context, uiScrollView);
     mUIScrollView = uiScrollView;
@@ -269,18 +274,39 @@ public class AndroidScrollView extends NestedScrollView implements IDrawChildHoo
     }
   }
 
+  private boolean isConsumeGesture(MotionEvent ev) {
+    return mUIScrollView.isEnableNewGesture() && (mConsumeGesture != null && !mConsumeGesture)
+        && ev.getActionMasked() != MotionEvent.ACTION_DOWN;
+  }
+
+  private boolean isInterceptGestureNotNull() {
+    return mUIScrollView.isEnableNewGesture() && mInterceptGesture != null;
+  }
+
+  private boolean isNeedInterceptGesture() {
+    return isInterceptGestureNotNull() && mInterceptGesture;
+  }
+
   @Override
   public boolean onTouchEvent(MotionEvent ev) {
     if (!isHorizontal) {
-      if (mUIScrollView.isEnableNewGesture() && (mConsumeGesture == null || !mConsumeGesture)
-          && ev.getActionMasked() != MotionEvent.ACTION_DOWN) {
-        // If new gestures are enabled, return false to indicate that the event is not consumed, So
-        // this event can be passed to parent node, do not intercept the down event, otherwise will
-        // not receive other types of events.
-        if (ev.getAction() == MotionEvent.ACTION_UP) {
-          isUserDragging = false;
-        }
+      if (handleConsumeGesture(ev)) {
         return false;
+      }
+      if (isInterceptGestureNotNull()) {
+        if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
+          getParent().requestDisallowInterceptTouchEvent(true);
+        } else if (ev.getActionMasked() == MotionEvent.ACTION_MOVE) {
+          getParent().requestDisallowInterceptTouchEvent(mInterceptGesture);
+          boolean res = mInterceptGesture;
+          if (!mInterceptGesture) {
+            res = super.onTouchEvent(ev);
+          }
+          return res;
+        } else if (ev.getActionMasked() == MotionEvent.ACTION_UP
+            || ev.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+          mInterceptGesture = null;
+        }
       }
 
       // Note: we should update mHandleTouchMove before invoke super.onTouchEvent(ev) because
@@ -313,6 +339,19 @@ public class AndroidScrollView extends NestedScrollView implements IDrawChildHoo
     } else {
       return false;
     }
+  }
+
+  private boolean handleConsumeGesture(MotionEvent ev) {
+    if (isConsumeGesture(ev)) {
+      // If new gestures are enabled, return false to indicate that the event is not consumed, So
+      // this event can be passed to parent node, do not intercept the down event, otherwise will
+      // not receive other types of events.
+      if (ev.getActionMasked() == MotionEvent.ACTION_UP) {
+        isUserDragging = false;
+      }
+      return true;
+    }
+    return false;
   }
 
   private void transferToScroll() {
@@ -557,12 +596,14 @@ public class AndroidScrollView extends NestedScrollView implements IDrawChildHoo
       if (mUIScrollView.mPreferenceConsumeGesture) {
         requestDisallowInterceptTouchEvent(true);
       }
-      if (mUIScrollView.isEnableNewGesture() && (mConsumeGesture == null || !mConsumeGesture)
-          && ev.getActionMasked() != MotionEvent.ACTION_DOWN) {
+      if (isConsumeGesture(ev)) {
         // If new gestures are enabled, return false to indicate that the event is not intercept, So
         // this event can be passed to child node, do not intercept the down event, otherwise will
         // not receive other types of events.
         return false;
+      }
+      if (isNeedInterceptGesture()) {
+        return mInterceptGesture;
       }
       return super.onInterceptTouchEvent(ev);
     } else {
@@ -1001,11 +1042,13 @@ public class AndroidScrollView extends NestedScrollView implements IDrawChildHoo
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
       if (isHorizontal) {
-        if (mUIScrollView.isEnableNewGesture() && (mConsumeGesture == null || !mConsumeGesture)
-            && ev.getActionMasked() != MotionEvent.ACTION_DOWN) {
+        if (isConsumeGesture(ev)) {
           // If new gestures are enabled, return false to indicate that the event is not intercept,
           // So this event can be passed to child node
           return false;
+        }
+        if (isNeedInterceptGesture()) {
+          return mInterceptGesture;
         }
         return super.onInterceptTouchEvent(ev);
       } else {
@@ -1016,16 +1059,26 @@ public class AndroidScrollView extends NestedScrollView implements IDrawChildHoo
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
       if (isHorizontal) {
-        if (mUIScrollView.isEnableNewGesture() && (mConsumeGesture == null || !mConsumeGesture)
-            && ev.getActionMasked() != MotionEvent.ACTION_DOWN) {
-          // If new gestures are enabled, return false to indicate that the event is not consumed,
-          // So this event can be passed to parent node, do not intercept the down event, otherwise
-          // will not receive other types of events.
-          if (ev.getAction() == MotionEvent.ACTION_UP) {
-            isUserDragging = false;
-          }
+        if (handleConsumeGesture(ev)) {
           return false;
         }
+
+        if (isInterceptGestureNotNull()) {
+          if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            getParent().requestDisallowInterceptTouchEvent(true);
+          } else if (ev.getActionMasked() == MotionEvent.ACTION_MOVE) {
+            getParent().requestDisallowInterceptTouchEvent(mInterceptGesture);
+            boolean res = mInterceptGesture;
+            if (!mInterceptGesture) {
+              res = super.onTouchEvent(ev);
+            }
+            return res;
+          } else if (ev.getActionMasked() == MotionEvent.ACTION_UP
+              || ev.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+            mInterceptGesture = null;
+          }
+        }
+
         mHandleTouchMove = ev.getAction() == MotionEvent.ACTION_MOVE;
         if (ev.getAction() == MotionEvent.ACTION_UP) {
           isUserDragging = false;

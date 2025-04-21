@@ -659,6 +659,11 @@ public class UIListContainer extends UISimpleView<ListContainerView>
     mView.consumeGesture(consumeGesture);
   }
 
+  @Override
+  protected void interceptGesture(boolean interceptGesture) {
+    mView.interceptGesture(interceptGesture);
+  }
+
   @MainThread
   @Override
   public float[] scrollBy(float deltaX, float deltaY) {

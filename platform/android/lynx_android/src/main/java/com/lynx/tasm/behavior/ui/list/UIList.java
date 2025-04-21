@@ -298,6 +298,8 @@ public class UIList extends AbsLynxList<RecyclerView> implements GestureArenaMem
     private ScrollContainerDrawHelper mDrawHelper = new ScrollContainerDrawHelper();
     // Whether to consume gestures
     private Boolean mConsumeGesture = null;
+    // Whether to intercept gesture
+    private Boolean mInterceptGesture = null;
     // Whether the down event has been processed, gesture starts from the down event, so if you want
     // to handle the gesture with one gesture, you need to convert one of the move events into a
     // down event
@@ -475,6 +477,19 @@ public class UIList extends AbsLynxList<RecyclerView> implements GestureArenaMem
       mTouchScroll = scroll;
     }
 
+    private boolean isConsumeGesture(UIList list, MotionEvent ev) {
+      return list.isEnableNewGesture() && (mConsumeGesture != null && !mConsumeGesture)
+          && ev.getActionMasked() != MotionEvent.ACTION_DOWN;
+    }
+
+    private boolean isInterceptGestureNotNull(UIList list) {
+      return list.isEnableNewGesture() && mInterceptGesture != null;
+    }
+
+    private boolean isNeedInterceptGesture(UIList list) {
+      return isInterceptGestureNotNull(list) && mInterceptGesture;
+    }
+
     @Override
     public boolean onInterceptTouchEvent(MotionEvent e) {
       if (mPreferenceConsumeGesture) {
@@ -484,13 +499,17 @@ public class UIList extends AbsLynxList<RecyclerView> implements GestureArenaMem
       if (list == null) {
         return super.onInterceptTouchEvent(e);
       }
-      if (list.isEnableNewGesture() && (mConsumeGesture == null || !mConsumeGesture)
-          && e.getActionMasked() != MotionEvent.ACTION_DOWN) {
+      if (isConsumeGesture(list, e)) {
         // If new gestures are enabled, return false to indicate that the event is not intercept, So
         // this event can be passed to child node, do not intercept the down event, otherwise will
         // not receive other types of events.
         return false;
       }
+
+      if (isNeedInterceptGesture(list)) {
+        return mInterceptGesture;
+      }
+
       return super.onInterceptTouchEvent(e);
     }
 
@@ -520,13 +539,29 @@ public class UIList extends AbsLynxList<RecyclerView> implements GestureArenaMem
       if (list == null) {
         return super.onTouchEvent(ev);
       }
-      if (list.isEnableNewGesture() && (mConsumeGesture == null || !mConsumeGesture)
-          && ev.getActionMasked() != MotionEvent.ACTION_DOWN) {
+      if (isConsumeGesture(list, ev)) {
         // If new gestures are enabled, return false to indicate that the event is not consumed,
         // So this event can be passed to parent node, do not intercept the down event, otherwise
         // will not receive other types of events.
         return false;
       }
+
+      if (isInterceptGestureNotNull(list)) {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+          getParent().requestDisallowInterceptTouchEvent(true);
+        } else if (ev.getAction() == MotionEvent.ACTION_MOVE) {
+          getParent().requestDisallowInterceptTouchEvent(mInterceptGesture);
+          boolean res = mInterceptGesture;
+          if (!mInterceptGesture) {
+            res = super.onTouchEvent(ev);
+          }
+          return res;
+        } else if (ev.getAction() == MotionEvent.ACTION_UP
+            || ev.getAction() == MotionEvent.ACTION_CANCEL) {
+          mInterceptGesture = null;
+        }
+      }
+
       if (mTouchScroll) {
         return super.onTouchEvent(ev);
       }
@@ -550,6 +585,10 @@ public class UIList extends AbsLynxList<RecyclerView> implements GestureArenaMem
       if (consume) {
         mIsDownEventHandled = false;
       }
+    }
+
+    public void interceptGesture(boolean intercept) {
+      mInterceptGesture = intercept;
     }
   }
 
@@ -869,6 +908,13 @@ public class UIList extends AbsLynxList<RecyclerView> implements GestureArenaMem
   protected void consumeGesture(boolean consumeGesture) {
     if (mView instanceof PrivateRecyclerView) {
       ((PrivateRecyclerView) mView).consumeGesture(consumeGesture);
+    }
+  }
+
+  @Override
+  protected void interceptGesture(boolean interceptGesture) {
+    if (mView instanceof PrivateRecyclerView) {
+      ((PrivateRecyclerView) mView).interceptGesture(interceptGesture);
     }
   }
 

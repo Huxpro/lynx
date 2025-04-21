@@ -3448,10 +3448,16 @@ public abstract class LynxBaseUI
     boolean consume = params.getBoolean("consume", true);
     if (inner) {
       consumeGesture(consume);
+    } else {
+      interceptGesture(consume);
     }
   }
 
   protected void consumeGesture(boolean consumeGesture) {
+    // Implemented in child
+  }
+
+  protected void interceptGesture(boolean interceptGesture) {
     // Implemented in child
   }
 

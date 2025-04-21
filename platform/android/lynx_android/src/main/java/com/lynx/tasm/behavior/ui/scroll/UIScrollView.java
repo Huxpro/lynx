@@ -1303,6 +1303,11 @@ public class UIScrollView extends AbsLynxUIScroll<AndroidScrollView>
     mView.consumeGesture(consumeGesture);
   }
 
+  @Override
+  protected void interceptGesture(boolean interceptGesture) {
+    mView.interceptGesture(interceptGesture);
+  }
+
   /**
    * Scrolls the view by the specified width and height.
    * @param deltaX The deltaX to scroll by.

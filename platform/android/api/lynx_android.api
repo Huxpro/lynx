@@ -232,6 +232,7 @@ public class com::lynx::tasm::behavior::ui::scroll::AndroidScrollView : com.lynx
   public final int com.lynx.tasm.behavior.ui.scroll.AndroidScrollView.SCROLL_STATE_ANIMATION SCROLL_STATE_ANIMATION;
   public final int com.lynx.tasm.behavior.ui.scroll.AndroidScrollView.SCROLL_NESTED_SCROLL SCROLL_NESTED_SCROLL;
   public void com.lynx.tasm.behavior.ui.scroll.AndroidScrollView.consumeGesture(boolean consume);
+  public void com.lynx.tasm.behavior.ui.scroll.AndroidScrollView.interceptGesture(boolean interceptGesture);
   public com.lynx.tasm.behavior.ui.scroll.AndroidScrollView.AndroidScrollView(Context context, UIScrollView uiScrollView);
   public boolean com.lynx.tasm.behavior.ui.scroll.AndroidScrollView.onTouchEvent(MotionEvent ev);
   public void com.lynx.tasm.behavior.ui.scroll.AndroidScrollView.bindDrawChildHook(IDrawChildHook hook);
@@ -317,6 +318,8 @@ public class com::lynx::tasm::behavior::ui::text::AndroidText : com.lynx.tasm.be
 public class com::lynx::tasm::behavior::ui::view::AndroidView : ViewGroup, com.lynx.tasm.behavior.ui.IDrawChildHook.IDrawChildHookBinding {
   public void com.lynx.tasm.behavior.ui.view.AndroidView.setBlurSampling(int sampling);
   public com.lynx.tasm.behavior.ui.view.AndroidView.AndroidView(Context context);
+  public void com.lynx.tasm.behavior.ui.view.AndroidView.interceptGesture(boolean interceptGesture);
+  public boolean com.lynx.tasm.behavior.ui.view.AndroidView.onInterceptTouchEvent(MotionEvent ev);
   public boolean com.lynx.tasm.behavior.ui.view.AndroidView.onTouchEvent(MotionEvent event);
   public void com.lynx.tasm.behavior.ui.view.AndroidView.setNativeInteractionEnabled(boolean enabled);
   public void com.lynx.tasm.behavior.ui.view.AndroidView.setImpressionId(String id);
@@ -2802,6 +2805,7 @@ public class com::lynx::tasm::behavior::ui::list::container::ListContainerView :
   public boolean com.lynx.tasm.behavior.ui.list.container.ListContainerView.dispatchTouchEvent(MotionEvent ev);
   public boolean com.lynx.tasm.behavior.ui.list.container.ListContainerView.onTouchEvent(MotionEvent ev);
   public void com.lynx.tasm.behavior.ui.list.container.ListContainerView.consumeGesture(boolean consume);
+  public void com.lynx.tasm.behavior.ui.list.container.ListContainerView.interceptGesture(boolean intercept);
   public void com.lynx.tasm.behavior.ui.list.container.ListContainerView.computeScroll();
   public void com.lynx.tasm.behavior.ui.list.container.ListContainerView.setForceCanScroll(boolean forceCanScroll);
   public boolean com.lynx.tasm.behavior.ui.list.container.ListContainerView.canScrollVertically(int direction);

@@ -27,6 +27,8 @@ public class ListContainerView
   private CustomLinearLayout mCustomLinearLayout;
   // Whether to consume gestures
   private Boolean mConsumeGesture = null;
+  // Whether to intercept gesture
+  private Boolean mInterceptGesture = null;
   // Whether the down event has been processed, gesture starts from the down event, so if you want
   // to handle the gesture with one gesture, you need to convert one of the move events into a down
   // event
@@ -63,13 +65,17 @@ public class ListContainerView
     if (mUiListContainer == null) {
       return super.onInterceptTouchEvent(e);
     }
-    if (mUiListContainer.isEnableNewGesture() && (mConsumeGesture == null || !mConsumeGesture)
-        && e.getActionMasked() != MotionEvent.ACTION_DOWN) {
+    if (isConsumeGesture(e)) {
       // If new gestures are enabled, return false to indicate that the event is not intercept, So
       // this event can be passed to child node, do not intercept the down event, otherwise will not
       // receive other types of events.
       return false;
     }
+
+    if (isNeedInterceptGesture()) {
+      return mInterceptGesture;
+    }
+
     return super.onInterceptTouchEvent(e);
   }
 
@@ -92,17 +98,45 @@ public class ListContainerView
     return super.dispatchTouchEvent(ev);
   }
 
+  private boolean isConsumeGesture(MotionEvent ev) {
+    return mUiListContainer.isEnableNewGesture() && (mConsumeGesture != null && !mConsumeGesture)
+        && ev.getActionMasked() != MotionEvent.ACTION_DOWN;
+  }
+
+  private boolean isInterceptGestureNotNull() {
+    return mUiListContainer.isEnableNewGesture() && mInterceptGesture != null;
+  }
+
+  private boolean isNeedInterceptGesture() {
+    return isInterceptGestureNotNull() && mInterceptGesture;
+  }
+
   @Override
   public boolean onTouchEvent(MotionEvent ev) {
     if (mUiListContainer == null) {
       return super.onTouchEvent(ev);
     }
-    if (mUiListContainer.isEnableNewGesture() && (mConsumeGesture == null || !mConsumeGesture)
-        && ev.getActionMasked() != MotionEvent.ACTION_DOWN) {
+    if (isConsumeGesture(ev)) {
       // If new gestures are enabled, return false to indicate that the event is not consumed,
       // So this event can be passed to parent node, do not intercept the down event, otherwise will
       // not receive other types of events.
       return false;
+    }
+
+    if (isInterceptGestureNotNull()) {
+      if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+        getParent().requestDisallowInterceptTouchEvent(true);
+      } else if (ev.getAction() == MotionEvent.ACTION_MOVE) {
+        getParent().requestDisallowInterceptTouchEvent(mInterceptGesture);
+        boolean res = mInterceptGesture;
+        if (!mInterceptGesture) {
+          res = super.onTouchEvent(ev);
+        }
+        return res;
+      } else if (ev.getAction() == MotionEvent.ACTION_UP
+          || ev.getAction() == MotionEvent.ACTION_CANCEL) {
+        mInterceptGesture = null;
+      }
     }
 
     return super.onTouchEvent(ev);
@@ -113,6 +147,10 @@ public class ListContainerView
     if (consume) {
       mIsDownEventHandled = false;
     }
+  }
+
+  public void interceptGesture(boolean intercept) {
+    mInterceptGesture = intercept;
   }
 
   @Override

@@ -142,6 +142,11 @@ public class UIView
   }
 
   @Override
+  protected void interceptGesture(boolean interceptGesture) {
+    super.interceptGesture(interceptGesture);
+    mView.interceptGesture(interceptGesture);
+  }
+  @Override
   public void onGestureScrollBy(float deltaX, float deltaY) {
     // No need to implement if it's not a scrolling container
   }

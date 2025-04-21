@@ -29,6 +29,9 @@ public class AndroidView extends ViewGroup implements IDrawChildHookBinding {
   // for gesture arena
   private WeakReference<GestureArenaManager> mGestureArenaManager;
 
+  // whether to intercept gestures to current, parents and children's gesture
+  private Boolean mInterceptGesture = null;
+
   public void setBlurSampling(int sampling) {
     this.mBlurSampling = sampling;
   }
@@ -121,11 +124,49 @@ public class AndroidView extends ViewGroup implements IDrawChildHookBinding {
     }
   }
 
+  public void interceptGesture(boolean interceptGesture) {
+    mInterceptGesture = interceptGesture;
+  }
+
+  private boolean isInterceptGestureNotNull() {
+    return mInterceptGesture != null;
+  }
+
+  private boolean isNeedInterceptGesture() {
+    return isInterceptGestureNotNull() && mInterceptGesture;
+  }
+
+  @Override
+  public boolean onInterceptTouchEvent(MotionEvent ev) {
+    if (isNeedInterceptGesture()) {
+      return mInterceptGesture;
+    }
+    return super.onInterceptTouchEvent(ev);
+  }
+
   @Override
   public boolean onTouchEvent(MotionEvent event) {
     if (this.nativeInteractionEnabled) {
       return true;
     }
+    if (isInterceptGestureNotNull()) {
+      if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+        getParent().requestDisallowInterceptTouchEvent(true);
+        return true;
+      } else if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
+        getParent().requestDisallowInterceptTouchEvent(mInterceptGesture);
+        boolean res = mInterceptGesture;
+        if (!mInterceptGesture) {
+          res = super.onTouchEvent(event);
+        }
+        return res;
+      } else if (event.getActionMasked() == MotionEvent.ACTION_UP
+          || event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+        mInterceptGesture = null;
+        return true;
+      }
+    }
+
     return super.onTouchEvent(event);
   }
 
