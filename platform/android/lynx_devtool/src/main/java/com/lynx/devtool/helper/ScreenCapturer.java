@@ -44,9 +44,9 @@ public class ScreenCapturer extends FrameCapturer {
   private static final String TAG = "ScreenCapturer";
   private static final ScreenCapturer mInstance = new ScreenCapturer();
 
-  private static final int CARD_PREVIEW_QUALITY = 80;
-  private static final int CARD_PREVIEW_MAX_WIDTH = 150;
-  private static final int CARD_PREVIEW_MAX_HEIGHT = 300;
+  private static final int CARD_PREVIEW_QUALITY = 100;
+  private static final int CARD_PREVIEW_MAX_WIDTH = 400;
+  private static final int CARD_PREVIEW_MAX_HEIGHT = 800;
 
   private IDevToolDelegate mDevToolDelegate = null;
 

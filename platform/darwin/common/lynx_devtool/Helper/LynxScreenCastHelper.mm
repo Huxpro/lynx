@@ -11,9 +11,9 @@
 #include <memory>
 #include "base/screen_metadata.h"
 
-static int const kCardPreviewQuality = 80;
-static int const kCardPreviewMaxWidth = 150;
-static int const kCardPreviewMaxHeight = 300;
+static int const kCardPreviewQuality = 100;
+static int const kCardPreviewMaxWidth = 400;
+static int const kCardPreviewMaxHeight = 800;
 
 NSString* const ScreenshotModeLynxView = @"lynxview";
 NSString* const ScreenshotModeFullScreen = @"fullscreen";
