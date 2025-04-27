@@ -33,7 +33,7 @@ builder({
 coverage({
     "output": "out/coverage",
     "ignores": [
-        ".*_unittest.cc", 
+        ".*_unittest.cc",
         ".*_unittests.cc",
         ".*_unittests.mm"
         "*_tests.cc",
@@ -53,137 +53,137 @@ coverage({
 
 targets({
     "base_unittests_exec":{
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
         "args":["--gtest_filter=\"-*TimeSensitiveTest*\""]
     },
     "binary_decoder_unittest_exec": {
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
     },
     "trace_unittests_exec": {
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
         "builder":'builder_for_trace'
     },
     "profile_unittests_exec": {
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
         "builder":'builder_for_trace'
     },
     "v8_profile_unittests_exec": {
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
         "builder":'builder_for_trace'
     },
     "quickjs_profile_unittests_exec":{
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
         "builder":'builder_for_trace'
     },
     "lepusng_profile_unittests_exec":{
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
         "builder":'builder_for_trace'
     },
     "dom_unittest_exec":{
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True
     },
     "dom_trace_unittest_exec":{
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True
     },
     "value_wrapper_unittest_exec":{
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True
     },
     "record_unittest_exec":{
-       "cwd": ".", 
+       "cwd": ".",
        "owners":["ZhaoSongGOO"],
        "coverage": True,
        "enable_parallel":True
     },
     "renderer_utils_unittests_exec": {
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
     },
     "replay_unittest_exec":{
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True
     },
     "shell_unittests_exec":{
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
         "args":["--gtest_filter=\"-*DISABLE*\""]
     },
      "css_parser_test_exec":{
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
     },
     "css_encoder_test_exec":{
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
     },
     "jsbridge_tests_exec":{
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
         "retry":3,
     },
     "worklet_unittests_exec":{
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
     },
     "shared_data_test_exec":{
         "cwd": ".",
-        "owners":["ZhaoSongGOO"], 
+        "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
         "retry":3,
     },
     "element_selector_unittests_exec":{
-        "cwd": ".", 
-        "owners":["ZhaoSongGOO"], 
+        "cwd": ".",
+        "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
     },
     "lazy_bundle_test_exec":{
         "cwd": ".",
-        "owners":["ZhaoSongGOO"], 
+        "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
     },
@@ -208,7 +208,7 @@ targets({
         "enable":True
     },
     "inspector_test_exec":{
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
@@ -221,7 +221,7 @@ targets({
     },
      "event_unittests_exec":{
         "cwd": ".",
-        "owners":["ZhaoSongGOO"], 
+        "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
     },
@@ -245,24 +245,24 @@ targets({
     },
     "runtime_common_unittests_exec":{
         "cwd": ".",
-        "owners":["ZhaoSongGOO"], 
+        "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
     },
     "js_runtime_unittests_exec":{
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
     },
     "lepus_runtime_unittests_exec":{
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
     },
     "task_unittests_exec":{
-        "cwd": ".", 
+        "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,
         "enable_parallel":True,
@@ -274,6 +274,12 @@ targets({
         "enable_parallel":True,
     },
     "mapbuffer_unittests_exec":{
+        "cwd": ".",
+        "owners":["ZhaoSongGOO"],
+        "coverage": True,
+        "enable_parallel":True,
+    },
+    "pipeline_test_exec": {
         "cwd": ".",
         "owners":["ZhaoSongGOO"],
         "coverage": True,

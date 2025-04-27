@@ -698,6 +698,7 @@ subspec_target("tasm") {
            "//lynx/core/renderer/dom/selector:element_selector",
            "//lynx/core/renderer/dom/vdom/radon",
            "//lynx/core/renderer/events:events",
+           "//lynx/core/renderer/pipeline",
            "//lynx/core/renderer/signal:signal",
            "//lynx/core/renderer/trace:renderer_trace",
            "//lynx/core/renderer/ui_component/list:react_component_list",

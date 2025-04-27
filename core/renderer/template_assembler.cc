@@ -31,6 +31,7 @@
 #include "core/renderer/dom/vdom/radon/radon_lazy_component.h"
 #include "core/renderer/dom/vdom/radon/radon_node.h"
 #include "core/renderer/dom/vdom/radon/radon_page.h"
+#include "core/renderer/pipeline/pipeline_context.h"
 #include "core/renderer/trace/renderer_trace_event_def.h"
 #include "core/renderer/ui_wrapper/painting/painting_context.h"
 #include "core/renderer/utils/base/base_def.h"
@@ -215,7 +216,8 @@ TemplateAssembler::TemplateAssembler(Delegate& delegate,
       destroyed_(false),
       is_loading_template_(false),
       font_scale_(1.0),
-      component_loader_(nullptr) {
+      component_loader_(nullptr),
+      pipeline_context_manager_(std::make_unique<PipelineContextManager>()) {
   TRACE_EVENT(LYNX_TRACE_CATEGORY, TEMPLATE_ASSEMBLER_CONSTRUCTOR);
   page_proxy()->element_manager()->SetElementManagerDelegate(
       &element_manager_delegate_);

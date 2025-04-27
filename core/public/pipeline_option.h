@@ -131,6 +131,13 @@ struct PipelineOptions {
   }
 #endif
 
+  // Switches for pipeline stage.
+  bool resolve_requested_ = false;
+  bool layout_requested_ = false;
+  bool flush_ui_requested_ = false;
+  // Whether the current template has been reloaded.
+  bool reload_ = false;
+
  private:
   // Helper class to generate pipelineID
   class PipelineIDGenerator {

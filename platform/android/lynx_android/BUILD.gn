@@ -54,6 +54,7 @@ group("lynx_android_lib") {
     "//lynx/core/renderer/dom:renderer_dom",
     "//lynx/core/renderer/dom/selector:element_selector",
     "//lynx/core/renderer/events:events",
+    "//lynx/core/renderer/pipeline",
     "//lynx/core/renderer/signal:signal",
     "//lynx/core/renderer/starlight:starlight",
     "//lynx/core/renderer/ui_wrapper:ui_wrapper",

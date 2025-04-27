@@ -190,6 +190,7 @@ group("lynx_native") {
     "//lynx/core/renderer/css",
     "//lynx/core/renderer/data:data",
     "//lynx/core/renderer/events",
+    "//lynx/core/renderer/pipeline",
     "//lynx/core/renderer/signal:signal",
     "//lynx/core/renderer/starlight",
     "//lynx/core/renderer/utils:renderer_utils",

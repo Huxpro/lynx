@@ -1,0 +1,45 @@
+# Copyright 2925 The Lynx Authors. All rights reserved.
+# Licensed under the Apache License Version 2.0 that can be found in the
+# LICENSE file in the root directory of this source tree.
+
+import("//lynx/core/Lynx.gni")
+import("//lynx/testing/test.gni")
+
+lynx_core_source_set("pipeline") {
+  sources = [
+    "pipeline_context.cc",
+    "pipeline_context.h",
+    "pipeline_context_manager.cc",
+    "pipeline_context_manager.h",
+    "pipeline_version.h",
+  ]
+
+  public_deps = []
+}
+
+unittest_set("pipeline_test_testset") {
+  testonly = true
+
+  sources = [
+    "pipeline_context_manager_unittest.cc",
+    "pipeline_context_manager_unittest.h",
+    "pipeline_context_unittest.cc",
+    "pipeline_context_unittest.h",
+    "pipeline_version_unittest.cc",
+    "pipeline_version_unittest.h",
+  ]
+
+  deps = [
+    ":pipeline",
+    "//lynx/base/src:base_log",
+    "//lynx/core/public",
+  ]
+}
+
+unittest_exec("pipeline_test_exec") {
+  testonly = true
+
+  sources = []
+
+  deps = [ ":pipeline_test_testset" ]
+}

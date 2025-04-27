@@ -26,6 +26,7 @@
 #include "core/renderer/element_manager_delegate_impl.h"
 #include "core/renderer/events/touch_event_handler.h"
 #include "core/renderer/page_proxy.h"
+#include "core/renderer/pipeline/pipeline_context_manager.h"
 #include "core/renderer/signal/signal_context.h"
 #include "core/renderer/tasm/i18n/i18n.h"
 #include "core/renderer/template_entry.h"
@@ -894,6 +895,8 @@ class TemplateAssembler final
 
   // Called by ElementManager
   ElementManagerDelegateImpl element_manager_delegate_{};
+
+  std::unique_ptr<PipelineContextManager> pipeline_context_manager_{nullptr};
 };
 }  // namespace tasm
 }  // namespace lynx
