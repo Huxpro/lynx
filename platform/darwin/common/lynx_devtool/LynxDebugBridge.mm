@@ -143,17 +143,7 @@ using ClientInfo = std::unordered_map<std::string, std::string>;
 }
 
 - (void)onMessage:(NSString *)message withType:(NSString *)type {
-  if ([type isEqualToString:@"D2RStopAtEntry"]) {
-    bool stop = [message isEqualToString:@"true"];
-    lynx::devtool::DevToolConfig::SetStopAtEntry(stop);
-    [[DebugRouter instance] sendDataAsync:message WithType:@"R2DStopAtEntry" ForSession:-1];
-  } else if ([type isEqualToString:@"D2RStopLepusAtEntry"]) {
-#if OS_IOS
-    bool stop = [message isEqualToString:@"true"];
-    lynx::devtool::DevToolConfig::SetStopAtEntry(stop, true);
-    [[DebugRouter instance] sendDataAsync:message WithType:@"R2DStopLepusAtEntry" ForSession:-1];
-#endif
-  } else if ([type isEqualToString:@"SetGlobalSwitch"]) {
+  if ([type isEqualToString:@"SetGlobalSwitch"]) {
     NSData *messageObj = [message dataUsingEncoding:NSUTF8StringEncoding];
     NSDictionary *messageDict =
         [NSJSONSerialization JSONObjectWithData:messageObj
@@ -175,7 +165,56 @@ using ClientInfo = std::unordered_map<std::string, std::string>;
     [[DebugRouter instance] sendDataAsync:((result) ? @"true" : @"false")
                                  WithType:@"GetGlobalSwitch"
                                ForSession:-1];
+  } else {
+    [self handleStopAtEntry:message withType:type];
   }
+}
+
+- (void)handleStopAtEntry:(NSString *)message withType:(NSString *)type {
+  static NSString *const kGetStopAtEntry = @"GetStopAtEntry";
+  static NSString *const kSetStopAtEntry = @"SetStopAtEntry";
+  static NSString *const kKeyType = @"type";
+  static NSString *const kKeyValue = @"value";
+  static NSString *const kKeyMTS = @"MTS";
+  static NSString *const kKeyBTS = @"BTS";
+  static NSString *const kKeyDefault = @"DEFAULT";
+  if (![type isEqualToString:kGetStopAtEntry] && ![type isEqualToString:kSetStopAtEntry]) {
+    return;
+  }
+  NSString *response = message;
+  NSData *messageObj = [message dataUsingEncoding:NSUTF8StringEncoding];
+  NSMutableDictionary *messageDict =
+      [NSJSONSerialization JSONObjectWithData:messageObj
+                                      options:NSJSONReadingMutableContainers
+                                        error:0];
+  NSString *key = messageDict[kKeyType];
+  if ([type isEqualToString:kGetStopAtEntry]) {
+    bool result = false;
+    if ([key isEqualToString:kKeyMTS]) {
+      result = lynx::devtool::DevToolConfig::ShouldStopAtEntry(true);
+    } else if ([key isEqualToString:kKeyBTS] || [key isEqualToString:kKeyDefault]) {
+      result = lynx::devtool::DevToolConfig::ShouldStopAtEntry();
+    }
+    [messageDict setValue:[NSNumber numberWithBool:result] forKey:kKeyValue];
+    NSError *error;
+    NSData *responseData = [NSJSONSerialization dataWithJSONObject:messageDict
+                                                           options:0
+                                                             error:&error];
+    if (!responseData) {
+      LLogError(@"handleStopAtEntry error! message: %@, type: %@, description: %@", message, type,
+                [error localizedDescription]);
+      return;
+    }
+    response = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
+  } else if ([type isEqualToString:kSetStopAtEntry]) {
+    bool value = [messageDict[kKeyValue] boolValue];
+    if ([key isEqualToString:kKeyMTS]) {
+      lynx::devtool::DevToolConfig::SetStopAtEntry(value, true);
+    } else if ([key isEqualToString:kKeyBTS] || [key isEqualToString:kKeyDefault]) {
+      lynx::devtool::DevToolConfig::SetStopAtEntry(value);
+    }
+  }
+  [[DebugRouter instance] sendDataAsync:response WithType:type ForSession:-1];
 }
 
 - (void)setAppInfo:(NSDictionary *)hostOptions {

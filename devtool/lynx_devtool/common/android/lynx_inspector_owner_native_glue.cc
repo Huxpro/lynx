@@ -28,6 +28,10 @@ void SetStopAtEntry(JNIEnv* env, jobject jcaller, jboolean stop,
   lynx::devtool::DevToolConfig::SetStopAtEntry(stop, isLepus);
 }
 
+jboolean GetStopAtEntry(JNIEnv* env, jobject jcaller, jboolean isLepus) {
+  return lynx::devtool::DevToolConfig::ShouldStopAtEntry(isLepus);
+}
+
 void InitRecorderConfig(JNIEnv* env, jobject jcaller, jstring filePath,
                         jint sessionID, jfloat screenWidth, jfloat screenHeight,
                         jlong recordID) {

@@ -34,6 +34,7 @@ constexpr char kKeyDebuggerId[] = "debuggerId";
 constexpr char kKeyError[] = "error";
 constexpr char kKeyTargetId[] = "targetId";
 constexpr char kKeyType[] = "type";
+constexpr char kKeyValue[] = "value";
 constexpr char kKeyTypeWorker[] = "worker";
 constexpr char kKeyTitle[] = "title";
 constexpr char kKeyAttached[] = "attached";

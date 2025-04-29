@@ -443,12 +443,12 @@ public class LynxInspectorOwner implements LynxBaseInspectorOwnerNG {
     }
   }
 
-  public void setStopAtEntry(boolean stop) {
-    nativeSetStopAtEntry(stop, false);
+  public void setStopAtEntry(boolean stop, boolean isLepus) {
+    nativeSetStopAtEntry(stop, isLepus);
   }
 
-  public void setStopLepusAtEntry(boolean stop) {
-    nativeSetStopAtEntry(stop, true);
+  public boolean getStopAtEntry(boolean isLepus) {
+    return nativeGetStopAtEntry(isLepus);
   }
 
   public Object setGlobalSwitch(String message) {
@@ -677,6 +677,7 @@ public class LynxInspectorOwner implements LynxBaseInspectorOwnerNG {
   }
 
   private native void nativeSetStopAtEntry(boolean stop, boolean isLepus);
+  private native boolean nativeGetStopAtEntry(boolean isLepus);
   private native void nativeInitRecorderConfig(
       String filePath, int sessionID, float screenWidth, float screenHeight, long recordID);
   private native void nativeSendFileByAgent(String type, String file);

@@ -15,11 +15,16 @@ constexpr char kLepusDefaultContextName[] = "__Card__";
 
 constexpr char kScriptUrlPrefix[] = "file://view";
 
+constexpr char kTypeGetStopAtEntry[] = "GetStopAtEntry";
+constexpr char kTypeSetStopAtEntry[] = "SetStopAtEntry";
+constexpr char kKeyDefault[] = "DEFAULT";
+constexpr char kKeyMTS[] = "MTS";
+constexpr char kKeyBTS[] = "BTS";
+
 // parameters defined in CDP
 constexpr char kKeyScriptId[] = "scriptId";
 constexpr char kKeyExecutionContextId[] = "executionContextId";
 constexpr char kKeyArgs[] = "args";
-constexpr char kKeyValue[] = "value";
 constexpr char kKeyStringType[] = "string";
 constexpr char kKeyFunctionDeclaration[] = "functionDeclaration";
 constexpr char kKeyObjectId[] = "objectId";
