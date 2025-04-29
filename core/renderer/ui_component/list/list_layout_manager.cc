@@ -441,15 +441,14 @@ bool ListLayoutManager::UpdateStickyItemsInternal(int& layout_changed_position,
 
 void ListLayoutManager::UpdateStickyItemsAfterLayout(
     ListAnchorManager::AnchorInfo& anchor_info) {
-  //    If the list has sticky items, the sticky items should be updated after
-  //    the first adjustment to obtain information about which sticky items will
-  //    enter their sticky mode. Since new sticky items may trigger extra
-  //    bindings and cause additional layout changes, which requires an update
-  //    to the layout afterwards.
+  // If the list has sticky items, the sticky items should be updated after
+  // the first adjustment to obtain information about which sticky items will
+  // enter their sticky mode. Since new sticky items may trigger extra
+  // bindings and cause additional layout changes, which requires an update
+  // to the layout afterwards.
   if (list_container_->sticky_enabled()) {
     int minimum_layout_updated_index = UpdateStickyItems();
-    minimum_layout_updated_index =
-        std::max(minimum_layout_updated_index - 1, 0);
+    minimum_layout_updated_index = std::max(minimum_layout_updated_index, 0);
     // Layout and adjust scroll status again
     LayoutInvalidItemHolder(minimum_layout_updated_index);
     content_size_ = GetTargetContentSize();

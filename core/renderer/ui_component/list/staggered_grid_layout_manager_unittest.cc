@@ -50,11 +50,42 @@ class StaggeredGridLayoutManagerTest : public ::testing::Test {
       span_indexes_.resize(span_count, {});
     }
 
+    void ReLayout() {
+      // Reset layout result.
+      span_indexes_.assign(span_count_, {});
+      content_size_ = 0.f;
+      // Re-layout
+      std::vector<float> span_sizes(span_count_, 0.f);
+      for (int i = 0; i < data_count_; ++i) {
+        int item_size = item_sizes_[i];
+        if (IsItemFullSpan(i)) {
+          float max_size =
+              *std::max_element(span_sizes.begin(), span_sizes.end());
+          for (int j = 0; j < span_count_; ++j) {
+            span_sizes[j] = max_size + item_size;
+            span_indexes_[j].push_back(i);
+          }
+        } else {
+          auto min_size_it =
+              std::min_element(span_sizes.begin(), span_sizes.end());
+          int min_span_index = std::distance(span_sizes.begin(), min_size_it);
+          span_sizes[min_span_index] += item_size;
+          span_indexes_[min_span_index].push_back(i);
+        }
+      }
+      content_size_ = *std::max_element(span_sizes.begin(), span_sizes.end());
+    }
+
+    bool IsItemFullSpan(int index) const {
+      return full_span_indexes_.find(index) != full_span_indexes_.end();
+    }
+
     int data_count_{0};
     int span_count_{0};
     float content_offset_{0.f};
     float content_size_{0.f};
     std::vector<int> item_sizes_;
+    std::unordered_set<int> full_span_indexes_;
     std::vector<std::vector<int>> span_indexes_;
   };
 
@@ -154,6 +185,7 @@ class StaggeredGridLayoutManagerTest : public ::testing::Test {
     BaseLayoutResult base_layout_result(data_count, span_count);
     auto& item_sizes = base_layout_result.item_sizes_;
     auto& span_indexes = base_layout_result.span_indexes_;
+    auto& full_span_indexes = base_layout_result.full_span_indexes_;
     std::vector<float> span_sizes(span_count, 0.f);
     std::mt19937 gen(0);
     std::uniform_int_distribution<> dis(min_item_size, max_item_size);
@@ -167,6 +199,7 @@ class StaggeredGridLayoutManagerTest : public ::testing::Test {
           span_sizes[j] = max_size + item_size;
           span_indexes[j].push_back(i);
         }
+        full_span_indexes.insert(i);
       } else {
         auto min_size_it =
             std::min_element(span_sizes.begin(), span_sizes.end());
@@ -246,6 +279,47 @@ TEST_F(StaggeredGridLayoutManagerTest, LayoutInvalidItemHolder) {
   layout_mananger->LayoutInvalidItemHolder(0);
   EXPECT_TRUE(base::FloatsEqual(layout_mananger->GetTargetContentSize(),
                                 layout_result.content_size_));
+  for (int i = 0; i < span_count; ++i) {
+    auto& basic_span_index = layout_result.span_indexes_[i];
+    auto& test_span_index = layout_mananger->column_indexes_[i];
+    EXPECT_EQ(test_span_index.size(), basic_span_index.size());
+    for (int j = 0; j < static_cast<int>(basic_span_index.size()); ++j) {
+      EXPECT_EQ(test_span_index[j], basic_span_index[j]);
+    }
+  }
+}
+
+TEST_F(StaggeredGridLayoutManagerTest, LayoutInvalidItemHolder1) {
+  int data_count = 1000;
+  int span_count = 3;
+  BaseLayoutResult layout_result =
+      GenerateBaseLayoutResult(data_count, span_count, 50, 100, true);
+  InitLayoutAttrs("waterfall", span_count, "vertical", 0.f, 0.f, 2000.f,
+                  1000.f);
+  InitFiberDataSource(data_count, layout_result.item_sizes_, true);
+  auto* layout_mananger = staggered_grid_layout_manager();
+  layout_mananger->LayoutInvalidItemHolder(0);
+  // Change item size of index 5 and 10.
+  layout_result.item_sizes_[5] = 200;
+  layout_result.item_sizes_[10] = 500;
+  list_container_->GetItemHolderForIndex(5)->SetEstimatedSize(200);
+  list_container_->GetItemHolderForIndex(10)->SetEstimatedSize(500);
+  layout_result.ReLayout();
+  // Layout from index 5.
+  layout_mananger->LayoutInvalidItemHolder(5);
+  EXPECT_TRUE(base::FloatsEqual(layout_mananger->GetTargetContentSize(),
+                                layout_result.content_size_));
+  // Change item size of index 7 and 14 (full span).
+  layout_result.item_sizes_[7] = 300;
+  layout_result.item_sizes_[14] = 300;
+  list_container_->GetItemHolderForIndex(7)->SetEstimatedSize(300);
+  list_container_->GetItemHolderForIndex(14)->SetEstimatedSize(300);
+  layout_result.ReLayout();
+  // Layout from 7.
+  layout_mananger->LayoutInvalidItemHolder(7);
+  EXPECT_TRUE(base::FloatsEqual(layout_mananger->GetTargetContentSize(),
+                                layout_result.content_size_));
+  // Check span index
   for (int i = 0; i < span_count; ++i) {
     auto& basic_span_index = layout_result.span_indexes_[i];
     auto& test_span_index = layout_mananger->column_indexes_[i];

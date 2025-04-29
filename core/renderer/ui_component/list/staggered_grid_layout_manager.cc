@@ -482,20 +482,27 @@ void StaggeredGridLayoutManager::LayoutInvalidItemHolder(
   if (first_invalid_index < 0 || first_invalid_index > data_count - 1) {
     return;
   }
-  for (auto& column_index : column_indexes_) {
+  LayoutState layout_state(span_count_, list::LayoutDirection::kLayoutToEnd);
+  for (int i = 0; i < span_count_; ++i) {
+    auto& column_index = column_indexes_[i];
     if (!column_index.empty()) {
       int erase_index = static_cast<int>(column_index.size());
-      for (int i = erase_index - 1; i >= 0; --i) {
-        if (column_index[i] < first_invalid_index) {
+      for (int j = erase_index - 1; j >= 0; --j) {
+        if (column_index[j] < first_invalid_index) {
           break;
         }
-        erase_index = i;
+        erase_index = j;
       }
       column_index.erase(column_index.begin() + erase_index,
                          column_index.end());
+      if (!column_index.empty()) {
+        int end_index = *(column_index.rbegin());
+        layout_state.end_index[i] = end_index;
+        layout_state.end_lines[i] = list_orientation_helper_->GetDecoratedEnd(
+            list_container_->GetItemHolderForIndex(end_index));
+      }
     }
   }
-  LayoutState layout_state(span_count_);
   for (int i = first_invalid_index; i < data_count; ++i) {
     LayoutChunkToEnd(i, layout_state, true);
   }
