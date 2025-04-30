@@ -858,10 +858,16 @@ short const OVERFLOW_HIDDEN_VAL = 0x00;
   BOOL consume = [(params[@"consume"] ?: @(YES)) boolValue];
   if (inner) {
     [self consumeInternalGesture:consume];
+  } else {
+    [self interceptGesture:consume];
   }
 }
 
 - (void)consumeInternalGesture:(BOOL)consume {
+  // Override by sub class
+}
+
+- (void)interceptGesture:(BOOL)intercept {
   // Override by sub class
 }
 

@@ -6,6 +6,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class LynxGestureDetectorDarwin;
 // Used to let lynx native gesture block the scrolling of UIScrollView
 
 typedef NS_ENUM(NSInteger, LynxGestureConsumeStatus) {
@@ -14,16 +15,29 @@ typedef NS_ENUM(NSInteger, LynxGestureConsumeStatus) {
   LynxGestureConsumeStatusAllow = 1,
 };
 
+typedef NS_ENUM(NSInteger, LynxInterceptGestureState) {
+  LynxInterceptGestureStateUnset = 0,
+  LynxInterceptGestureStateFalse = 1,
+  LynxInterceptGestureStateTrue = 2
+};
+
 @interface LynxGestureConsumer : NSObject
+
 @property(nonatomic, assign) BOOL adjustingScrollOffset;
 @property(nonatomic, assign, readonly) LynxGestureConsumeStatus gestureConsumeStatus;
+@property(nonatomic, assign) LynxInterceptGestureState interceptGestureStatus;
+
 @property(nonatomic, assign) CGPoint previousScrollOffset;
 
 - (void)consumeGesture:(BOOL)consume;
 
+- (void)interceptGesture:(BOOL)intercept;
+
 @end
 
-@interface UIScrollView (LynxGesture)
+@interface UIScrollView (LynxGesture) <UIGestureRecognizerDelegate>
+
+- (void)respondToGestureDidSet:(NSDictionary<NSNumber *, LynxGestureDetectorDarwin *> *)gestureMap;
 
 - (BOOL)respondToScrollViewDidScroll:(LynxGestureConsumer *)gestureConsumer;
 

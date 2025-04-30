@@ -1611,8 +1611,10 @@ public protocol LynxGestureArenaMember-p : <LynxEventTarget> {
 public class LynxGestureConsumer : NSObject {
   public BOOL LynxGestureConsumer::adjustingScrollOffset adjustingScrollOffset;
   public LynxGestureConsumeStatus LynxGestureConsumer::gestureConsumeStatus gestureConsumeStatus;
+  public LynxInterceptGestureState LynxGestureConsumer::interceptGestureStatus interceptGestureStatus;
   public CGPoint LynxGestureConsumer::previousScrollOffset previousScrollOffset;
   public void LynxGestureConsumer::consumeGesture:(BOOL consume);
+  public void LynxGestureConsumer::interceptGesture:(BOOL intercept);
 }
 
 public class LynxGestureDetectorDarwin : NSObject {
@@ -3610,6 +3612,7 @@ public class LynxUI : <__covariant V UIView> {
   public void LynxUI(Fluency)::postFluencyEventWithInfo:(LynxScrollInfo *info);
   public LynxScrollInfo * LynxUI(Fluency)::infoWithScrollView:selector:(UIScrollView *view, [selector] SEL selector);
   public void LynxUI(Gesture)::consumeInternalGesture:(BOOL consume);
+  public void LynxUI(Gesture)::interceptGesture:(BOOL intercept);
   typedef void(^ LynxUI(AsyncDisplay)::LynxCGContextImageDrawingActions) (CGContextRef context)
   public void LynxUI(AsyncDisplay)::drawRect:withParameters:(CGRect bounds, [withParameters] id drawParameters);
   public UIImage * LynxUI(AsyncDisplay)::imageWithActionBlock:opaque:scale:size:(LynxCGContextImageDrawingActions action, [opaque] BOOL opaque, [scale] CGFloat scale, [size] CGSize size);
@@ -3642,6 +3645,7 @@ public interface LynxUI(Fluency) {
 
 public interface LynxUI(Gesture) {
   public void LynxUI(Gesture)::consumeInternalGesture:(BOOL consume);
+  public void LynxUI(Gesture)::interceptGesture:(BOOL intercept);
 }
 
 public class LynxUICollection : LynxUIListLoader, <UICollectionView> {
@@ -4699,6 +4703,7 @@ public interface UIScrollView(LynxFadingEdge) {
 }
 
 public interface UIScrollView(LynxGesture) {
+  public void UIScrollView(LynxGesture)::respondToGestureDidSet:(NSDictionary< NSNumber *, LynxGestureDetectorDarwin * > *gestureMap);
   public BOOL UIScrollView(LynxGesture)::respondToScrollViewDidScroll:(LynxGestureConsumer *gestureConsumer);
   public void UIScrollView(LynxGesture)::disableGesturesRecursivelyIfNecessary:(LynxGestureConsumer *gestureConsumer);
   public BOOL UIScrollView(LynxGesture)::stopDeceleratingIfNecessaryWithTargetContentOffset:(inout CGPoint *targetContentOffset);
@@ -5402,7 +5407,8 @@ public interface UIViewController(LynxHeroTransition) {
   typedef double(^ UIScrollViewLynxTimingFunction) (double input)
   public NS_ASSUME_NONNULL_BEGIN typedef NS_ENUM(NSUInteger, LynxScrollViewTouchBehavior);
 
-  public NS_ASSUME_NONNULL_BEGIN typedef NS_ENUM(NSInteger, LynxGestureConsumeStatus);
+  public typedef NS_ENUM(NSInteger, LynxGestureConsumeStatus);
+  public typedef NS_ENUM(NSInteger, LynxInterceptGestureState);
 
   public NS_ASSUME_NONNULL_BEGIN NSString* const KEY_LYNX_ENABLE_MULTI_ASYNC_THREAD KEY_LYNX_ENABLE_MULTI_ASYNC_THREAD;
   public NSString* const KEY_LYNX_PLATFORM_CONFIG KEY_LYNX_PLATFORM_CONFIG;

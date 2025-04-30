@@ -1719,6 +1719,7 @@ LYNX_UI_METHOD(autoScroll) {
   ((LynxScrollView *)self.view).gestureEnabled = YES;
   [self enableIncreaseFrequencyIfNecessary];
   [self ensureGestureConsumer];
+  [self.view respondToGestureDidSet:self.gestureMap];
 }
 
 - (void)ensureGestureConsumer {
@@ -1736,6 +1737,10 @@ LYNX_UI_METHOD(autoScroll) {
 
 - (void)consumeInternalGesture:(BOOL)consume {
   [self.view.gestureConsumer consumeGesture:consume];
+}
+
+- (void)interceptGesture:(BOOL)intercept {
+  [self.view.gestureConsumer interceptGesture:intercept];
 }
 
 - (BOOL)canConsumeGesture:(CGPoint)delta {

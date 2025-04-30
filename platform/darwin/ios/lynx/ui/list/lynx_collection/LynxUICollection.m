@@ -629,6 +629,7 @@ static const CGFloat SCROLL_BY_EPSILON = 0.1f;
   [self enableIncreaseFrequencyIfNecessary];
 
   [self ensureGestureConsumer];
+  [self.view respondToGestureDidSet:self.gestureMap];
 }
 
 - (void)enableIncreaseFrequencyIfNecessary {
@@ -657,6 +658,10 @@ static const CGFloat SCROLL_BY_EPSILON = 0.1f;
 
 - (void)consumeInternalGesture:(BOOL)consume {
   [self.gestureConsumer consumeGesture:consume];
+}
+
+- (void)interceptGesture:(BOOL)intercept {
+  [self.gestureConsumer interceptGesture:intercept];
 }
 
 - (BOOL)canConsumeGesture:(CGPoint)delta {

@@ -11,5 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)consumeInternalGesture:(BOOL)consume;
 
+- (void)interceptGesture:(BOOL)intercept;
+
 @end
 NS_ASSUME_NONNULL_END
