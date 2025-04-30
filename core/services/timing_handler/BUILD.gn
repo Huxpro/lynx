@@ -35,10 +35,8 @@ lynx_core_source_set("timing_handler_platform") {
     "timing_collector_platform_impl.h",
   ]
   if (is_android) {
-    timing_handler_platform_shared_sources = [
-      "android/timing_collector_android.cc",
-      "android/timing_collector_android.h",
-    ]
+    timing_handler_platform_shared_sources =
+        [ "android/timing_collector_android.cc" ]
     sources += timing_handler_platform_shared_sources
   }
 

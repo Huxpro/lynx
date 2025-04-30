@@ -10,7 +10,6 @@
 #include "base/include/platform/android/jni_convert_helper.h"
 #include "base/include/platform/android/jni_utils.h"
 #include "core/base/android/lynx_error_android.h"
-#include "core/build/gen/LynxBackgroundRuntime_jni.h"
 #include "core/inspector/observer/inspector_runtime_observer_ng.h"
 #include "core/renderer/ui_wrapper/common/android/prop_bundle_android.h"
 #include "core/resource/lynx_resource_loader_android.h"
@@ -19,6 +18,16 @@
 #include "core/shell/android/platform_call_back_android.h"
 #include "core/shell/lynx_shell.h"
 #include "core/shell/module_delegate_impl.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxBackgroundRuntime_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxBackgroundRuntime_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForLynxBackgroundRuntime(JNIEnv *env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 using lynx::base::android::AttachCurrentThread;
 using lynx::base::android::JNIConvertHelper;
@@ -177,10 +186,6 @@ void DestroyRuntime(JNIEnv *env, jobject jcaller, jlong ptr) {
 
 namespace lynx {
 namespace shell {
-
-void LynxRuntimeWrapperAndroid::RegisterJNI(JNIEnv *env) {
-  (void)RegisterNativesImpl(env);
-}
 
 void LynxRuntimeWrapperAndroid::EvaluateScript(std::string url,
                                                std::string script) {

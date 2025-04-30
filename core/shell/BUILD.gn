@@ -80,7 +80,6 @@ if (is_android) {
     "android/lynx_runtime_wrapper_android.cc",
     "android/lynx_runtime_wrapper_android.h",
     "android/lynx_template_render_android.cc",
-    "android/lynx_template_renderer_android.h",
     "android/native_facade_android.cc",
     "android/native_facade_android.h",
     "android/native_facade_reporter_android.cc",

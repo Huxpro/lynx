@@ -12,12 +12,13 @@
 #include "core/base/android/java_only_array.h"
 #include "core/base/android/java_only_map.h"
 #include "core/base/lynx_trace_categories.h"
-#include "core/build/gen/CallbackImpl_jni.h"
 #include "core/runtime/bindings/jsi/modules/android/lynx_module_android.h"
 #include "core/runtime/bindings/jsi/modules/android/method_invoker.h"
 #include "core/runtime/trace/runtime_trace_event_def.h"
 #include "core/services/recorder/recorder_controller.h"
 #include "lynx/core/value_wrapper/android/value_impl_android.h"
+#include "platform/android/lynx_android/src/main/jni/gen/BlurUtils_register_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/CallbackImpl_jni.h"
 
 void Invoke(JNIEnv* env, jobject jcaller, jlong nativePtr, jobject array) {
   auto weak_callback_android =
@@ -46,14 +47,6 @@ namespace piper {
 
 static jclass jniClass;
 static jmethodID ctor;
-
-bool ModuleCallbackAndroid::RegisterJNI(JNIEnv* env) {
-  jniClass = static_cast<jclass>(
-      // NOLINTNEXTLINE
-      env->NewGlobalRef(env->FindClass("com/lynx/jsbridge/CallbackImpl")));
-  ctor = env->GetMethodID(jniClass, "<init>", "(J)V");
-  return RegisterNativesImpl(env);
-}
 
 void ModuleCallbackAndroid::Invoke(
     lynx::base::android::ScopedGlobalJavaRef<jobject> args) {
@@ -96,4 +89,16 @@ ModuleCallbackAndroid::CallbackPair ModuleCallbackAndroid::CreateCallbackImpl(
 }
 
 }  // namespace piper
+}  // namespace lynx
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForCallbackImpl(JNIEnv* env) {
+  lynx::piper::jniClass = static_cast<jclass>(
+      // NOLINTNEXTLINE
+      env->NewGlobalRef(env->FindClass("com/lynx/jsbridge/CallbackImpl")));
+  lynx::piper::ctor = env->GetMethodID(lynx::piper::jniClass, "<init>", "(J)V");
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
 }  // namespace lynx

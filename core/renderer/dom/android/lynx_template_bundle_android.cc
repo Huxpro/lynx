@@ -10,10 +10,19 @@
 #include <vector>
 
 #include "core/base/android/jni_helper.h"
-#include "core/build/gen/TemplateBundle_jni.h"
 #include "core/renderer/dom/android/lepus_message_consumer.h"
 #include "core/runtime/jscache/js_cache_manager_facade.h"
 #include "core/template_bundle/template_codec/binary_decoder/lynx_binary_reader.h"
+#include "platform/android/lynx_android/src/main/jni/gen/TemplateBundle_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/TemplateBundle_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForTemplateBundle(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 jlong ParseTemplate(JNIEnv* env, jclass jcaller, jbyteArray j_binary,
                     jobjectArray j_buffer) {
@@ -98,10 +107,6 @@ void InitWithOption(JNIEnv* env, jclass jcaller, jlong ptr,
 
 namespace lynx {
 namespace tasm {
-bool LynxTemplateBundleAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 lynx::base::android::ScopedLocalJavaRef<jobject>
 ConstructJTemplateBundleFromNative(LynxTemplateBundle bundle) {
   JNIEnv* env = base::android::AttachCurrentThread();

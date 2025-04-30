@@ -34,7 +34,6 @@ lynx_renderer_utils_platform_sources = []
 if (is_android) {
   lynx_renderer_utils_platform_sources += [
     "android/device_display_info.cc",
-    "android/device_display_info.h",
     "android/event_converter_android.cc",
     "android/event_converter_android.h",
     "android/text_utils_android.cc",

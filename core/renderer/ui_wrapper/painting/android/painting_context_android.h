@@ -28,7 +28,6 @@ namespace tasm {
 
 class PaintingContextAndroidRef : public PaintingCtxPlatformRef {
  public:
-  static bool RegisterJNI(JNIEnv* env);
   PaintingContextAndroidRef(JNIEnv* env, jobject impl);
   ~PaintingContextAndroidRef() override = default;
 
@@ -71,7 +70,6 @@ class PaintingContextAndroidRef : public PaintingCtxPlatformRef {
 
 class PaintingContextAndroid : public PaintingCtxPlatformImpl {
  public:
-  static bool RegisterJNI(JNIEnv* env);
   PaintingContextAndroid(JNIEnv* env, jobject impl, jint thread_strategy,
                          bool enable_context_free);
   ~PaintingContextAndroid() override = default;

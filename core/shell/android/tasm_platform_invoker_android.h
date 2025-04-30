@@ -20,8 +20,6 @@ class TasmPlatformInvokerAndroid : public TasmPlatformInvoker {
       : jni_object_(env, jni_object) {}
   ~TasmPlatformInvokerAndroid() override = default;
 
-  static void RegisterJni(JNIEnv* env);
-
   void OnPageConfigDecoded(
       const std::shared_ptr<tasm::PageConfig>& config) override;
 

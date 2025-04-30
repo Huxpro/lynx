@@ -5,14 +5,19 @@
 #include "core/runtime/bindings/jsi/modules/android/platform_jsi/lynx_jsi_object_descriptor.h"
 
 #include "base/include/platform/android/jni_convert_helper.h"
-#include "build/gen/ILynxJSIObjectDescriptor_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/ILynxJSIObjectDescriptor_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/ILynxJSIObjectDescriptor_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForILynxJSIObjectDescriptor(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 namespace lynx {
 namespace piper {
-
-bool LynxJSIObjectDescriptor::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 std::vector<std::string> LynxJSIObjectDescriptor::GetJSPropertyDescriptorInfo(
     JNIEnv* env, const std::string& field_name) {

@@ -11,12 +11,19 @@
 #include "base/include/platform/android/jni_utils.h"
 #include "base/trace/native/trace_event.h"
 #include "core/base/android/java_only_map.h"
-#include "core/build/gen/TextUtils_jni.h"
 #include "core/renderer/dom/android/lepus_message_consumer.h"
 #include "core/renderer/utils/base/tasm_constants.h"
 #include "core/runtime/vm/lepus/array.h"
 #include "core/runtime/vm/lepus/table.h"
 #include "core/value_wrapper/value_impl_lepus.h"
+#include "platform/android/lynx_android/src/main/jni/gen/TextUtils_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/TextUtils_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForTextUtils(JNIEnv* env) { return RegisterNativesImpl(env); }
+}  // namespace jni
+}  // namespace lynx
 
 namespace lynx {
 namespace tasm {
@@ -35,10 +42,6 @@ lepus::Value ConvertJavaData(JNIEnv* env, jobject arguments, jint length) {
   return decoder.DecodeMessage(data, length);
 }
 }  // namespace
-
-void TextUtilsAndroidHelper::RegisterJNI(JNIEnv* env) {
-  RegisterNativesImpl(env);
-}
 
 // The input info contains fontSize and fontFamily, both of which are string
 // types. The unit of fontSize can be px or rpx.

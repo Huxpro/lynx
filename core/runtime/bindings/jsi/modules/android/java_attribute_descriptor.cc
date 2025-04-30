@@ -4,13 +4,19 @@
 
 #include "core/runtime/bindings/jsi/modules/android/java_attribute_descriptor.h"
 
-#include "core/build/gen/AttributeDescriptor_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/AttributeDescriptor_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/AttributeDescriptor_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForAttributeDescriptor(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 namespace lynx {
 namespace piper {
-bool JavaAttributeDescriptor::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 std::string JavaAttributeDescriptor::getName() {
   JNIEnv* env = base::android::AttachCurrentThread();

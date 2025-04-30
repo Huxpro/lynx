@@ -5,10 +5,19 @@
 
 #include <memory>
 
-#include "core/build/gen/LayoutNodeManager_jni.h"
 #include "core/public/layout_node_manager.h"
 #include "core/public/layout_node_value.h"
 #include "core/renderer/ui_wrapper/layout/android/layout_node_android.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LayoutNodeManager_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LayoutNodeManager_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForLayoutNodeManager(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 void SetMeasureFunc(JNIEnv* env, jobject jcaller, jlong nativePtr, jint id,
                     jobject shadowNode) {
@@ -149,10 +158,6 @@ static jintArray GetMargin(JNIEnv* env, jobject jcaller, jlong nativePtr,
 
 namespace lynx {
 namespace tasm {
-
-bool LayoutNodeManagerAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 MeasureFuncAndroid::MeasureFuncAndroid(JNIEnv* env, jobject obj)
     : jni_object_(env, obj) {}

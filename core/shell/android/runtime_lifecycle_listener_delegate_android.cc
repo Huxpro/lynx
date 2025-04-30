@@ -5,7 +5,16 @@
 #include "lynx/core/shell/android/runtime_lifecycle_listener_delegate_android.h"
 
 #include "base/include/log/logging.h"
-#include "lynx/core/build/gen/RuntimeLifecycleListenerDelegate_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/RuntimeLifecycleListenerDelegate_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/RuntimeLifecycleListenerDelegate_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForRuntimeLifecycleListenerDelegate(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 namespace lynx {
 namespace shell {
@@ -27,10 +36,6 @@ void RuntimeLifecycleListenerDelegateAndroid::OnRuntimeAttach(
 void RuntimeLifecycleListenerDelegateAndroid::OnRuntimeDetach() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_RuntimeLifecycleListenerDelegate_onRuntimeDetach(env, impl_.Get());
-}
-
-void RuntimeLifecycleListenerDelegateAndroid::RegisterJNI(JNIEnv* env) {
-  RegisterNativesImpl(env);
 }
 
 }  // namespace shell

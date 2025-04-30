@@ -35,8 +35,6 @@ class JSProxyAndroid : public LynxRuntimeProxyImpl {
   JSProxyAndroid(JSProxyAndroid&&) = delete;
   JSProxyAndroid& operator=(JSProxyAndroid&&) = delete;
 
-  static bool RegisterJNIUtils(JNIEnv* env);
-
   int64_t GetId() const { return id_; }
 
   jobject GetJniObject() const {

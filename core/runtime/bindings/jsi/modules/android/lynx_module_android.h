@@ -31,7 +31,6 @@ class LynxModuleAndroid
     : public LynxNativeModule,
       public std::enable_shared_from_this<LynxModuleAndroid> {
  public:
-  static bool RegisterJNI(JNIEnv *env);
   static std::string getName(jobject jni_object);
   LynxModuleAndroid(JNIEnv *env, jobject jni_object,
                     std::shared_ptr<pub::PubValueFactory> value_factory);

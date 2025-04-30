@@ -12,9 +12,20 @@ import yaml
 import argparse
 from jni_generator import GenerateJNIHeader, Options
 
-def parse_yaml(input_file_path):
+def parse_yaml(root_path, input_file_path):
+  def include_constructor(loader, node):
+      file_name, key = loader.construct_scalar(node).replace(' ', '').split('|')
+      key_list = key.split('.')
+      file_path = os.path.join(root_path, file_name)
+      with open(file_path, 'r') as f:
+          data = yaml.full_load(f)
+          for key in key_list:
+            data = data.get(key, None)
+          return data
+  # register !include constructor
+  yaml.add_constructor('!include', include_constructor)
   with open(input_file_path, 'r') as file:
-    data = yaml.safe_load(file)
+    data = yaml.full_load(file)
     return data
 
 so_load_file_template = """
@@ -312,17 +323,26 @@ def should_skip_generate_jni(root_path, jni_configs_file, jni_classes, jni_outpu
 
   return False
 
+def get_jni_classes(jni_classes_list):
+  classes = []
+  for jni_class in jni_classes_list:
+    if type(jni_class) == list:
+      classes.extend(get_jni_classes(jni_class))
+    else:
+      classes.append(jni_class)
+  return classes
+
 def generate_files(root_path, jni_configs_file, use_base_jni_utils_header):
   # Parse jni_files yaml file to a map
   jni_configs_abs_path = os.path.join(root_path, jni_configs_file)
-  jni_configs = parse_yaml(jni_configs_abs_path)
+  jni_configs = parse_yaml(root_path, jni_configs_abs_path)
 
   # Read config from yaml map
   jni_classes_configs = jni_configs.get('jni_class_configs', [])
   jni_register_configs = jni_configs.get('jni_register_configs', {})
   gn_configs = jni_configs.get('gn_configs', {})
 
-  jni_classes = jni_classes_configs.get('jni_classes', [])
+  jni_classes = get_jni_classes(jni_classes_configs.get('jni_classes', []))
   jni_output_path = jni_classes_configs.get('output_dir', {})
   special_cases = jni_register_configs.get('special_cases', [])
   so_load_file_path = jni_register_configs.get('output_path', '')
@@ -340,7 +360,11 @@ def generate_files(root_path, jni_configs_file, use_base_jni_utils_header):
     if header != '':
       special_headers.append(['#include "' + header + '"', macro])
     if method != '':
-      special_methods.append([method, macro])
+      if type(method) == list:
+        for m in method:
+          special_methods.append([m, macro])
+      else:
+        special_methods.append([method, macro])
     if java != '':
       excluded_java_files[java] = True
 

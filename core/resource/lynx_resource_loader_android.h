@@ -34,8 +34,6 @@ class LynxResourceLoaderAndroid : public pub::LynxResourceLoader {
       : jni_object_(env, jni_object) {}
   ~LynxResourceLoaderAndroid() override = default;
 
-  static void RegisterJni(JNIEnv* env);
-
   void LoadResource(const pub::LynxResourceRequest& request,
                     bool request_in_current_thread,
                     base::MoveOnlyClosure<void, pub::LynxResourceResponse&>

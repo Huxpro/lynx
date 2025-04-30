@@ -6,8 +6,17 @@
 
 #include "core/base/android/android_jni.h"
 #include "core/base/android/jni_helper.h"
-#include "core/build/gen/PlatformCallBack_jni.h"
 #include "core/renderer/dom/android/lepus_message_consumer.h"
+#include "platform/android/lynx_android/src/main/jni/gen/PlatformCallBack_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/PlatformCallBack_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForPlatformCallBack(JNIEnv *env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 using lynx::base::android::AttachCurrentThread;
 using lynx::base::android::JNIHelper;
@@ -15,10 +24,6 @@ using lynx::base::android::ScopedLocalJavaRef;
 
 namespace lynx {
 namespace shell {
-
-void PlatformCallBackAndroid::RegisterJni(JNIEnv *env) {
-  RegisterNativesImpl(env);
-}
 
 void PlatformCallBackAndroid::InvokeWithValue(const lepus::Value &value) {
   JNIEnv *env = AttachCurrentThread();

@@ -28,8 +28,6 @@ class NativeFacadeReporterAndroid : public NativeFacadeReporter {
   NativeFacadeReporterAndroid& operator=(NativeFacadeReporterAndroid&&) =
       default;
 
-  static void RegisterJni(JNIEnv* env);
-
   void OnPerformanceEvent(const lepus::Value& entry) override;
 
  private:

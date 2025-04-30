@@ -4,13 +4,19 @@
 
 #include "core/runtime/bindings/jsi/modules/android/java_method_descriptor.h"
 
-#include "core/build/gen/MethodDescriptor_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/MethodDescriptor_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/MethodDescriptor_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForMethodDescriptor(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 namespace lynx {
 namespace piper {
-bool JavaMethodDescriptor::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 std::string JavaMethodDescriptor::getName() {
   JNIEnv* env = base::android::AttachCurrentThread();

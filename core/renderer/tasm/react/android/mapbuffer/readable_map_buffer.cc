@@ -9,7 +9,16 @@
 
 #include "base/include/log/logging.h"
 #include "base/trace/native/trace_event.h"
-#include "core/build/gen/ReadableMapBuffer_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/ReadableMapBuffer_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/ReadableMapBuffer_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForReadableMapBuffer(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 namespace lynx {
 namespace base {
@@ -17,10 +26,6 @@ namespace android {
 
 JReadableMapBuffer::JReadableMapBuffer(MapBuffer&& map)
     : serialized_data_(std::move(map.bytes_)) {}
-
-bool JReadableMapBuffer::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 base::android::ScopedLocalJavaRef<jobject>
 JReadableMapBuffer::CreateReadableMapBuffer(const MapBuffer& map) {

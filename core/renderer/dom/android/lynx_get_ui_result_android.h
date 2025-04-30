@@ -13,8 +13,6 @@ class LynxGetUIResult;
 
 class LynxGetUIResultAndroid {
  public:
-  static bool RegisterJNI(JNIEnv* env);
-
   LynxGetUIResultAndroid(const LynxGetUIResult& result);
 
   inline jobject jni_object() { return jni_object_.Get(); }

@@ -26,8 +26,6 @@ class ModuleFactoryAndroid : public NativeModuleFactory {
 
   bool RetainJniObject();
 
-  static bool RegisterJNIUtils(JNIEnv* env);
-
  private:
   base::android::ScopedWeakGlobalJavaRef<jobject> jni_object_;
   base::android::ScopedGlobalJavaRef<jobject> strong_jni_object_;

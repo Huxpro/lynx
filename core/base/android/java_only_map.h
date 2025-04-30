@@ -24,7 +24,6 @@ class JavaOnlyMap {
   using ForEachClosure = base::MoveOnlyClosure<void, JNIEnv*, jobject, jstring,
                                                const std::string&>;
 
-  static bool RegisterJni(JNIEnv* env);
   JavaOnlyMap();
 
   JavaOnlyMap(JNIEnv* env,

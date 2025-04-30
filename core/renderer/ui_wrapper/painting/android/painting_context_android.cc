@@ -11,7 +11,6 @@
 #include "core/base/android/android_jni.h"
 #include "core/base/android/jni_helper.h"
 #include "core/base/thread/once_task.h"
-#include "core/build/gen/PaintingContext_jni.h"
 #include "core/renderer/css/css_property.h"
 #include "core/renderer/css/css_style_utils.h"
 #include "core/renderer/dom/android/lepus_message_consumer.h"
@@ -26,6 +25,16 @@
 #include "core/runtime/vm/lepus/table.h"
 #include "core/shell/lynx_ui_operation_async_queue.h"
 #include "core/value_wrapper/value_impl_lepus.h"
+#include "platform/android/lynx_android/src/main/jni/gen/PaintingContext_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/PaintingContext_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForPaintingContext(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 void InvokeCallback(JNIEnv* env, jobject jcaller, jlong context, jint callback,
                     jobject array) {
@@ -52,10 +61,6 @@ jlong CreatePaintingContext(JNIEnv* env, jobject jcaller,
 
 namespace lynx {
 namespace tasm {
-
-bool PaintingContextAndroidRef::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 PaintingContextAndroidRef::PaintingContextAndroidRef(JNIEnv* env, jobject impl)
     : java_ref_(base::android::ScopedWeakGlobalJavaRef<jobject>(env, impl)) {}
@@ -323,10 +328,6 @@ void PaintingContextAndroid::SetKeyframes(
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_PaintingContext_setKeyframes(env, local_ref.Get(), props_ref.Get());
   });
-}
-
-bool PaintingContextAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 void PaintingContextAndroid::ConsumeGesture(int64_t idx, int32_t gesture_id,

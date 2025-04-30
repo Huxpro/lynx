@@ -18,7 +18,6 @@ class LynxEnvAndroid {
   LynxEnvAndroid() = delete;
   ~LynxEnvAndroid() = delete;
 
-  static void RegisterJNI(JNIEnv* env);
   static void onPiperInvoked(const std::string& module_name,
                              const std::string& method_name,
                              const std::string& param_str,

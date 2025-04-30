@@ -13,7 +13,6 @@
 #include "core/base/android/java_only_map.h"
 #include "core/base/android/jni_helper.h"
 #include "core/base/threading/task_runner_manufactor.h"
-#include "core/build/gen/JSProxy_jni.h"
 #include "core/build/gen/lynx_sub_error_code.h"
 #include "core/renderer/tasm/config.h"
 #include "core/renderer/utils/lynx_env.h"
@@ -24,6 +23,14 @@
 #include "core/shell/lynx_runtime_proxy_impl.h"
 #include "core/shell/lynx_shell.h"
 #include "core/value_wrapper/value_impl_piper.h"
+#include "platform/android/lynx_android/src/main/jni/gen/JSProxy_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/JSProxy_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForJSProxy(JNIEnv* env) { return RegisterNativesImpl(env); }
+}  // namespace jni
+}  // namespace lynx
 
 using lynx::base::android::AttachCurrentThread;
 using lynx::base::android::JNIConvertHelper;
@@ -134,10 +141,6 @@ void AddLifecycleListener(JNIEnv* env, jobject jcaller, jlong ptr,
 
 namespace lynx {
 namespace shell {
-
-bool JSProxyAndroid::RegisterJNIUtils(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 std::unique_ptr<pub::Value> JSProxyAndroid::GetArgs(
     std::shared_ptr<piper::Runtime>& runtime,

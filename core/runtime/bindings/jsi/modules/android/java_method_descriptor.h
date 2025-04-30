@@ -16,8 +16,6 @@ namespace piper {
 
 class JavaMethodDescriptor {
  public:
-  static bool RegisterJNI(JNIEnv* env);
-
   JavaMethodDescriptor(JNIEnv* env, jobject jni_object)
       : wrapper_(env, jni_object) {}
   std::string getName();

@@ -4,14 +4,19 @@
 
 #include "core/renderer/ui_wrapper/common/android/platform_extra_bundle_android.h"
 
-#include "core/build/gen/PlatformExtraBundleHolder_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/PlatformExtraBundleHolder_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/PlatformExtraBundleHolder_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForPlatformExtraBundleHolder(JNIEnv *env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 namespace lynx {
 namespace tasm {
-
-bool PlatformBundleHolderAndroid::RegisterJNI(JNIEnv *env) {
-  return RegisterNativesImpl(env);
-}
 
 PlatformBundleHolderAndroid::PlatformBundleHolderAndroid(JNIEnv *env) {
   impl_.Reset(env, Java_PlatformExtraBundleHolder_generateHolder(env));

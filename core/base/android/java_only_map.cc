@@ -16,13 +16,18 @@
 #include "core/base/android/jni_helper.h"
 #include "core/base/android/piper_data.h"
 #include "core/base/js_constants.h"
-#include "core/build/gen/JavaOnlyMap_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/JavaOnlyMap_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/JavaOnlyMap_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForJavaOnlyMap(JNIEnv* env) { return RegisterNativesImpl(env); }
+}  // namespace jni
+}  // namespace lynx
 
 namespace lynx {
 namespace base {
 namespace android {
-
-bool JavaOnlyMap::RegisterJni(JNIEnv* env) { return RegisterNativesImpl(env); }
 
 JavaOnlyMap::JavaOnlyMap() {
   JNIEnv* env = base::android::AttachCurrentThread();

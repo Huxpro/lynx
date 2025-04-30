@@ -28,8 +28,6 @@ namespace piper {
  */
 class LynxPlatformJSIObjectAndroid : public HostObject {
  public:
-  static bool RegisterJNI(JNIEnv* env);
-
   static std::shared_ptr<LynxPlatformJSIObjectAndroid> Create(
       JNIEnv* env, jobject i_jsi_object);
 

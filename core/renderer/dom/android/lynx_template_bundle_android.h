@@ -11,16 +11,6 @@
 
 namespace lynx {
 namespace tasm {
-class LynxTemplateBundleAndroid {
- public:
-  static bool RegisterJNI(JNIEnv* env);
-
- private:
-  base::android::ScopedGlobalJavaRef<jobject> jni_object_;
-  LynxTemplateBundleAndroid(const LynxTemplateBundleAndroid&) = delete;
-  LynxTemplateBundleAndroid& operator=(const LynxTemplateBundleAndroid&) =
-      delete;
-};
 
 lynx::base::android::ScopedLocalJavaRef<jobject>
 ConstructJTemplateBundleFromNative(LynxTemplateBundle bundle);

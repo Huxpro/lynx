@@ -47,8 +47,6 @@ class LynxRuntimeWrapperAndroid {
   LynxRuntimeWrapperAndroid(LynxRuntimeWrapperAndroid&& facade) = delete;
   LynxRuntimeWrapperAndroid& operator=(LynxRuntimeWrapperAndroid&&) = delete;
 
-  static void RegisterJNI(JNIEnv* env);
-
   void SetPresetData(lepus::Value data);
 
   void EvaluateScript(std::string url, std::string script);

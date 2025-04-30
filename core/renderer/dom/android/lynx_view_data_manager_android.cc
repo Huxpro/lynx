@@ -11,13 +11,22 @@
 
 #include "base/include/log/logging.h"
 #include "base/include/platform/android/jni_convert_helper.h"
-#include "core/build/gen/TemplateData_jni.h"
 #include "core/renderer/data/android/platform_data_android.h"
 #include "core/renderer/data/platform_data.h"
 #include "core/renderer/data/template_data.h"
 #include "core/renderer/dom/android/lepus_message_consumer.h"
 #include "core/renderer/utils/value_utils.h"
 #include "core/runtime/vm/lepus/table.h"
+#include "platform/android/lynx_android/src/main/jni/gen/TemplateData_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/TemplateData_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForTemplateData(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 jlong ParseStringData(JNIEnv* env, jclass jcaller, jstring jni_temp) {
   const char* temp = env->GetStringUTFChars(jni_temp, JNI_FALSE);
@@ -176,10 +185,6 @@ void ReleaseTemplateData(JNIEnv* env, jclass jcaller, jlong ptr) {
 
 namespace lynx {
 namespace tasm {
-
-bool LynxViewDataManagerAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 lepus::Value LynxViewDataManagerAndroid::GetJsThreadDataFromTemplateData(
     JNIEnv* env, jobject jni_object) {

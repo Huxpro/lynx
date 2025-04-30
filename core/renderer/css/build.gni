@@ -175,9 +175,7 @@ if (!enable_unittests) {
 if (is_android) {
   lynx_css_core_sources += [
     "android/css_color_utils.cc",
-    "android/css_color_utils.h",
     "android/css_gradient_utils.cc",
-    "android/css_gradient_utils.h",
   ]
 }
 

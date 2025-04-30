@@ -4,15 +4,20 @@
 
 #include "core/renderer/tasm/react/android/mapbuffer/readable_compact_array_buffer.h"
 
-#include "core/build/gen/ReadableCompactArrayBuffer_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/ReadableCompactArrayBuffer_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/ReadableCompactArrayBuffer_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForReadableCompactArrayBuffer(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 namespace lynx {
 namespace base {
 namespace android {
-
-bool JReadableCompactArrayBuffer::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 std::optional<ScopedLocalJavaRef<jobject>>
 JReadableCompactArrayBuffer::CreateReadableCompactArrayBuffer(

@@ -2,14 +2,21 @@
 // Licensed under the Apache License Version 2.0 that can be found in the
 // LICENSE file in the root directory of this source tree.
 
-#include "core/services/long_task_timing/android/long_task_monitor_android.h"
-
 #include <string>
 
 #include "core/base/android/android_jni.h"
 #include "core/base/android/jni_helper.h"
-#include "core/build/gen/LynxLongTaskMonitor_jni.h"
 #include "core/services/long_task_timing/long_task_monitor.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxLongTaskMonitor_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxLongTaskMonitor_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForLynxLongTaskMonitor(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 static void WillProcessTask(JNIEnv* env, jclass jcaller, jstring jType,
                             jstring jName, jstring jTaskInfo,
@@ -53,13 +60,3 @@ static void UpdateLongTaskTimingIfNeed(JNIEnv* env, jclass jcaller,
 static void DidProcessTask(JNIEnv* env, jclass jcaller) {
   lynx::tasm::timing::LongTaskMonitor::Instance()->DidProcessTask();
 }
-
-namespace lynx {
-namespace tasm {
-namespace timing {
-
-void RegisterJniLongTaskMonitor(JNIEnv* env) { (void)RegisterNativesImpl(env); }
-
-}  // namespace timing
-}  // namespace tasm
-}  // namespace lynx

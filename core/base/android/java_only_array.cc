@@ -15,15 +15,20 @@
 #include "core/base/android/piper_data.h"
 #include "core/base/js_constants.h"
 #include "core/base/json/json_util.h"
-#include "core/build/gen/JavaOnlyArray_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/JavaOnlyArray_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/JavaOnlyArray_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForJavaOnlyArray(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 namespace lynx {
 namespace base {
 namespace android {
-
-bool JavaOnlyArray::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 JavaOnlyArray::JavaOnlyArray() {
   JNIEnv* env = base::android::AttachCurrentThread();

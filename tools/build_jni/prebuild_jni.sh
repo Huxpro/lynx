@@ -2,8 +2,8 @@
 # Licensed under the Apache License Version 2.0 that can be found in the
 # LICENSE file in the root directory of this source tree.
 CURRENT_PATH="$(dirname "$(realpath "$0")")"
-ANDROID_NAME=("lynx_android/src/main/")
-LIBRARY_NAME=("core")
+ANDROID_NAME=()
+LIBRARY_NAME=()
 ANDROID_NAME_LENGTH=${#LIBRARY_NAME[@]}
 LIBRARY_NAME_LENGTH=${#ANDROID_NAME[@]}
 if [ ${ANDROID_NAME_LENGTH} -ne ${LIBRARY_NAME_LENGTH} ]; then

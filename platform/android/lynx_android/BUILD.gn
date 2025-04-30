@@ -21,11 +21,11 @@ cmake_target("lynx_android") {
   target_type = "shared_library"
   output_name = "lynx"
   deps = [
+    ":lynx_jni_files",
     "//lynx/base/trace/android:LynxTrace",
     "//lynx/core/build:build",
     "//lynx/core/shell:shell",
     "//lynx/platform/android/lynx_android:lynx_android_lib",
-    "//lynx/platform/android/lynx_android/src:lynx_jni_on_load",
   ]
   configs = [
     "//lynx/platform/android/lynx_android:lynx_android_public_config",
@@ -109,6 +109,17 @@ group("lynx_android_lib") {
       "//third_party/googletest_custom:gtest_custom",
     ]
   }
+}
+
+group("lynx_jni_files") {
+  exec_script("//lynx/tools/build_jni/generate_and_register_jni_files.py",
+              [
+                "-root",
+                rebase_path("//"),
+                "-path",
+                rebase_path("./src/main/jni/jni_configs.yml"),
+              ])
+  public_deps = [ "src/main/jni:build" ]
 }
 
 config("lynx_android_public_config") {

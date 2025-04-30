@@ -14,8 +14,15 @@
 #include "base/include/log/alog_wrapper.h"
 #include "base/include/log/logging.h"
 #include "core/base/android/jni_helper.h"
-#include "core/build/gen/LLog_jni.h"
 #include "core/renderer/utils/lynx_env.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LLog_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LLog_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForLLog(JNIEnv* env) { return RegisterNativesImpl(env); }
+}  // namespace jni
+}  // namespace lynx
 
 static lynx::base::alog_write_func_ptr s_alog_write = nullptr;
 
@@ -54,8 +61,6 @@ void PrintLogMessageByLogDelegate(LogMessage* msg, const char* tag) {
   }
 }
 }  // namespace
-
-bool RegisterJNI(JNIEnv* env) { return RegisterNativesImpl(env); }
 
 void InitLynxLog() {
   InitLynxLogging(InitAlog, PrintLogMessageByLogDelegate,

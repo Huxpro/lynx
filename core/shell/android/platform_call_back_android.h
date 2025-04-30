@@ -17,8 +17,6 @@ class PlatformCallBackAndroid : public PlatformCallBack {
       : jni_object_(env, jni_object){};
   ~PlatformCallBackAndroid() override = default;
 
-  static void RegisterJni(JNIEnv* env);
-
   void InvokeWithValue(const lepus::Value& value) override;
 
  private:

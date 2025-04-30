@@ -8,13 +8,22 @@
 
 #include "base/trace/native/trace_event.h"
 #include "core/base/android/android_jni.h"
-#include "core/build/gen/LayoutContext_jni.h"
 #include "core/renderer/trace/renderer_trace_event_def.h"
 #include "core/renderer/ui_wrapper/common/android/platform_extra_bundle_android.h"
 #include "core/renderer/ui_wrapper/common/android/prop_bundle_android.h"
 #include "core/renderer/ui_wrapper/layout/layout_node.h"
 #include "core/runtime/vm/lepus/table.h"
 #include "core/value_wrapper/value_impl_lepus.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LayoutContext_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LayoutContext_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForLayoutContext(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 void TriggerLayout(JNIEnv* env, jobject jcaller, jlong ptr) {
   reinterpret_cast<lynx::tasm::LayoutContextAndroid*>(ptr)->TriggerLayout();
@@ -43,10 +52,6 @@ static inline lepus::Value ResolveFontFaceToken(
   }
   result.SetTable(dict);
   return result;
-}
-
-bool LayoutContextAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 LayoutContextAndroid::LayoutContextAndroid(JNIEnv* env, jobject impl)

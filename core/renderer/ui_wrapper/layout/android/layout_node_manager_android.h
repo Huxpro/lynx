@@ -12,11 +12,6 @@
 namespace lynx {
 namespace tasm {
 
-class LayoutNodeManagerAndroid {
- public:
-  static bool RegisterJNI(JNIEnv* env);
-};
-
 class MeasureFuncAndroid : public MeasureFunc {
  public:
   MeasureFuncAndroid(JNIEnv* env, jobject obj);

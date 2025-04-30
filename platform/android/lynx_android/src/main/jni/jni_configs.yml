@@ -1,0 +1,84 @@
+# jni register file configs.
+jni_register_configs:
+  output_path: lynx/platform/android/lynx_android/src/main/jni/gen/lynx_so_load.cc
+  custom_headers:
+    - core/base/android/android_jni.h
+  namespaces:
+    - lynx
+  special_cases:
+    - header: base/include/fml/platform/android/message_loop_android.h
+      method: lynx::fml::MessageLoopAndroid::Register(env);
+    - header: core/runtime/bindings/jsi/modules/android/lynx_promise_impl.h
+      method: lynx::piper::LynxPromiseImpl::RegisterJNI(env);
+    - header: lynx/core/runtime/common/utils.h
+      method:
+        - lynx::piper::JSBUtilsRegisterJNI(env);
+        - lynx::piper::JSBUtilsMapRegisterJNI(env);
+# gn file configs.
+gn_configs:
+  output_path: lynx/platform/android/lynx_android/src/main/jni/BUILD.gn
+  template_name: lynx_core_source_set
+  custom_headers:
+    - //lynx/core/Lynx.gni
+# jni files configs.
+jni_class_configs:
+  output_dir: lynx/platform/android/lynx_android/src/main/jni/gen
+  jni_classes:
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/utils/BlurUtils.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/LynxEnv.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/LynxTemplateRender.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/LynxBackgroundRuntime.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/react/bridge/JavaOnlyMap.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/react/bridge/JavaOnlyArray.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/LynxError.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/eventreport/LynxEventReporter.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/performance/longtasktiming/LynxLongTaskMonitor.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/performance/TimingCollector.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/behavior/LayoutContext.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/behavior/LayoutNodeManager.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/behavior/PlatformExtraBundleHolder.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/behavior/shadow/LayoutNode.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/LynxWhiteBoard.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/NativeFacade.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/NativeFacadeReporter.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/TemplateData.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/LynxGetUIResult.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/utils/CallStackUtil.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/utils/DeviceUtils.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/jsbridge/LynxModuleWrapper.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/jsbridge/MethodDescriptor.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/jsbridge/AttributeDescriptor.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/jsbridge/CallbackImpl.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/jsbridge/jsi/ILynxJSIObjectDescriptor.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/jsbridge/jsi/LynxJSIObjectHub.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/jsbridge/LynxModuleFactory.java
+    # - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/jsbridge/network/HttpRequest.java
+    # - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/jsbridge/network/HttpResponse.java
+    # - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/jsbridge/network/LynxHttpRunner.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/base/LLog.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/core/resource/LynxResourceLoader.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/core/JSProxy.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/core/LynxEngineProxy.java
+    # - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/core/ResourceLoader.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/utils/TextUtils.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/base/LynxNativeMemoryTracer.java
+      macro: MEMORY_TRACING
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/core/VSyncMonitor.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/utils/ColorUtils.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/utils/GradientUtils.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/utils/DisplayMetricsHolder.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/utils/BlurUtils.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/utils/EnvUtils.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/react/bridge/PiperData.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/behavior/LynxUIRenderer.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/TemplateBundle.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/fluency/FluencySample.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/icu/ICURegister.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/PlatformCallBack.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/TasmPlatformInvoker.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/react/bridge/mapbuffer/ReadableMapBuffer.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/react/bridge/mapbuffer/ReadableCompactArrayBuffer.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/behavior/PaintingContext.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/featurecount/LynxFeatureCounter.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/tasm/LynxBackgroundRuntime.java
+    - java: lynx/platform/android/lynx_android/src/main/java/com/lynx/jsbridge/RuntimeLifecycleListenerDelegate.java

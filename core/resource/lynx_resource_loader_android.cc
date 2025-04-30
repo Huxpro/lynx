@@ -7,8 +7,18 @@
 #include "base/include/log/logging.h"
 #include "base/trace/native/trace_event.h"
 #include "core/base/android/jni_helper.h"
-#include "core/build/gen/LynxResourceLoader_jni.h"
 #include "core/resource/lynx_resource_setting.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxResourceLoader_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxResourceLoader_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForLynxResourceLoader(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
+
 #include "core/resource/trace/resource_trace_event_def.h"
 
 using lynx::base::android::AttachCurrentThread;
@@ -35,10 +45,6 @@ void ConfigLynxResourceSetting(JNIEnv* env, jobject jcaller) {
 
 namespace lynx {
 namespace shell {
-
-void LynxResourceLoaderAndroid::RegisterJni(JNIEnv* env) {
-  (void)RegisterNativesImpl(env);
-}
 
 void LynxResourceLoaderAndroid::LoadResource(
     const pub::LynxResourceRequest& request, bool request_in_current_thread,

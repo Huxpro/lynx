@@ -19,7 +19,6 @@ namespace shell {
 
 class LynxEngineProxyAndroid : public LynxEngineProxyImpl {
  public:
-  static bool RegisterJNI(JNIEnv *env);
   LynxEngineProxyAndroid(
       std::shared_ptr<shell::LynxActor<shell::LynxEngine>> actor, JNIEnv *env,
       jobject impl)

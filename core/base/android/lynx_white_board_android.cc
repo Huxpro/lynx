@@ -2,13 +2,20 @@
 // Licensed under the Apache License Version 2.0 that can be found in the
 // LICENSE file in the root directory of this source tree.
 
-#include "core/base/android/lynx_white_board_android.h"
-
 #include <memory>
 
 #include "core/base/android/android_jni.h"
-#include "core/build/gen/LynxWhiteBoard_jni.h"
 #include "core/shared_data/lynx_white_board.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxWhiteBoard_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxWhiteBoard_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForLynxWhiteBoard(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 jlong Create(JNIEnv* env, jobject jcaller) {
   auto* white_board = new lynx::tasm::WhiteBoard();
@@ -22,12 +29,3 @@ void Destroy(JNIEnv* env, jobject jcaller, jlong ptr) {
       reinterpret_cast<std::shared_ptr<lynx::tasm::WhiteBoard>*>(ptr);
   delete white_board;
 }
-
-namespace lynx {
-namespace base {
-
-void LynxWhiteBoardAndroid::RegisterJni(JNIEnv* env) {
-  RegisterNativesImpl(env);
-}
-}  // namespace base
-}  // namespace lynx

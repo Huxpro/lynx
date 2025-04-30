@@ -12,7 +12,6 @@
 #include "base/include/timer/time_utils.h"
 #include "core/base/android/android_jni.h"
 #include "core/base/android/java_only_array.h"
-#include "core/build/gen/LynxModuleWrapper_jni.h"
 #include "core/renderer/utils/lynx_env.h"
 #include "core/runtime/bindings/jsi/modules/android/java_method_descriptor.h"
 #include "core/runtime/common/utils.h"
@@ -21,6 +20,17 @@
 #include "core/services/feature_count/feature_counter.h"
 #include "core/value_wrapper/value_impl_piper.h"
 #include "core/value_wrapper/value_wrapper_utils.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxModuleWrapper_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxModuleWrapper_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForLynxModuleWrapper(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
+
 #include "lynx/core/runtime/bindings/jsi/modules/lynx_jsi_module_callback.h"
 namespace lynx {
 namespace piper {
@@ -30,10 +40,6 @@ base::expected<piper::Value, JSINativeException> InvokeWithErrorReport(
     Func func, ModuleDelegate& delegate, const std::string& module_name,
     const std::string& method_name) {
   return func();
-}
-
-bool LynxModuleAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 LynxModuleAndroid::LynxModuleAndroid(

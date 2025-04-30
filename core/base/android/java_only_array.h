@@ -35,7 +35,6 @@ class JavaOnlyMap;
 class JavaValue;
 class JavaOnlyArray {
  public:
-  static bool RegisterJni(JNIEnv* env);
   JavaOnlyArray();
   JavaOnlyArray(JNIEnv* env,
                 const lynx::base::android::ScopedLocalJavaRef<jobject>& ref)

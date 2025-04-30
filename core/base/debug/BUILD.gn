@@ -9,7 +9,6 @@ lynx_core_source_set("memory_tracer_src") {
     "memory_tracer.cc",
     "memory_tracer.h",
     "memory_tracer_android.cc",
-    "memory_tracer_android.h",
   ]
   deps = [ "//third_party/xhook:xhook" ]
 }

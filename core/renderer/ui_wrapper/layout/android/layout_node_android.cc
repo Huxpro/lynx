@@ -10,9 +10,16 @@
 #include "base/include/debug/lynx_error.h"
 #include "base/include/log/logging.h"
 #include "base/include/platform/android/scoped_java_ref.h"
-#include "core/build/gen/LayoutNode_jni.h"
 #include "core/renderer/css/measure_context.h"
 #include "core/renderer/starlight/layout/layout_object.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LayoutNode_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LayoutNode_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForLayoutNode(JNIEnv* env) { return RegisterNativesImpl(env); }
+}  // namespace jni
+}  // namespace lynx
 
 using lynx::starlight::Constraints;
 using lynx::starlight::kHorizontal;
@@ -21,10 +28,6 @@ using lynx::starlight::OneSideConstraint;
 
 namespace lynx {
 namespace tasm {
-
-bool LayoutNodeAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 lynx::base::android::ScopedLocalJavaRef<jfloatArray> LayoutNodeAndroid::Measure(
     JNIEnv* env, jobject obj, jfloat width, int widthMode, jfloat height,

@@ -16,7 +16,6 @@ namespace android {
 
 class CallStackUtilAndroid {
  public:
-  static bool RegisterJNI(JNIEnv* env);
   BASE_EXPORT_FOR_DEVTOOL static std::string GetMessageOfCauseChain(
       JNIEnv* env, const ScopedLocalJavaRef<jthrowable>& throwable);
   BASE_EXPORT_FOR_DEVTOOL static std::string GetStackTraceStringWithLineTrimmed(

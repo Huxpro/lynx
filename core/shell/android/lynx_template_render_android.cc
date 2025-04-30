@@ -9,7 +9,6 @@
 
 #include "core/base/android/jni_helper.h"
 #include "core/base/thread/atomic_lifecycle.h"
-#include "core/build/gen/LynxTemplateRender_jni.h"
 #include "core/public/lynx_extension_delegate.h"
 #include "core/public/ui_delegate.h"
 #include "core/renderer/data/android/platform_data_android.h"
@@ -19,9 +18,8 @@
 #include "core/resource/lazy_bundle/lazy_bundle_loader.h"
 #include "core/resource/lynx_resource_loader_android.h"
 #include "core/runtime/bindings/jsi/modules/android/module_factory_android.h"
-#include "core/services/timing_handler/android/timing_collector_android.h"
+#include "core/services/timing_handler/timing_collector_platform_impl.h"
 #include "core/shell/android/lynx_runtime_wrapper_android.h"
-#include "core/shell/android/lynx_template_renderer_android.h"
 #include "core/shell/android/native_facade_android.h"
 #include "core/shell/android/native_facade_reporter_android.h"
 #include "core/shell/android/platform_call_back_android.h"
@@ -31,6 +29,16 @@
 #include "core/shell/lynx_shell.h"
 #include "core/shell/lynx_shell_builder.h"
 #include "core/shell/module_delegate_impl.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxTemplateRender_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxTemplateRender_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForLynxTemplateRender(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 using lynx::base::AtomicLifecycle;
 using lynx::base::android::AttachCurrentThread;
@@ -231,11 +239,11 @@ jlong Create(JNIEnv* env, jclass jcaller, jlong timing_collector_android,
     white_board = *reinterpret_cast<std::shared_ptr<lynx::tasm::WhiteBoard>*>(
         white_board_ptr);
   }
-  std::shared_ptr<lynx::tasm::timing::TimingCollectorAndroid>
+  std::shared_ptr<lynx::tasm::timing::TimingCollectorPlatformImpl>
       sp_timing_collector_android = nullptr;
   if (timing_collector_android != 0) {
     sp_timing_collector_android = *reinterpret_cast<
-        std::shared_ptr<lynx::tasm::timing::TimingCollectorAndroid>*>(
+        std::shared_ptr<lynx::tasm::timing::TimingCollectorPlatformImpl>*>(
         timing_collector_android);
   }
 
@@ -1358,13 +1366,3 @@ void EnforceRelayoutOnCurrentThreadWithUpdatedViewport(
 
   AtomicLifecycle::TryFree(lifecycle_ptr);
 }
-
-namespace lynx {
-namespace shell {
-
-void LynxTemplateRendererAndroid::RegisterJni(JNIEnv* env) {
-  (void)RegisterNativesImpl(env);
-}
-
-}  // namespace shell
-}  // namespace lynx

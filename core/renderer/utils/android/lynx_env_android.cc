@@ -9,13 +9,24 @@
 
 #include "core/base/android/jni_helper.h"
 #include "core/base/threading/task_runner_manufactor.h"
-#include "core/build/gen/LynxEnv_jni.h"
 #include "core/renderer/lynx_global_pool.h"
 #include "core/renderer/tasm/config.h"
 #include "core/renderer/utils/lynx_env.h"
 #include "core/runtime/jscache/js_cache_manager_facade.h"
 #include "core/services/ssr/ssr_type_info.h"
 #include "core/services/timing_handler/timing.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxEnv_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxEnv_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForLynxEnv(JNIEnv* env) {
+  tasm::Config::InitializeVersion(
+      std::to_string(android_get_device_api_level()));
+  return lynxenv::RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 namespace lynxenv {
 
@@ -93,12 +104,6 @@ void ClearBytecode(JNIEnv* env, jclass jcaller, jstring bytecodeSourceUrl,
 
 namespace lynx {
 namespace tasm {
-
-void LynxEnvAndroid::RegisterJNI(JNIEnv* env) {
-  lynx::tasm::Config::InitializeVersion(
-      std::to_string(android_get_device_api_level()));
-  (void)lynxenv::RegisterNativesImpl(env);
-}
 
 void LynxEnvAndroid::onPiperInvoked(const std::string& module_name,
                                     const std::string& method_name,

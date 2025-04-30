@@ -13,9 +13,18 @@
 //              Introduce TasmPlatformInvoker.java as a replacement
 //              subsequently.
 #include "base/include/platform/android/jni_convert_helper.h"
-#include "core/build/gen/TasmPlatformInvoker_jni.h"
 #include "core/renderer/dom/android/lepus_message_consumer.h"
 #include "core/renderer/utils/android/value_converter_android.h"
+#include "platform/android/lynx_android/src/main/jni/gen/TasmPlatformInvoker_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/TasmPlatformInvoker_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForTasmPlatformInvoker(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 namespace lynx {
 namespace shell {
@@ -109,10 +118,6 @@ constexpr const char* kEnableMultiTouch = "enableMultiTouch";
 constexpr const char* kEnableFlattenTranslateZ = "enableFlattenTranslateZ";
 
 }  // namespace
-
-void TasmPlatformInvokerAndroid::RegisterJni(JNIEnv* env) {
-  (void)RegisterNativesImpl(env);
-}
 
 void TasmPlatformInvokerAndroid::OnPageConfigDecoded(
     const std::shared_ptr<tasm::PageConfig>& config) {

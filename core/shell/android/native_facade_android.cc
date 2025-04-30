@@ -10,7 +10,6 @@
 #include "core/base/android/jni_helper.h"
 #include "core/base/android/lynx_error_android.h"
 #include "core/base/thread/atomic_lifecycle.h"
-#include "core/build/gen/NativeFacade_jni.h"
 #include "core/renderer/dom/android/lynx_get_ui_result_android.h"
 #include "core/renderer/dom/android/lynx_template_bundle_android.h"
 #include "core/renderer/ui_wrapper/common/android/prop_bundle_android.h"
@@ -19,6 +18,16 @@
 #include "core/services/ssr/client/ssr_event_utils.h"
 #include "core/shell/common/shell_trace_event_def.h"
 #include "core/shell/lynx_shell.h"
+#include "platform/android/lynx_android/src/main/jni/gen/NativeFacade_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/NativeFacade_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForNativeFacade(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 using lynx::base::AtomicLifecycle;
 using lynx::base::android::AttachCurrentThread;
@@ -106,10 +115,6 @@ jobject ConvertToJavaPerfTiming(
       j_perf_timing.jni_object());
 }
 }  // namespace
-
-void NativeFacadeAndroid::RegisterJni(JNIEnv* env) {
-  (void)RegisterNativesImpl(env);
-}
 
 void NativeFacadeAndroid::OnDataUpdated() {
   Java_NativeFacade_onDataUpdated(AttachCurrentThread(), jni_object_.Get());

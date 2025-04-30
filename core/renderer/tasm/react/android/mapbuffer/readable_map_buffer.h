@@ -21,8 +21,6 @@ namespace android {
  */
 class JReadableMapBuffer {
  public:
-  static bool RegisterJni(JNIEnv* env);
-
   static base::android::ScopedLocalJavaRef<jobject> CreateReadableMapBuffer(
       const MapBuffer& map);
 

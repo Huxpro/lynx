@@ -9,7 +9,16 @@
 
 #include "base/include/log/logging.h"
 #include "core/base/android/android_jni.h"
-#include "core/build/gen/VSyncMonitor_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/VSyncMonitor_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/VSyncMonitor_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForVSyncMonitor(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 void OnVSync(JNIEnv* env, jclass jcaller, jlong nativePtr,
              jlong frameStartTimeNS, jlong frameEndTimeNS) {
@@ -28,11 +37,6 @@ namespace base {
 
 std::shared_ptr<VSyncMonitor> VSyncMonitor::Create() {
   return std::make_shared<lynx::base::VSyncMonitorAndroid>();
-}
-
-// static
-bool VSyncMonitorAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 VSyncMonitorAndroid::VSyncMonitorAndroid() {}

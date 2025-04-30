@@ -6,8 +6,17 @@
 
 #include <memory>
 
-#include "core/build/gen/LynxUIRenderer_jni.h"
 #include "core/renderer/ui_wrapper/common/android/prop_bundle_android.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxUIRenderer_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxUIRenderer_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForLynxUIRenderer(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 jlong CreateUIDelegate(JNIEnv* env, jclass jcaller, jlong painting_context_ptr,
                        jlong layout_context_ptr) {
@@ -21,10 +30,6 @@ void DestroyUIDelegate(JNIEnv* env, jclass jcaller, jlong ui_delegate_ptr) {
 
 namespace lynx {
 namespace tasm {
-
-bool UIDelegateAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 std::unique_ptr<PaintingCtxPlatformImpl>
 UIDelegateAndroid::CreatePaintingContext() {

@@ -18,7 +18,6 @@ namespace android {
 
 class LynxErrorAndroid {
  public:
-  static bool RegisterJNI(JNIEnv* env);
   LynxErrorAndroid(
       int error_code, const std::string& error_message,
       const std::string& fix_suggestion, base::LynxErrorLevel level,

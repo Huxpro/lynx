@@ -20,8 +20,6 @@ namespace piper {
  */
 class LynxJSIObjectDescriptor {
  public:
-  static bool RegisterJNI(JNIEnv* env);
-
   explicit LynxJSIObjectDescriptor(
       base::android::ScopedGlobalJavaRef<jobject> jsi_object_descriptor)
       : jsi_object_descriptor_(std::move(jsi_object_descriptor)) {}

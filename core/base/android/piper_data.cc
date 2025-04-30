@@ -10,8 +10,15 @@
 #include "core/base/android/android_jni.h"
 #include "core/base/android/jni_helper.h"
 #include "core/base/js_constants.h"
-#include "core/build/gen/PiperData_jni.h"
 #include "core/renderer/dom/android/lepus_message_consumer.h"
+#include "platform/android/lynx_android/src/main/jni/gen/PiperData_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/PiperData_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForPiperData(JNIEnv* env) { return RegisterNativesImpl(env); }
+}  // namespace jni
+}  // namespace lynx
 
 jlong ParseStringData(JNIEnv* env, jclass jcaller, jstring data) {
   const char* temp = env->GetStringUTFChars(data, JNI_FALSE);
@@ -112,8 +119,6 @@ std::optional<piper::Value> jsonValueToJSValue(
   return piper::Value();
 }
 }  // namespace
-
-bool PiperData::RegisterJni(JNIEnv* env) { return RegisterNativesImpl(env); }
 
 std::optional<piper::Value> PiperData::jsObjectFromPiperData(
     JNIEnv* env, piper::Runtime* rt, jobject piper_data) {

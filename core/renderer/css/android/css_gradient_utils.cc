@@ -2,15 +2,12 @@
 // Licensed under the Apache License Version 2.0 that can be found in the
 // LICENSE file in the root directory of this source tree.
 
-#include "core/renderer/css/android/css_gradient_utils.h"
-
 #include <memory>
 #include <string>
 #include <utility>
 
 #include "base/include/platform/android/jni_convert_helper.h"
 #include "core/base/android/jni_helper.h"
-#include "core/build/gen/GradientUtils_jni.h"
 #include "core/renderer/css/css_style_utils.h"
 #include "core/renderer/css/css_utils.h"
 #include "core/renderer/css/measure_context.h"
@@ -18,6 +15,16 @@
 #include "core/renderer/tasm/react/android/mapbuffer/readable_map_buffer.h"
 #include "core/renderer/ui_wrapper/common/android/prop_bundle_android.h"
 #include "core/value_wrapper/value_impl_lepus.h"
+#include "platform/android/lynx_android/src/main/jni/gen/GradientUtils_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/GradientUtils_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForGradientUtils(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 jfloatArray GetRadialRadius(JNIEnv* env, jclass jcaller, jint shape,
                             jint shapeSize, jfloat cx, jfloat cy, jfloat sx,
@@ -63,13 +70,3 @@ jobject GetGradientArray(JNIEnv* env, jclass jcaller, jstring gradientDef,
           *map_buffer);
   return env->NewLocalRef(map_buffer_jobject.Get());  // NOLINT
 }
-
-namespace lynx {
-namespace tasm {
-
-bool CSSGradientUtils::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-}  // namespace tasm
-}  // namespace lynx

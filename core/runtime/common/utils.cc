@@ -10,8 +10,8 @@
 #include "core/base/android/android_jni.h"
 #include "core/base/android/jni_helper.h"
 #include "core/base/android/piper_data.h"
-#include "core/build/gen/JavaOnlyArray_jni.h"
 #include "core/runtime/bindings/jsi/modules/android/platform_jsi/lynx_platform_jsi_object_android.h"
+#include "platform/android/lynx_android/src/main/jni/gen/JavaOnlyArray_jni.h"
 #endif  // OS_ANDROID
 
 #include "core/base/js_constants.h"

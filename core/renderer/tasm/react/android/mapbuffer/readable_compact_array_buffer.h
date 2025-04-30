@@ -16,8 +16,6 @@ namespace android {
 
 class JReadableCompactArrayBuffer {
  public:
-  static bool RegisterJni(JNIEnv* env);
-
   /**
    * Create a ScopedLocalRef of ReadableCompactArrayBuffer
    * @param array a C++ CompactArrayBuffer

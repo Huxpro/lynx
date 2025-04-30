@@ -13,10 +13,7 @@ feature_count_shared_sources = [
                                ] + feature_count_extend_shared_sources
 
 if (is_android) {
-  feature_count_shared_sources += [
-    "android/feature_counter_android.cc",
-    "android/feature_counter_android.h",
-  ]
+  feature_count_shared_sources += [ "android/feature_counter_android.cc" ]
 }
 
 lynx_core_source_set("feature_count") {

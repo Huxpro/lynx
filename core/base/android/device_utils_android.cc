@@ -4,15 +4,18 @@
 
 #include "core/base/android/device_utils_android.h"
 
-#include "core/build/gen/DeviceUtils_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/DeviceUtils_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/DeviceUtils_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForDeviceUtils(JNIEnv* env) { return RegisterNativesImpl(env); }
+}  // namespace jni
+}  // namespace lynx
 
 namespace lynx {
 namespace base {
 namespace android {
-
-void DeviceUtilsAndroid::RegisterJNI(JNIEnv* env) {
-  (void)RegisterNativesImpl(env);
-}
 
 bool DeviceUtilsAndroid::Is64BitDevice() {
   return Java_DeviceUtils_is64BitDevice(android::AttachCurrentThread());

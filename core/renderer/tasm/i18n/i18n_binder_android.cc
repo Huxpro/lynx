@@ -4,7 +4,14 @@
 
 #include "core/renderer/tasm/i18n/i18n_binder_android.h"
 
-#include "core/build/gen/ICURegister_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/ICURegister_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/ICURegister_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForICURegister(JNIEnv* env) { return RegisterNativesImpl(env); }
+}  // namespace jni
+}  // namespace lynx
 
 namespace lynx {
 namespace tasm {
@@ -14,6 +21,5 @@ void I18nBinderAndroid::Bind(intptr_t ptr) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ICURegister_register(env, ptr);
 }
-void I18nBinderAndroid::RegisterJNI(JNIEnv* env) { RegisterNativesImpl(env); }
 }  // namespace tasm
 }  // namespace lynx

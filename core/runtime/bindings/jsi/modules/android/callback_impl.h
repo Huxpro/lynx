@@ -28,7 +28,6 @@ class ModuleCallbackAndroid {
   using CallbackArgsConverter = std::function<std::unique_ptr<pub::Value>(
       piper::Runtime* rt, ModuleCallback* callback,
       lynx::base::android::ScopedGlobalJavaRef<jobject> args)>;
-  static bool RegisterJNI(JNIEnv* env);
 
   ModuleCallbackAndroid(std::weak_ptr<LynxModuleAndroid> callback_invoker,
                         std::shared_ptr<ModuleCallback> callback)

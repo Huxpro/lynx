@@ -5,15 +5,20 @@
 #include "core/shell/android/native_facade_reporter_android.h"
 
 #include "core/base/android/jni_helper.h"
-#include "core/build/gen/NativeFacadeReporter_jni.h"
 #include "core/renderer/utils/android/value_converter_android.h"
+#include "platform/android/lynx_android/src/main/jni/gen/NativeFacadeReporter_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/NativeFacadeReporter_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForNativeFacadeReporter(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 namespace lynx {
 namespace shell {
-
-void NativeFacadeReporterAndroid::RegisterJni(JNIEnv* env) {
-  (void)RegisterNativesImpl(env);
-}
 
 void NativeFacadeReporterAndroid::OnPerformanceEvent(
     const lepus::Value& entry) {

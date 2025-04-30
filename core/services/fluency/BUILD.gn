@@ -10,10 +10,7 @@ fluency_shared_sources = [
 ]
 
 if (is_android) {
-  fluency_shared_sources += [
-    "android/fluency_sample_android.cc",
-    "android/fluency_sample_android.h",
-  ]
+  fluency_shared_sources += [ "android/fluency_sample_android.cc" ]
 }
 
 lynx_core_source_set("fluency") {

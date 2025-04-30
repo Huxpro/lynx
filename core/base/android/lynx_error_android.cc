@@ -6,15 +6,18 @@
 
 #include "base/include/debug/lynx_error.h"
 #include "core/base/android/jni_helper.h"
-#include "core/build/gen/LynxError_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxError_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxError_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForLynxError(JNIEnv* env) { return RegisterNativesImpl(env); }
+}  // namespace jni
+}  // namespace lynx
 
 namespace lynx {
 namespace base {
 namespace android {
-
-bool LynxErrorAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 LynxErrorAndroid::LynxErrorAndroid(
     int error_code, const std::string& error_message,

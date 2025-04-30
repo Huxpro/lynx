@@ -10,12 +10,21 @@
 #include "core/base/android/java_only_array.h"
 #include "core/base/android/java_only_map.h"
 #include "core/base/android/jni_helper.h"
-#include "core/build/gen/LynxEngineProxy_jni.h"
 #include "core/renderer/dom/android/lepus_message_consumer.h"
 #include "core/renderer/utils/android/value_converter_android.h"
 #include "core/renderer/utils/lynx_env.h"
 #include "core/shell/lynx_shell.h"
 #include "core/value_wrapper/value_impl_lepus.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxEngineProxy_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxEngineProxy_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForLynxEngineProxy(JNIEnv *env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 using lynx::lepus::Value;
 
@@ -158,9 +167,6 @@ void DispatchTaskToLynxEngine(JNIEnv *env, jobject jcaller, jlong ptr,
 
 namespace lynx {
 namespace shell {
-bool LynxEngineProxyAndroid::RegisterJNI(JNIEnv *env) {
-  return RegisterNativesImpl(env);
-}
 
 void LynxEngineProxyAndroid::InvokeLepusApiCallback(
     JNIEnv *env, jobject jcaller, jlong nativePtr, jint callbackID,

@@ -2,10 +2,17 @@
 // Licensed under the Apache License Version 2.0 that can be found in the
 // LICENSE file in the root directory of this source tree.
 
-#include "core/base/debug/memory_tracer_android.h"
-
 #include "core/base/debug/memory_tracer.h"
-#include "core/build/gen/LynxNativeMemoryTracer_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxNativeMemoryTracer_jni.h"
+#include "platform/android/lynx_android/src/main/jni/gen/LynxNativeMemoryTracer_register_jni.h"
+
+namespace lynx {
+namespace jni {
+bool RegisterJNIForLynxNativeMemoryTracer(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+}  // namespace jni
+}  // namespace lynx
 
 // static
 void StartTracing(JNIEnv* env, jclass clazz, jint min_watched_size) {
@@ -23,13 +30,3 @@ void WriteRecordsToFile(JNIEnv* env, jclass jcaller, jstring filePath) {
   lynx::base::MemoryTracer::Instance().WriteRecordsToFile(file_path_str);
   env->ReleaseStringUTFChars(filePath, file_path_str);
 }
-
-namespace lynx {
-namespace base {
-
-bool MemoryTracerAndroid::RegisterJNIUtils(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-}  // namespace base
-}  // namespace lynx
