@@ -1006,6 +1006,11 @@ void LynxRuntime::AddLifecycleListener(
   lifecycle_observer_->AddEventListener(std::move(listener));
 }
 
+void LynxRuntime::AddModuleFactory(
+    std::unique_ptr<piper::NativeModuleFactory> native_factory) {
+  js_executor_->GetModuleManager()->SetModuleFactory(std::move(native_factory));
+}
+
 }  // namespace runtime
 }  // namespace lynx
 

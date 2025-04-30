@@ -22,16 +22,14 @@ class LynxActor;
 namespace runtime {
 class LynxRuntime;
 }
+
 namespace pub {
-using RuntimeActorReadyListener = base::MoveOnlyClosure<
-    void, std::shared_ptr<shell::LynxActor<runtime::LynxRuntime>>>;
+
 class LynxExtensionDelegate {
  public:
   virtual ~LynxExtensionDelegate() = default;
-  virtual std::unique_ptr<piper::NativeModuleFactory> CreateModuleFactory() = 0;
-  virtual void SetRuntimeTaskRunner(
-      fml::RefPtr<fml::TaskRunner> task_runner) = 0;
-  virtual RuntimeActorReadyListener GetRuntimeActorReadyListener() = 0;
+  virtual void SetRuntimeActor(
+      std::shared_ptr<shell::LynxActor<runtime::LynxRuntime>> actor) = 0;
 };
 
 }  // namespace pub

@@ -1321,11 +1321,7 @@ void SetExtensionDelegate(JNIEnv* env, jobject jcaller, jlong ptr,
   auto* shell = reinterpret_cast<LynxShell*>(ptr);
   auto* extension_delegate =
       reinterpret_cast<lynx::pub::LynxExtensionDelegate*>(delegate_ptr);
-  shell->RegisterModuleFactory(extension_delegate->CreateModuleFactory());
-  extension_delegate->SetRuntimeTaskRunner(
-      shell->GetRunners()->GetJSTaskRunner());
-  shell->AddRuntimeActorReadyListener(
-      extension_delegate->GetRuntimeActorReadyListener());
+  extension_delegate->SetRuntimeActor(shell->GetRuntimeActor());
   AtomicLifecycle::TryFree(lifecycle_ptr);
 }
 

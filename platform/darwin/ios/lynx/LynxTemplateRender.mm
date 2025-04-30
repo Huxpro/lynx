@@ -426,6 +426,7 @@ LYNX_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder*)aDecoder)
     auto js_proxy = lynx::shell::JSProxyDarwin::Create(actor, self, actor->GetInstanceId(),
                                                        [_runtimeOptions groupThreadName]);
     [_context setJSProxy:js_proxy];
+    [self setUpExtensionModules];
     return;
   }
 
@@ -462,6 +463,7 @@ LYNX_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder*)aDecoder)
                       _runtimeOptions.backgroundJsRuntimeType == LynxBackgroundJsRuntimeTypeQuickjs,
                       _enablePendingJSTaskOnLayout, _runtimeOptions.enableBytecode,
                       [_runtimeOptions bytecodeUrlString]);
+  [self setUpExtensionModules];
 }
 
 - (void)setUpLynxContextWithLastInstanceId:(int32_t)lastInstanceId {
@@ -538,7 +540,6 @@ LYNX_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder*)aDecoder)
 
   [self setUpBuiltModuleWithFactory:module_factory];
   [self setUpLepusModulesWithFactory:module_factory];
-  [self setUpExtensionModules];
 
   return module_manager;
 }
@@ -565,14 +566,15 @@ LYNX_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder*)aDecoder)
 }
 
 - (void)setUpExtensionModules {
+  if ([self enableAirStrictMode]) {
+    return;
+  }
   NSDictionary* modules = _context.extentionModules;
   for (NSString* key in modules) {
     id<LynxExtensionModule> instance = modules[key];
     auto* extension_delegate =
         reinterpret_cast<lynx::pub::LynxExtensionDelegate*>([instance getExtensionDelegate]);
-    shell_->RegisterModuleFactory(extension_delegate->CreateModuleFactory());
-    extension_delegate->SetRuntimeTaskRunner(shell_->GetRunners()->GetJSTaskRunner());
-    shell_->AddRuntimeActorReadyListener(extension_delegate->GetRuntimeActorReadyListener());
+    extension_delegate->SetRuntimeActor(shell_->GetRuntimeActor());
     [instance setUp];
   }
 }

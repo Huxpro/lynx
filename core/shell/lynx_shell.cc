@@ -232,7 +232,6 @@ void LynxShell::InitRuntime(
       std::move(runtime), js_task_runner, instance_id_, enable_runtime_);
   delegate_raw_ptr->set_vsync_monitor(vsync_monitor, runtime_actor_);
 
-  ConsumeModuleFactory(module_manager.get());
   OnRuntimeCreate();
   on_runtime_actor_created(runtime_actor_);
   external_resource_loader_ptr->SetRuntimeActor(runtime_actor_);
@@ -268,11 +267,6 @@ void LynxShell::InitRuntime(
 
 void LynxShell::AttachRuntime(
     std::weak_ptr<piper::LynxModuleManager> module_manager) {
-  auto lock_module_manager = module_manager.lock();
-  DCHECK(lock_module_manager);
-  if (lock_module_manager) {
-    ConsumeModuleFactory(lock_module_manager.get());
-  }
   OnRuntimeCreate();
 
   // TODO(huzhanbo.luc): support TestBench
@@ -1230,11 +1224,6 @@ void LynxShell::SetHierarchyObserver(
   });
 }
 
-void LynxShell::RegisterModuleFactory(
-    std::unique_ptr<lynx::piper::NativeModuleFactory> module_factory) {
-  module_factories_.push_back(std::move(module_factory));
-}
-
 void LynxShell::OnRuntimeCreate() {
   DCHECK(runtime_actor_);
 
@@ -1247,21 +1236,6 @@ void LynxShell::OnRuntimeCreate() {
       [message_event = std::move(event)](auto& runtime) mutable {
         runtime->OnReceiveMessageEvent(std::move(message_event));
       });
-  for (auto& listener : runtime_actor_ready_listeners_) {
-    std::move(listener)(runtime_actor_);
-  }
-  runtime_actor_ready_listeners_.clear();
-}
-
-void LynxShell::ConsumeModuleFactory(piper::LynxModuleManager* module_manager) {
-  if (module_manager) {
-    for (auto& module_factory : module_factories_) {
-      if (module_factory) {
-        module_manager->SetModuleFactory(std::move(module_factory));
-      }
-    }
-    module_factories_.clear();
-  }
 }
 
 std::weak_ptr<piper::JsBundleHolder> LynxShell::GetWeakJsBundleHolder() {

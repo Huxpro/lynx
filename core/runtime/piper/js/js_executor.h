@@ -77,6 +77,10 @@ class BASE_EXPORT_FOR_DEVTOOL JSExecutor {
     return runtime_observer_ng_;
   }
 
+  std::shared_ptr<piper::LynxModuleManager>& GetModuleManager() {
+    return module_manager_;
+  }
+
  protected:
   std::shared_ptr<JSIExceptionHandler> exception_handler_;
   std::string group_id_;

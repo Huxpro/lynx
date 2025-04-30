@@ -15,6 +15,7 @@
 #include "base/include/debug/lynx_assert.h"
 #include "base/include/debug/lynx_error.h"
 #include "core/base/threading/task_runner_manufactor.h"
+#include "core/public/jsb/native_module_factory.h"
 #include "core/public/page_options.h"
 #include "core/public/prop_bundle.h"
 #include "core/runtime/bindings/jsi/api_call_back.h"
@@ -24,11 +25,11 @@
 #include "core/runtime/piper/js/js_bundle_holder.h"
 #include "core/runtime/piper/js/js_executor.h"
 #include "core/runtime/piper/js/lynx_api_handler.h"
+#include "core/runtime/piper/js/runtime_lifecycle_listener_delegate.h"
+#include "core/runtime/piper/js/runtime_lifecycle_observer_impl.h"
 #include "core/runtime/piper/js/template_delegate.h"
 #include "core/runtime/vm/lepus/lepus_global.h"
 #include "core/template_bundle/template_codec/ttml_constant.h"
-#include "lynx/core/runtime/piper/js/runtime_lifecycle_listener_delegate.h"
-#include "lynx/core/runtime/piper/js/runtime_lifecycle_observer_impl.h"
 #include "third_party/rapidjson/document.h"
 
 namespace lynx {
@@ -159,6 +160,9 @@ class LynxRuntime final {
       const std::weak_ptr<piper::JsBundleHolder>& weak_js_bundle_holder);
 
   void TransitionToFullRuntime();
+
+  void AddModuleFactory(
+      std::unique_ptr<piper::NativeModuleFactory> native_factory);
 
  private:
   enum class State {

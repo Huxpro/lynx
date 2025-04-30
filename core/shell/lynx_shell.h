@@ -18,7 +18,6 @@
 #include "core/base/threading/task_runner_manufactor.h"
 #include "core/base/threading/vsync_monitor.h"
 #include "core/inspector/observer/inspector_runtime_observer_ng.h"
-#include "core/public/lynx_extension_delegate.h"
 #include "core/public/lynx_resource_loader.h"
 #include "core/public/page_options.h"
 #include "core/renderer/data/template_data.h"
@@ -279,10 +278,6 @@ class LynxShell {
     return runtime_actor_;
   }
 
-  void AddRuntimeActorReadyListener(pub::RuntimeActorReadyListener listener) {
-    runtime_actor_ready_listeners_.emplace_back(std::move(listener));
-  }
-
   std::shared_ptr<LynxActor<shell::LynxEngine>> GetEngineActor() {
     return engine_actor_;
   }
@@ -348,9 +343,6 @@ class LynxShell {
   void AttachEngineToUIThread();
 
   void DetachEngineFromUIThread();
-
-  void RegisterModuleFactory(
-      std::unique_ptr<lynx::piper::NativeModuleFactory> module_factory);
 
  protected:
   // use for record app state
@@ -431,11 +423,6 @@ class LynxShell {
 
   // Only ref module_manager;
   std::weak_ptr<lynx::piper::LynxModuleManager> weak_module_manager_;
-  // Managed by Runtime, only keep those before runtime create.
-  std::vector<std::unique_ptr<lynx::piper::NativeModuleFactory>>
-      module_factories_;
-  std::vector<lynx::pub::RuntimeActorReadyListener>
-      runtime_actor_ready_listeners_;
 
   std::shared_ptr<LayoutResultManager> layout_result_manager_;
 
