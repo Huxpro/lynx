@@ -17,18 +17,35 @@
   return self;
 }
 
++ (LynxFluencyConfig)constructFluencyConfigWithLynxScrollInfo:(LynxScrollInfo *)info {
+  LynxFluencyConfig config;
+  config.key = info;
+  config.lynxView = info.lynxView;
+  config.scrollMonitorTagName = info.scrollMonitorTagName;
+  config.tagName = info.tagName;
+  return config;
+}
+
 - (void)scrollerWillBeginDragging:(LynxScrollInfo *)info {
-  [_fluencyMonitor startWithScrollInfo:info];
+  if (info.lynxView == nil) {
+    // This method should be called synchronic when a UIScrollView in LynxView is scrolling. Info's
+    // lynxView should not be nil.
+    return;
+  }
+  LynxFluencyConfig config = [LynxScrollFluency constructFluencyConfigWithLynxScrollInfo:info];
+  [_fluencyMonitor startWithFluencyConfig:&config];
 }
 
 - (void)scrollerDidEndDragging:(LynxScrollInfo *)info willDecelerate:(BOOL)decelerate {
   if (!decelerate) {
-    [_fluencyMonitor stopWithScrollInfo:info];
+    LynxFluencyConfig config = [LynxScrollFluency constructFluencyConfigWithLynxScrollInfo:info];
+    [_fluencyMonitor stopWithFluencyConfig:&config];
   }
 }
 
 - (void)scrollerDidEndDecelerating:(LynxScrollInfo *)info {
-  [_fluencyMonitor stopWithScrollInfo:info];
+  LynxFluencyConfig config = [LynxScrollFluency constructFluencyConfigWithLynxScrollInfo:info];
+  [_fluencyMonitor stopWithFluencyConfig:&config];
 }
 
 - (void)setEnabledBySampling:(LynxBooleanOption)enabledBySampling {

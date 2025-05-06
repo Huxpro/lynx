@@ -1476,10 +1476,17 @@ public class LynxFilterUtil : NSObject {
   public id LynxFilterUtil::getFilterWithType:filterAmount:(LynxFilterType type,[filterAmount] CGFloat filter_amount);
 }
 
+public struct LynxFluencyConfig {
+  public id<NSCopying> LynxFluencyConfig::key key;
+  public NSString* LynxFluencyConfig::tagName tagName;
+  public NSString* LynxFluencyConfig::scrollMonitorTagName scrollMonitorTagName;
+  public UIView<LUIBodyView>* LynxFluencyConfig::lynxView lynxView;
+}
+
 public class LynxFluencyMonitor : NSObject {
   public BOOL LynxFluencyMonitor::shouldSendAllScrollEvent shouldSendAllScrollEvent;
-  public void LynxFluencyMonitor::startWithScrollInfo:(LynxScrollInfo *info);
-  public void LynxFluencyMonitor::stopWithScrollInfo:(LynxScrollInfo *info);
+  public void LynxFluencyMonitor::startWithFluencyConfig:(LynxFluencyConfig *config);
+  public void LynxFluencyMonitor::stopWithFluencyConfig:(LynxFluencyConfig *config);
   public void LynxFluencyMonitor::setEnabledBySampling:(LynxBooleanOption enabledBySampling);
   public void LynxFluencyMonitor::setPageConfigProbability:(CGFloat probability);
 }

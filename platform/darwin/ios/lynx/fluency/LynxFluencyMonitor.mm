@@ -42,36 +42,32 @@ typedef NS_ENUM(NSInteger, ForceStatus) {
     return _forceStatus == ForceStatusForcedOn;
 }
 
-- (void)startWithScrollInfo:(LynxScrollInfo *)info {
-  if (info.lynxView == nil) {
-    // This method should be called synchronic when a UIScrollView in LynxView is scrolling. Info's
-    // lynxView should not be nil.
-    return;
-  }
-  LynxFPSRecord *record = [[LynxFPSMonitor sharedInstance] beginWithKey:info];
+- (void)startWithFluencyConfig:(LynxFluencyConfig *)config {
+  LynxFPSRecord *record = [[LynxFPSMonitor sharedInstance] beginWithKey:config->key];
   // If one scroll event does not stop after 10 seconds, we stop it manually.
   NSTimeInterval timeout = 10;
   [record setTimeout:timeout
           completion:^(LynxFPSRecord *_Nonnull record) {
-            [self stopWithScrollInfo:(LynxScrollInfo *)(record.key)];
+            [self stopWithFluencyConfig:(LynxFluencyConfig *)(config)];
           }];
   // FIXME: Add the 'scene' parameter to the trace later to differentiate whether it is an animation
   // scene, a scroll scene, etc.
   LYNX_TRACE_INSTANT_WITH_DEBUG_INFO(LYNX_TRACE_CATEGORY_WRAPPER,
-                                     FLUENCY_MONITOR_START_FLUENCY_TRACE, @{@"tag" : info.tagName});
+                                     FLUENCY_MONITOR_START_FLUENCY_TRACE,
+                                     @{@"tag" : config->tagName});
 }
 
-- (void)stopWithScrollInfo:(LynxScrollInfo *)info {
-  LynxFPSRecord *record = [[LynxFPSMonitor sharedInstance] endWithKey:info];
+- (void)stopWithFluencyConfig:(LynxFluencyConfig *)config {
+  LynxFPSRecord *record = [[LynxFPSMonitor sharedInstance] endWithKey:config->key];
   if (record.duration < 0.2) {
     // just ignore scroll event with duration less than 200ms.
     return;
   }
-  [self reportWithRecord:record info:info];
+  [self reportWithRecord:record config:config];
   LYNX_TRACE_INSTANT(LYNX_TRACE_CATEGORY_WRAPPER, FLUENCY_MONITOR_STOP_FLUENCY_TRACE);
 }
 
-- (NSDictionary *)jsonFromRecord:(LynxFPSRecord *)record info:(LynxScrollInfo *)info {
+- (NSDictionary *)jsonFromRecord:(LynxFPSRecord *)record config:(LynxFluencyConfig *)config {
   if (record == nil) {
     return nil;
   }
@@ -79,7 +75,7 @@ typedef NS_ENUM(NSInteger, ForceStatus) {
   LynxFPSDerivedMetrics derivedMetrics = record.derivedMetrics;
   NSMutableDictionary *result = [[NSMutableDictionary alloc] initWithDictionary:@{
     @"lynxsdk_fluency_scene" : @"scroll",
-    @"lynxsdk_fluency_tag" : info.scrollMonitorTagName ?: @"default_tag",
+    @"lynxsdk_fluency_tag" : config->scrollMonitorTagName ?: @"default_tag",
     @"lynxsdk_fluency_dur" : @(record.duration),
     @"lynxsdk_fluency_fps" : @(record.framesPerSecond),
     @"lynxsdk_fluency_frames_number" : @(record.frames),
@@ -106,14 +102,14 @@ typedef NS_ENUM(NSInteger, ForceStatus) {
   return result;
 }
 
-- (void)reportWithRecord:(LynxFPSRecord *)record info:(LynxScrollInfo *)info {
-  if (info == nil || info.lynxView == nil || record == nil) {
+- (void)reportWithRecord:(LynxFPSRecord *)record config:(LynxFluencyConfig *)config {
+  if (config == nil || config->lynxView == nil || record == nil) {
     // lynxView has been released, so we can directly drop this record.
     return;
   }
 
-  int32_t instanceId = [info.lynxView instanceId];
-  NSDictionary *json = [self jsonFromRecord:record info:info];
+  int32_t instanceId = [config->lynxView instanceId];
+  NSDictionary *json = [self jsonFromRecord:record config:config];
   [LynxEventReporter onEvent:@"lynxsdk_fluency_event" instanceId:instanceId props:json];
 }
 

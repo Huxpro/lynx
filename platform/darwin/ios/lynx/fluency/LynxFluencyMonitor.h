@@ -7,15 +7,22 @@
 #import <Lynx/LynxBooleanOption.h>
 #import <Lynx/LynxScrollListener.h>
 
+typedef struct {
+  id<NSCopying> key;
+  NSString *tagName;
+  NSString *scrollMonitorTagName;
+  UIView<LUIBodyView> *lynxView;
+} LynxFluencyConfig;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface LynxFluencyMonitor : NSObject
 
 @property(nonatomic, readonly) BOOL shouldSendAllScrollEvent;
 
-- (void)startWithScrollInfo:(LynxScrollInfo*)info;
+- (void)startWithFluencyConfig:(LynxFluencyConfig *)config;
 
-- (void)stopWithScrollInfo:(LynxScrollInfo*)info;
+- (void)stopWithFluencyConfig:(LynxFluencyConfig *)config;
 
 /// Set the sampling decision of whether to enable fluency metics collection.
 ///
