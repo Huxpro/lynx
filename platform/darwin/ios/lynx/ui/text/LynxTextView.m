@@ -566,7 +566,11 @@ static const float kResponseTouchRadius = 20.f;
   }
 
   UIMenuController *menu = [UIMenuController sharedMenuController];
-  [menu setMenuVisible:NO animated:YES];
+  if (@available(iOS 13.0, *)) {
+    [menu hideMenuFromView:self];
+  } else {
+    [menu setMenuVisible:NO animated:YES];
+  }
   self.menuShowing = NO;
 }
 
@@ -596,9 +600,13 @@ static const float kResponseTouchRadius = 20.f;
   rect.origin.x += self.border.left + self.padding.left;
   rect.origin.y += self.border.top + self.padding.top;
 
-  [menu setTargetRect:rect inView:self];
+  if (@available(iOS 13.0, *)) {
+    [menu showMenuFromView:self rect:rect];
+  } else {
+    [menu setTargetRect:rect inView:self];
+    [menu setMenuVisible:YES animated:YES];
+  }
   [menu update];
-  [menu setMenuVisible:YES animated:YES];
 
   self.menuShowing = YES;
 }
