@@ -91,6 +91,7 @@ class BASE_EXPORT_FOR_DEVTOOL LynxEnv {
     FIX_FIBER_REMOVE_TWICE_BUG,
     OPT_PUSH_STYLE_TO_BUNDLE,
     ENABLE_BATCH_LAYOUT_TASK_WITH_SYNC_LAYOUT,
+    ENABLE_JSVM_RUNTIME,
     // Please add new enum values above
     END_MARK,  // Keep this as the last enum value, and do not use
   };
@@ -190,6 +191,7 @@ class BASE_EXPORT_FOR_DEVTOOL LynxEnv {
             {Key::OPT_PUSH_STYLE_TO_BUNDLE, "opt_push_style_to_bundle"},
             {Key::ENABLE_BATCH_LAYOUT_TASK_WITH_SYNC_LAYOUT,
              "enable_batch_layout_task_with_sync_layout"},
+            {Key::ENABLE_JSVM_RUNTIME, kLyneEnableJSVMRuntime},
         });
     auto it = (*env_key_to_string_map).find(key);
     DCHECK(it != (*env_key_to_string_map).end());
@@ -213,6 +215,9 @@ class BASE_EXPORT_FOR_DEVTOOL LynxEnv {
 
   constexpr static const char* const kLocalEnvValueTrue = "1";
   constexpr static const char* const kLocalEnvValueFalse = "0";
+
+  constexpr static const char* const kLyneEnableJSVMRuntime =
+      "enable_jsvm_runtime";
 
   static LynxEnv& GetInstance();
   static void onPiperInvoked(const std::string& module_name,
@@ -295,6 +300,7 @@ class BASE_EXPORT_FOR_DEVTOOL LynxEnv {
   bool EnableMultiTouch();
   bool EnableNewIntersectionObserver();
   bool EnableBatchLayoutTaskWithSyncLayout();
+  bool EnableJSVMRuntime();
 
   LynxEnv(const LynxEnv&) = delete;
   LynxEnv& operator=(const LynxEnv&) = delete;

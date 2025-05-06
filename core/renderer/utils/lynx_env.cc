@@ -397,5 +397,10 @@ bool LynxEnv::EnableBatchLayoutTaskWithSyncLayout() {
   return GetBoolEnv(Key::ENABLE_BATCH_LAYOUT_TASK_WITH_SYNC_LAYOUT, true);
 }
 
+bool LynxEnv::EnableJSVMRuntime() {
+  return GetBoolEnv(Key::ENABLE_JSVM_RUNTIME, false) ||
+         GetBoolEnv(Key::ENABLE_JSVM_RUNTIME, false, EnvType::LOCAL);
+}
+
 }  // namespace tasm
 }  // namespace lynx
