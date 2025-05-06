@@ -83,4 +83,11 @@ class LynxImageLoader {
       mLynxImageService.releaseAnimDrawable(drawable);
     }
   }
+
+  public boolean canParseUrl(String url) {
+    if (!mEnableImageFetcher) {
+      return mLynxImageService.canParseUrl(url);
+    }
+    return false;
+  }
 }

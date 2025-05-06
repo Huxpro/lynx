@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.view.View;
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
@@ -297,6 +298,15 @@ public class LynxImageService implements ILynxImageService {
     if (drawable instanceof DrawableWithCaches) {
       ((DrawableWithCaches) drawable).dropCaches();
     }
+  }
+
+  @Override
+  public boolean canParseUrl(@NonNull String url) {
+    if (TextUtils.isEmpty(url)) {
+      return true;
+    }
+    return url.startsWith("file://") || url.startsWith("content://") || url.startsWith("asset://")
+        || url.startsWith("data:");
   }
 
   @Override

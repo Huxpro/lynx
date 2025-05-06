@@ -614,14 +614,22 @@ public class LynxImageManager implements Drawable.Callback {
     LynxResourceRequest srcRequest = null;
     LynxResourceRequest placeholderRequest = null;
     if (needUpdateSrc) {
-      mSrcRedirectCheckResult = mMediaResourceFetcher.isLocalResource(mSrc);
+      if (mImageLoader.canParseUrl(mSrc)) {
+        mSrcRedirectCheckResult = OptionalBool.FALSE;
+      } else {
+        mSrcRedirectCheckResult = mMediaResourceFetcher.isLocalResource(mSrc);
+      }
       if (mSrcRedirectCheckResult != OptionalBool.FALSE) {
         srcRequest = new LynxResourceRequest(
             mSrc, LynxResourceRequest.LynxResourceType.LynxResourceTypeImage);
       }
     }
     if (needUpdatePlaceholder) {
-      mPlaceHolderRedirectCheckResult = mMediaResourceFetcher.isLocalResource(mPlaceholder);
+      if (mImageLoader.canParseUrl(mPlaceholder)) {
+        mPlaceHolderRedirectCheckResult = OptionalBool.FALSE;
+      } else {
+        mPlaceHolderRedirectCheckResult = mMediaResourceFetcher.isLocalResource(mPlaceholder);
+      }
       if (mPlaceHolderRedirectCheckResult != OptionalBool.FALSE) {
         placeholderRequest = new LynxResourceRequest(
             mPlaceholder, LynxResourceRequest.LynxResourceType.LynxResourceTypeImage);

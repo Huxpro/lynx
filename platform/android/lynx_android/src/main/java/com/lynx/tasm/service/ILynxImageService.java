@@ -109,6 +109,13 @@ public interface ILynxImageService extends IServiceProvider {
   void releaseAnimDrawable(@NonNull Drawable drawable);
 
   /**
+   * Checks if the image library can directly handle the URL.
+   * If so, bypasses the MediaResourceFetcher to improve performance.
+   * @param url The URL of the image to parse.
+   */
+  boolean canParseUrl(@NonNull String url);
+
+  /**
    * The implementation of background-image: url
    * now provides a default {@link com.lynx.tasm.behavior.ui.image.BackgroundImageDrawable}
    * implementation.

@@ -2048,6 +2048,7 @@ public interface com::lynx::tasm::service::ILynxImageService {
   public void com.lynx.tasm.service.ILynxImageService.prefetchImage( @NonNull String uri, @Nullable Object callerContext, @Nullable ReadableMap params);
   public void com.lynx.tasm.service.ILynxImageService.releaseImage(@NonNull ImageRequestInfo imageRequestInfo);
   public void com.lynx.tasm.service.ILynxImageService.releaseAnimDrawable(@NonNull Drawable drawable);
+  public boolean com.lynx.tasm.service.ILynxImageService.canParseUrl(@NonNull String url);
   public BackgroundLayerDrawable com.lynx.tasm.service.ILynxImageService.createBackgroundImageDrawable( @NonNull Context context, @NonNull String url);
   public void com.lynx.tasm.service.ILynxImageService.setCustomImageDecoder(@NonNull Object builder);
   public Object com.lynx.tasm.service.ILynxImageService.getImageSRPostProcessor();
