@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // rgba : red_green_blue_alpha
 @property(nonatomic, readonly) UIColor* backgroundColor;
+@property(nonatomic, readonly) BOOL enableSizeOptimization;
 
 // Record file and source file requestCachePolicy, default is
 // NSURLRequestReloadIgnoringLocalCacheData

@@ -31,7 +31,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)startWithUrl:(NSString *)url
               inView:(UIView *)parentView
           withOrigin:(CGPoint)point
+        replayConfig:(TestBenchReplayConfig *)replayConfig
+              NavBar:(CGSize)navBarSize;
+
+- (void)startWithUrl:(NSString *)url
+              inView:(UIView *)parentView
+          withOrigin:(CGPoint)point
         replayConfig:(TestBenchReplayConfig *)replayConfig;
+
 - (void)reload;
 - (void)reloadAction;
 - (void)endTestBench;

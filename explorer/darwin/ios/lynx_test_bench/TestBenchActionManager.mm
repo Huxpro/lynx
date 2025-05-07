@@ -72,6 +72,7 @@ static const int kVirtual = 1 << 2;
 @property LynxTemplateBundle* templateBundle;
 @property LynxTemplateBundleOption* templateBundleOption;
 @property NSDictionary* templateBundleParams;
+@property CGSize screenSize;
 @property(nonatomic, strong) NSMutableArray* actionCallbacks;
 @property(nonatomic, strong) id<TestBenchTouchHelper> touchHelper;
 
@@ -196,6 +197,18 @@ static const int kVirtual = 1 << 2;
               inView:(UIView*)parentView
           withOrigin:(CGPoint)point
         replayConfig:(TestBenchReplayConfig*)replayConfig {
+  [self startWithUrl:url
+              inView:parentView
+          withOrigin:point
+        replayConfig:replayConfig
+              NavBar:CGSizeMake(0, 0)];
+}
+
+- (void)startWithUrl:(NSString*)url
+              inView:(UIView*)parentView
+          withOrigin:(CGPoint)point
+        replayConfig:(TestBenchReplayConfig*)replayConfig
+              NavBar:(CGSize)navBarSize {
   [self setReplayConfig:replayConfig];
   _parentUI = parentView;
   [_parentUI setBackgroundColor:self.replayConfig.backgroundColor];
@@ -203,7 +216,9 @@ static const int kVirtual = 1 << 2;
   _stateView = [[TestBenchStateReplayView alloc] init];
   _startTime = 0;
   _hasLoadTemplate = NO;
-
+  _screenSize.width = [UIScreen mainScreen].bounds.size.width;
+  _screenSize.height = [UIScreen mainScreen].bounds.size.height - navBarSize.height -
+                       [UIApplication sharedApplication].statusBarFrame.size.height;
   _threadStrategyData = nil;
   _templateBundle = nil;
   _templateBundleOption = [[LynxTemplateBundleOption alloc] init];
@@ -571,9 +586,8 @@ static const int kVirtual = 1 << 2;
     if (preferredLayoutWidth > [UIScreen mainScreen].bounds.size.width) {
       preferredLayoutWidth = [UIScreen mainScreen].bounds.size.width;
     }
-    if ((preferredLayoutHeight > [UIScreen mainScreen].bounds.size.height) &&
-        [self.replayConfig heightLimit]) {
-      preferredLayoutHeight = [UIScreen mainScreen].bounds.size.height;
+    if ((preferredLayoutHeight > _screenSize.height) && [self.replayConfig heightLimit]) {
+      preferredLayoutHeight = _screenSize.height;
     }
 
     [_lynxView updateViewportWithPreferredLayoutWidth:preferredLayoutWidth
@@ -781,11 +795,43 @@ static const int kVirtual = 1 << 2;
   [_lynxView sendGlobalEvent:name withParams:args];
 }
 
+// Sometimes, clients pass the size of the front-end page to the globalprops,
+// which is often related to the device size. When we replay on different devices,
+// we need to update this part of the data.
+- (void)preprocessGlobalPropsDictData:(NSMutableDictionary*)params {
+  [params enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL* stop) {
+    if ([value isKindOfClass:[NSDictionary class]]) {
+      [self preprocessGlobalPropsDictData:value];
+    } else if ([value isKindOfClass:[NSArray class]]) {
+      [self preprocessGlobalPropsArrayData:value];
+    } else if ([key isKindOfClass:[NSString class]]) {
+      if ([key isEqual:@"screenWidth"]) {
+        [params setObject:@(self.screenSize.width) forKey:@"screenWidth"];
+      } else if ([key isEqual:@"screenHeight"]) {
+        [params setObject:@(self.screenSize.height) forKey:@"screenHeight"];
+      }
+    }
+  }];
+}
+
+- (void)preprocessGlobalPropsArrayData:(NSArray*)array {
+  [array enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL* stop) {
+    if ([obj isKindOfClass:[NSDictionary class]]) {
+      [self preprocessGlobalPropsDictData:obj];
+    } else if ([obj isKindOfClass:[NSArray class]]) {
+      [self preprocessGlobalPropsArrayData:obj];
+    }
+  }];
+}
+
 - (void)setGlobalProps:(NSDictionary*)params {
   if (_lynxView != nil) {
     _globalPropsCache = nil;
-    LynxTemplateData* globalProps =
-        [[LynxTemplateData alloc] initWithDictionary:params[@"global_props"]];
+    NSMutableDictionary* mutableDictionary = [params[@"global_props"] mutableCopy];
+    if ([self.replayConfig enableSizeOptimization]) {
+      [self preprocessGlobalPropsDictData:mutableDictionary];
+    }
+    LynxTemplateData* globalProps = [[LynxTemplateData alloc] initWithDictionary:mutableDictionary];
     [self.lynxView setGlobalPropsWithTemplateData:globalProps];
   } else {
     _globalPropsCache = params[@"global_props"];

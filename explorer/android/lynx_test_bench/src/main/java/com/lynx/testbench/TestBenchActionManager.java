@@ -164,6 +164,7 @@ public class TestBenchActionManager {
   private int mDelayEndInterval;
   private TestBenchReplayStateView mStateView;
   private int mScreenWidth;
+  private float mDensity;
   private int mScreenHeight;
   private LynxView mLynxView;
   private boolean mSSRLoaded;
@@ -172,6 +173,7 @@ public class TestBenchActionManager {
   private int mBackgroundColor;
   private boolean mLandScape;
   private boolean mEnableAirStrictMode;
+  private boolean mEnableSizeOptimization;
   private LynxGroup mLynxGroup;
   private float mRawFontScale;
   private String mSourceURL;
@@ -338,6 +340,8 @@ public class TestBenchActionManager {
     DisplayMetrics dm = resources.getDisplayMetrics();
     mScreenWidth = dm.widthPixels;
     mScreenHeight = dm.heightPixels;
+    mDensity = dm.density;
+    mEnableSizeOptimization = false;
     mHandler = new Handler(Looper.getMainLooper()) {
       @Override
       public void handleMessage(Message msg) {
@@ -486,6 +490,7 @@ public class TestBenchActionManager {
 
     mBackgroundColor = Color.argb(colorValues[3], colorValues[0], colorValues[1], colorValues[2]);
     mViewGroup.setBackgroundColor(mBackgroundColor);
+    mEnableSizeOptimization = queryMap.getBoolean("enableSizeOptimization", false);
 
     create();
   }
@@ -689,11 +694,46 @@ public class TestBenchActionManager {
     }
   }
 
+  private void preprocessGlobalPropsDictData(JSONObject obj) throws JSONException {
+    for (Iterator<String> it = obj.keys(); it.hasNext();) {
+      String key = it.next();
+      Object value = obj.get(key);
+      if (value instanceof JSONObject) {
+        preprocessGlobalPropsDictData((JSONObject) value);
+      } else if (value instanceof JSONArray) {
+        preprocessGlobalPropsArrayData((JSONArray) value);
+      } else {
+        if (key.equals("screenHeight")) {
+          int dpHeight = (int) Math.ceil(mScreenHeight / mDensity);
+          obj.put(key, dpHeight);
+        } else if (key.equals("screenWidth")) {
+          int dpWidth = (int) Math.ceil(mScreenWidth / mDensity);
+          obj.put(key, dpWidth);
+        }
+      }
+    }
+  }
+
+  private void preprocessGlobalPropsArrayData(JSONArray arr) throws JSONException {
+    for (int i = 0; i < arr.length(); i++) {
+      Object value = arr.get(i);
+      if (value instanceof JSONObject) {
+        preprocessGlobalPropsDictData((JSONObject) value);
+      } else if (value instanceof JSONArray) {
+        preprocessGlobalPropsArrayData((JSONArray) value);
+      }
+    }
+  }
+
   private void setGlobalProps(JSONObject params) {
     try {
       if (mLynxView != null) {
         mGlobalPropsCache = null;
-        mGlobalProps = TemplateData.fromString(params.getJSONObject("global_props").toString());
+        JSONObject obj = params.getJSONObject("global_props");
+        if (mEnableSizeOptimization) {
+          preprocessGlobalPropsDictData(obj);
+        }
+        mGlobalProps = TemplateData.fromString(obj.toString());
         LynxUpdateMeta.Builder metaBuilder = new LynxUpdateMeta.Builder();
         metaBuilder.setUpdatedGlobalProps(mGlobalProps);
         mLynxView.updateMetaData(metaBuilder.build());
@@ -769,6 +809,22 @@ public class TestBenchActionManager {
     }
   }
 
+  private int getLynxViewLayoutParams(int mode, int value) {
+    switch (mode) {
+      case View.MeasureSpec.EXACTLY:
+        return value;
+      default:
+        return ViewGroup.LayoutParams.WRAP_CONTENT;
+    }
+  }
+
+  private void updateViewLayoutParams(int widthLayout, int heightLayout) {
+    ViewGroup.LayoutParams layoutParams = mLynxView.getLayoutParams();
+    layoutParams.width = widthLayout;
+    layoutParams.height = heightLayout;
+    mLynxView.setLayoutParams(layoutParams);
+  }
+
   private boolean enableJSRuntime() {
     boolean enableJSRuntime = true;
     if (mThreadStrategyData.has("enableJSRuntime")) {
@@ -794,28 +850,39 @@ public class TestBenchActionManager {
       int preferredLayoutWidth = params.getInt("preferredLayoutWidth");
       // Get the size information of the recorded phone screen。
       // preferredLayoutHeight = (preferredLayoutHeight / recordScreenHeight) * mScreenHeight;
-      if (mConfig != null && mConfig.has("screenWidth") && mConfig.has("screenHeight")) {
+      if (hasScreenSizeInfo()) {
         int recordScreenWidth = mConfig.getInt("screenWidth");
         int recordScreenHeight = mConfig.getInt("screenHeight");
         if (recordScreenWidth != 0 && recordScreenHeight != 0) {
-          preferredLayoutHeight =
-              (int) (((double) preferredLayoutHeight / recordScreenHeight) * mScreenHeight);
+          preferredLayoutHeight = (int) Math.ceil(
+              ((double) preferredLayoutHeight / recordScreenHeight) * mScreenHeight);
           preferredLayoutWidth =
-              (int) (((double) preferredLayoutWidth / recordScreenWidth) * mScreenWidth);
+              (int) Math.ceil(((double) preferredLayoutWidth / recordScreenWidth) * mScreenWidth);
         }
       }
       int heightMeasureSpec =
           View.MeasureSpec.makeMeasureSpec(preferredLayoutHeight, getMeasureMode(heightMode));
       int widthMeasureSpec =
           View.MeasureSpec.makeMeasureSpec(preferredLayoutWidth, getMeasureMode(widthMode));
+
+      int viewWidthLayoutParams =
+          getLynxViewLayoutParams(getMeasureMode(widthMode), preferredLayoutWidth);
+      int viewHeightLayoutParams =
+          getLynxViewLayoutParams(getMeasureMode(heightMode), preferredLayoutHeight);
       if (mLandScape) {
-        return new int[] {heightMeasureSpec, widthMeasureSpec};
+        return new int[] {
+            heightMeasureSpec, widthMeasureSpec, viewHeightLayoutParams, viewWidthLayoutParams};
       }
-      return new int[] {widthMeasureSpec, heightMeasureSpec};
+      return new int[] {
+          widthMeasureSpec, heightMeasureSpec, viewWidthLayoutParams, viewHeightLayoutParams};
     } catch (Exception e) {
       e.printStackTrace();
       return null;
     }
+  }
+
+  private boolean hasScreenSizeInfo() {
+    return mConfig != null && mConfig.has("screenWidth") && mConfig.has("screenHeight");
   }
 
   private void initialLynxView(JSONObject params) {
@@ -872,6 +939,9 @@ public class TestBenchActionManager {
               View.MeasureSpec.getSize(measureSpec[0]), View.MeasureSpec.getSize(measureSpec[1])});
           setViewLayoutParams(mViewGroup, containerSize[0], containerSize[1]);
         }
+      }
+      if (hasScreenSizeInfo() && mEnableSizeOptimization) {
+        updateViewLayoutParams(measureSpec[2], measureSpec[3]);
       }
     } catch (Exception e) {
       e.printStackTrace();
