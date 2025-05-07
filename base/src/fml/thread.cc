@@ -54,11 +54,11 @@ Thread::Thread(const ThreadConfigSetter& setter, const ThreadConfig& config)
     if (additional_setup_closure) {
       (*additional_setup_closure)();
     }
-    setter(config);
     auto& loop = fml::MessageLoop::EnsureInitializedForCurrentThread();
     loop_impl = loop.GetLoopImpl();
     runner = loop.GetTaskRunner();
     latch.Signal();
+    setter(config);
     loop.Run();
     // hack, because we cannot detach vm within MessageLoop Terminate,
     // Terminate is called in Android Looper, the java code.
