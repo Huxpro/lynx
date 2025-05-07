@@ -233,7 +233,9 @@ class TemplateEntry : public VmContextHolder, public CSSStyleSheetDelegate {
     kFromLocalPool,
   };
 
-  void RegisterBuiltin(TemplateAssembler* assembler);
+  void RegisterBuiltin();
+
+  void SetTemplateAssembler(TemplateAssembler* assembler);
 
   void SetTemplateBundle(LynxTemplateBundle bundle);
 

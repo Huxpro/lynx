@@ -11,15 +11,25 @@
 #include "core/renderer/utils/lynx_env.h"
 #include "core/runtime/vm/lepus/context.h"
 #include "core/runtime/vm/lepus/quick_context.h"
+#include "core/template_bundle/lynx_template_bundle.h"
 
 namespace lynx {
 namespace lepus {
 
 std::shared_ptr<QuickContextPool> QuickContextPool::Create(
-    const std::shared_ptr<ContextBundle>& context_bundle) {
+    const tasm::LynxTemplateBundle* template_bundle) {
   return std::shared_ptr<QuickContextPool>(
-      new QuickContextPool(context_bundle));
+      new QuickContextPool(template_bundle));
 }
+
+QuickContextPool::QuickContextPool(
+    const tasm::LynxTemplateBundle* template_bundle)
+    : need_check_settings_(template_bundle == nullptr) {
+  if (template_bundle) {
+    context_bundle_ = template_bundle->GetContextBundle();
+    arch_option_ = template_bundle->GetCompileOptions().arch_option_;
+  }
+};
 
 void QuickContextPool::FillPool(int32_t count) {
   base::TaskRunnerManufactor::PostTaskToConcurrentLoop(
@@ -55,11 +65,13 @@ void QuickContextPool::AddContextSafely(int32_t count) {
   decltype(contexts_) temp_contexts;
   for (; count > 0; --count) {
     auto context = std::make_shared<QuickContext>();
-    // if context_bundle_ exists, should call DeSerialize. And if DeSerialize
-    // fails, just return.
-    if (context_bundle_ &&
-        !context->DeSerialize(*context_bundle_, false, nullptr)) {
-      return;
+    if (context_bundle_) {
+      context->RegisterCtxBuiltin(arch_option_);
+      // if context_bundle_ exists, should call DeSerialize. And if DeSerialize
+      // fails, just return.
+      if (!context->DeSerialize(*context_bundle_, false, nullptr)) {
+        return;
+      }
     }
     temp_contexts.emplace_back(std::move(context));
   }

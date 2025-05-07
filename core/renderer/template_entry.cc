@@ -105,7 +105,10 @@ bool TemplateEntry::ConstructContext(TemplateAssembler* assembler,
     context->SetRuntimeProfiler(profiler);
   }
 #endif
-  RegisterBuiltin(assembler);
+  SetTemplateAssembler(assembler);
+  if (source_type != LepusContextSourceType::kFromLocalPool) {
+    RegisterBuiltin();
+  }
   std::string file_name = GenerateLepusJSFileName(name_);
 
   // InitInspector() and SetDebugInfoURL() should be called before calling
@@ -332,14 +335,17 @@ TemplateEntry::~TemplateEntry() {
 #endif
 }
 
-void TemplateEntry::RegisterBuiltin(TemplateAssembler* assembler) {
+void TemplateEntry::RegisterBuiltin() {
   TRACE_EVENT(LYNX_TRACE_CATEGORY, TEMPLATE_ENTRY_REGISTER_BUILD_IN);
+  vm_context_->RegisterCtxBuiltin(compile_options().arch_option_);
+}
+
+void TemplateEntry::SetTemplateAssembler(TemplateAssembler* assembler) {
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, TEMPLATE_ENTRY_SET_TEMPLATE_ASSEMBLER);
   BASE_STATIC_STRING_DECL(kTemplateAssembler, "$kTemplateAssembler");
   vm_context_->SetGlobalData(
       kTemplateAssembler,
       lepus::Value(static_cast<lepus::Context::Delegate*>(assembler)));
-  vm_context_->RegisterCtxBuiltin(compile_options().arch_option_);
-  return;
 }
 
 lepus::Value TemplateEntry::ElementFromBinary(const std::string& key,
@@ -418,7 +424,8 @@ void TemplateEntry::AddLazyBundleDeclaration(const std::string& name,
 
 void TemplateEntry::ReInit(TemplateAssembler* assembler) {
   vm_context_->Initialize();
-  RegisterBuiltin(assembler);
+  SetTemplateAssembler(assembler);
+  RegisterBuiltin();
 }
 
 piper::NapiEnvironment* TemplateEntry::napi_environment() {

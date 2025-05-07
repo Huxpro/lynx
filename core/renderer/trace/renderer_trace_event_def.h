@@ -250,6 +250,8 @@ inline constexpr const char* const TEMPLATE_ENTRY_INIT_WITH_PAGE_CONFIG =
 inline constexpr const char* const TEMPLATE_ENTRY_INIT_CARD_ENV = "InitCardEnv";
 inline constexpr const char* const TEMPLATE_ENTRY_REGISTER_BUILD_IN =
     "TemplateEntry::RegisterBuiltin";
+inline constexpr const char* const TEMPLATE_ENTRY_SET_TEMPLATE_ASSEMBLER =
+    "TemplateEntry::SetTemplateAssembler";
 inline constexpr const char* const TEMPLATE_ENTRY_GET_ELEMENT_TEMPLATE_INFO =
     "TemplateEntry::GetElementTemplateInfo";
 inline constexpr const char* const TEMPLATE_ENTRY_GET_PARSED_STYLES =

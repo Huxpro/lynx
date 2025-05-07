@@ -51,7 +51,7 @@ void LynxTemplateBundle::PrepareVMByConfigs() {
     return;
   }
 
-  quick_context_pool_ = lepus::QuickContextPool::Create(context_bundle_);
+  quick_context_pool_ = lepus::QuickContextPool::Create(this);
 
   // if FE disables it in card, do not pre-create contexts. However, we reserve
   // the ability for the client to force pre-creation

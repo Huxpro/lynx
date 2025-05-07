@@ -19,6 +19,7 @@
 #include "core/renderer/template_themed.h"
 #include "core/renderer/utils/base/element_template_info.h"
 #include "core/runtime/piper/js/js_bundle.h"
+#include "core/runtime/vm/lepus/context.h"
 #include "core/runtime/vm/lepus/function.h"
 #include "core/runtime/vm/lepus/lepus_value.h"
 #include "core/runtime/vm/lepus/quick_context_pool.h"
@@ -127,6 +128,12 @@ class LynxTemplateBundle final {
   void GreedyConstructElements();
 
   std::optional<Elements> TryGetElements(const std::string &key);
+
+  const CompileOptions &GetCompileOptions() const { return compile_options_; }
+
+  const std::shared_ptr<lepus::ContextBundle> &GetContextBundle() const {
+    return context_bundle_;
+  }
 
  private:
   void EnsureParseTaskScheduler();
