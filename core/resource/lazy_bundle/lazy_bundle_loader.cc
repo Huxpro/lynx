@@ -125,7 +125,9 @@ bool LazyBundleLoader::DispatchOnComponentLoaded(TemplateAssembler* tasm,
   for (const auto& option : iter->second) {
     need_dispatch = option->OnLazyBundleLifecycleEnd(tasm) || need_dispatch;
   }
-  url_to_lifecycle_option_map_.erase(iter);
+  // FIXME(zhoupeng.z): erase url rather than iter, because map maybe change in
+  // `OnLazyBundleLifecycleEnd`. Fix this double check later.
+  url_to_lifecycle_option_map_.erase(url);
 
   return need_dispatch;
 }
