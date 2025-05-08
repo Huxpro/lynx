@@ -394,7 +394,7 @@ bool LynxEnv::EnableAnimationVsyncOnUIThread() {
 }
 
 bool LynxEnv::EnableBatchLayoutTaskWithSyncLayout() {
-  return GetBoolEnv(Key::ENABLE_BATCH_LAYOUT_TASK_WITH_SYNC_LAYOUT, true);
+  return GetBoolEnv(Key::ENABLE_BATCH_LAYOUT_TASK_WITH_SYNC_LAYOUT, false);
 }
 
 }  // namespace tasm

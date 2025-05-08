@@ -1310,6 +1310,29 @@ void ElementManager::SetEnableFiberElementForRadonDiff(TernaryBool value) {
   }
 }
 
+void ElementManager::LegacyHandleLayoutTask(
+    FiberElement *target, base::MoveOnlyClosure<void> operation) {
+  // Dispatch operation according to batch rendering state
+  auto *parent = target;
+  if (parent->GetRenderRootElement() != nullptr &&
+      parent->GetRenderRootElement()->GetSchedulerAdapter() &&
+      parent->GetRenderRootElement()
+          ->GetSchedulerAdapter()
+          ->IsBatchResolvingTree()) {
+    parent->GetRenderRootElement()
+        ->GetSchedulerAdapter()
+        ->resolve_element_tree_queue()
+        .emplace_back(std::move(operation));
+    return;
+  }
+  if (this->GetParallelWithSyncLayout() &&
+      target->ShouldProcessParallelTasks()) {
+    target->EnqueueReduceTask(std::move(operation));
+    return;
+  }
+  operation();
+}
+
 namespace {
 void ClearExtremeParsedStylesRecursively(FiberElement *cur) {
   cur->ClearExtremeParsedStyles();

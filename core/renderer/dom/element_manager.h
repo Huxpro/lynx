@@ -1069,6 +1069,9 @@ class ElementManager {
     return nullptr;
   }
 
+  void LegacyHandleLayoutTask(FiberElement *target,
+                              base::MoveOnlyClosure<void> operation);
+
  protected:
   /**
    * call this function to request layout
@@ -1212,8 +1215,7 @@ class ElementManager {
 
   ElementManagerDelegate *element_manager_delegate_{nullptr};
 
-  std::unique_ptr<ElementContextTaskQueue> element_context_task_queue_ =
-      nullptr;
+  std::unique_ptr<ElementContextTaskQueue> element_context_task_queue_{nullptr};
 
  public:
   // fixed node attached to the page node.

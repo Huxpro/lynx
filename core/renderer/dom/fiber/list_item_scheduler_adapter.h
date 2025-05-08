@@ -44,6 +44,8 @@ class ListItemSchedulerAdapter {
   void PostResolveElementTree(std::list<base::OnceTaskRefptr<base::closure>>&
                                   parallel_resolve_element_tree_queue);
 
+  bool IsBatchResolvingTree() { return batch_resolving_tree_; }
+
   bool IsBatchRendering() { return batch_rendering_; }
 
   ElementContextTaskQueue* GetElementContextTaskQueue() {
@@ -62,10 +64,10 @@ class ListItemSchedulerAdapter {
   std::list<base::OnceTaskRefptr<base::closure>> resolve_property_queue_{};
 
   std::list<base::closure> resolve_element_tree_queue_{};
+  bool batch_resolving_tree_{false};
   bool batch_rendering_{false};
 
-  std::unique_ptr<ElementContextTaskQueue> element_context_task_queue_ =
-      nullptr;
+  std::unique_ptr<ElementContextTaskQueue> element_context_task_queue_{nullptr};
 };
 
 }  // namespace tasm

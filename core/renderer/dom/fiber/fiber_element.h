@@ -631,7 +631,8 @@ class FiberElement : public Element, public SelectorItem {
 
   virtual void CheckHasInlineContainer(Element* parent) override;
 
-  void HandleLayoutTask(base::MoveOnlyClosure<void> operation) override;
+  virtual void EnqueueLayoutTask(
+      base::MoveOnlyClosure<void> operation) override;
 
   void HandleDelayTask(base::MoveOnlyClosure<void> operation) override;
 
@@ -821,8 +822,6 @@ class FiberElement : public Element, public SelectorItem {
 
   void UpdateRenderRootElementIfNecessary(FiberElement* child);
 
-  void HandleFlushActionsLayoutTask(base::MoveOnlyClosure<void> operation);
-
   void ClearExtremeParsedStyles() {
     if (has_extreme_parsed_styles_) {
       extreme_parsed_styles_.clear();
@@ -830,6 +829,9 @@ class FiberElement : public Element, public SelectorItem {
     }
   }
 
+  // Exported for accessing private field from Element Manager to handle legacy
+  // logic
+  inline FiberElement* GetRenderRootElement() { return render_root_element_; }
   ListItemSchedulerAdapter* GetSchedulerAdapter() {
     if (scheduler_adapter_) {
       return scheduler_adapter_.get();
@@ -840,6 +842,10 @@ class FiberElement : public Element, public SelectorItem {
   inline bool ShouldProcessParallelTasks() {
     return parallel_flush_ ||
            resolve_status_ == AsyncResolveStatus::kSyncResolving;
+  }
+
+  inline void EnqueueReduceTask(base::MoveOnlyClosure<void> operation) {
+    parallel_reduce_tasks_.emplace_back(std::move(operation));
   }
 
   inline void UpdateElementContextQueue(ElementContextTaskQueue* queue) {
@@ -959,6 +965,8 @@ class FiberElement : public Element, public SelectorItem {
   void SetFontSizeForAllElement(double cur_node_font_size,
                                 double root_node_font_size);
   void UpdateLengthContextValueForAllElement(const LynxEnvConfig& env_config);
+
+  void UpdateDynamicElementStyleRecursively(uint32_t style, bool force_update);
 
   // relevant to hierarchy
   base::InlineVector<fml::RefPtr<FiberElement>, kChildrenInlineVectorSize>
@@ -1089,7 +1097,7 @@ class FiberElement : public Element, public SelectorItem {
   std::unordered_map<PseudoState, std::unique_ptr<PseudoElement>>
       pseudo_elements_{};
 
-  std::shared_ptr<ListItemSchedulerAdapter> scheduler_adapter_ = nullptr;
+  std::shared_ptr<ListItemSchedulerAdapter> scheduler_adapter_{nullptr};
 };
 
 }  // namespace tasm

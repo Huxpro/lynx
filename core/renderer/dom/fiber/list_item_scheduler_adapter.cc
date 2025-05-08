@@ -23,6 +23,7 @@ ListItemSchedulerAdapter::ListItemSchedulerAdapter(
 }
 
 void ListItemSchedulerAdapter::ResolveSubtreeProperty() {
+  batch_rendering_ = true;
   std::deque<FiberElement*> queue;
   queue.emplace_back(render_root_);
   while (!queue.empty()) {
@@ -108,7 +109,9 @@ void ListItemSchedulerAdapter::PostResolveElementTree(
                           LIST_SCHEDULER_ADAPTER_ASYNC_FLUSH, "list_item",
                           std::to_string(render_root_->impl_id()));
               batch_rendering_ = true;
+              batch_resolving_tree_ = true;
               render_root_->FlushActions();
+              batch_resolving_tree_ = false;
               batch_rendering_ = false;
               promise.set_value(
                   this->GenerateReduceTaskForResolveElementTree());
@@ -118,6 +121,9 @@ void ListItemSchedulerAdapter::PostResolveElementTree(
         [task_info_ptr]() { task_info_ptr->Run(); },
         base::ConcurrentTaskType::HIGH_PRIORITY);
     parallel_resolve_element_tree_queue.emplace_back(std::move(task_info_ptr));
+  } else {
+    element_context_task_queue_->FlushEnqueuedTasks();
+    batch_rendering_ = false;
   }
 }
 
@@ -128,6 +134,8 @@ ListItemSchedulerAdapter::GenerateReduceTaskForResolveElementTree() {
         list::BatchRenderStrategy::kAsyncResolvePropertyAndElementTree) {
       ConsumeResolveElementTreeReduceTasks();
     }
+
+    element_context_task_queue_->FlushEnqueuedTasks();
   });
 }
 
