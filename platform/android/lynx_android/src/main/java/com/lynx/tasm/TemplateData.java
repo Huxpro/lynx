@@ -83,6 +83,8 @@ public final class TemplateData {
   private String mProcessorName;
   private volatile boolean mIsConcurrent;
   private boolean readOnly = false;
+  // To garantee multi-thread safety, any access of mJsNativeData must
+  // by synchronized.
   volatile long mJsNativeData;
   private final AtomicBoolean mConsumed = new AtomicBoolean(false);
 
