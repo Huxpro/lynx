@@ -318,22 +318,15 @@ class ComputedCSSStyle {
   const StyleInheritFuncMap& InheritFuncMap();
 
   // calc style parameters.
-  tasm::CssMeasureContext length_context_;
-  bool default_overflow_visible_ = false;
   LayoutComputedStyle layout_computed_style_;
+  tasm::CssMeasureContext length_context_;
 
   /***************** css style property ***************************/
 
-  int z_index_{DefaultComputedStyle::DEFAULT_LONG};
-  float opacity_{DefaultComputedStyle::DEFAULT_OPACITY};
-  float offset_distance_{DefaultComputedStyle::DEFAULT_OFFSET_DISTANCE};
-  float offset_rotate_ = {DefaultComputedStyle::DEFAULT_OFFSET_ROTATE};
-
-  OverflowType overflow_{DefaultComputedStyle::DEFAULT_OVERFLOW};
-  OverflowType overflow_x_{DefaultComputedStyle::DEFAULT_OVERFLOW};
-  OverflowType overflow_y_{DefaultComputedStyle::DEFAULT_OVERFLOW};
-  VisibilityType visibility_{DefaultComputedStyle::DEFAULT_VISIBILITY};
-
+  // this should not in css. But here is only compact old version.
+  base::String caret_color_;
+  base::String adapt_font_size_;
+  base::String content_;
   base::flex_optional<AnimationData> enter_transition_data_;
   base::flex_optional<AnimationData> exit_transition_data_;
   base::flex_optional<AnimationData> pause_transition_data_;
@@ -356,23 +349,28 @@ class ComputedCSSStyle {
   fml::RefPtr<lepus::CArray> clip_path_{nullptr};
   // offset-path array [type, args..]
   fml::RefPtr<lepus::CArray> offset_path_{nullptr};
+
+  int z_index_{DefaultComputedStyle::DEFAULT_LONG};
+  unsigned int handle_color_{0};
+  float handle_size_{0.f};
+  float opacity_{DefaultComputedStyle::DEFAULT_OPACITY};
+  float offset_distance_{DefaultComputedStyle::DEFAULT_OFFSET_DISTANCE};
+  float offset_rotate_ = {DefaultComputedStyle::DEFAULT_OFFSET_ROTATE};
+
   ImageRenderingType image_rendering_ = ImageRenderingType::kAuto;
   XAppRegionType app_region_ = XAppRegionType::kNone;
   XAnimationColorInterpolationType new_animator_interpolation_ =
       XAnimationColorInterpolationType::kAuto;
-  unsigned int handle_color_{0};
-  float handle_size_{0.f};
-
-  // this should not in css. But here is only compact old version.
-  base::String caret_color_;
-  base::String adapt_font_size_;
-  base::String content_;
+  OverflowType overflow_{DefaultComputedStyle::DEFAULT_OVERFLOW};
+  OverflowType overflow_x_{DefaultComputedStyle::DEFAULT_OVERFLOW};
+  OverflowType overflow_y_{DefaultComputedStyle::DEFAULT_OVERFLOW};
+  VisibilityType visibility_{DefaultComputedStyle::DEFAULT_VISIBILITY};
 
   /************ css style property end ***************************/
 
-  bool css_align_with_legacy_w3c_ = false;
-
   tasm::CSSParserConfigs parser_configs_;
+  bool default_overflow_visible_ = false;
+  bool css_align_with_legacy_w3c_ = false;
 
   void ResetOverflow();
 

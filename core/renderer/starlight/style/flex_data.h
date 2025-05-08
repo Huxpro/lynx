@@ -25,16 +25,17 @@ class FlexData : public fml::RefCountedThreadSafeStorage {
   FlexData(const FlexData& data);
   ~FlexData() = default;
   void Reset();
+
+  NLength flex_basis_;
   float flex_grow_;
   float flex_shrink_;
-  NLength flex_basis_;
+  float order_;
   FlexDirectionType flex_direction_;
   FlexWrapType flex_wrap_;
   JustifyContentType justify_content_;
   FlexAlignType align_items_;
   FlexAlignType align_self_;
   AlignContentType align_content_;
-  float order_;
 };
 
 }  // namespace starlight

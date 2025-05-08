@@ -12,7 +12,7 @@ import utils
 # auto generate enum
 def genEnum(handler_name, css_object_jsons):
     enum_template = string.Template(
-        """enum class ${class_name}Type : unsigned {
+        """enum class ${class_name}Type : uint8_t {
 ${enum_values}};
 """)
     enum_values_template = string.Template(

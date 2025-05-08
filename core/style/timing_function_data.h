@@ -18,11 +18,11 @@ struct TimingFunctionData {
   static constexpr int INDEX_Y2 = 4;
   static constexpr int INDEX_STEPS_TYPE = 2;
 
-  starlight::TimingFunctionType timing_func;
   float x1;
   float y1;
   float x2;
   float y2;
+  starlight::TimingFunctionType timing_func;
   starlight::StepsType steps_type;
   TimingFunctionData();
   ~TimingFunctionData() = default;

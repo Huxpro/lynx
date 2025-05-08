@@ -12,36 +12,36 @@
 namespace lynx {
 namespace starlight {
 TextAttributes::TextAttributes(float default_font_size)
-    : font_size(default_font_size),
-      color(DefaultColor::DEFAULT_TEXT_COLOR),
-      decoration_color(DefaultColor::DEFAULT_TEXT_COLOR),
-      white_space(DefaultComputedStyle::DEFAULT_WHITE_SPACE),
-      text_overflow(DefaultComputedStyle::DEFAULT_TEXT_OVERFLOW),
-      font_weight(DefaultComputedStyle::DEFAULT_FONT_WEIGHT),
-      font_style(DefaultComputedStyle::DEFAULT_FONT_STYLE),
+    : text_indent(DefaultLayoutStyle::SL_DEFAULT_ZEROLENGTH()),
+      vertical_align_length(DefaultComputedStyle::DEFAULT_FLOAT),
+      font_size(default_font_size),
       computed_line_height(DefaultComputedStyle::DEFAULT_LINE_HEIGHT),
       line_height_factor(DefaultComputedStyle::DEFAULT_LINE_HEIGHT_FACTOR),
-      enable_font_scaling(DefaultComputedStyle::DEFAULT_BOOLEAN),
       letter_spacing(DefaultComputedStyle::DEFAULT_LETTER_SPACING),
       line_spacing(DefaultComputedStyle::DEFAULT_LINE_SPACING),
-      text_align(DefaultComputedStyle::DEFAULT_TEXT_ALIGN),
-      word_break(DefaultComputedStyle::DEFAULT_WORD_BREAK),
-      underline_decoration(DefaultComputedStyle::DEFAULT_BOOLEAN),
-      line_through_decoration(DefaultComputedStyle::DEFAULT_BOOLEAN),
-      text_decoration_color(DefaultColor::DEFAULT_COLOR),
-      text_decoration_style(
-          DefaultComputedStyle::DEFAULT_TEXT_DECORATION_STYLE),
       text_stroke_width(DefaultComputedStyle::DEFAULT_FLOAT),
-      text_stroke_color(DefaultColor::DEFAULT_COLOR),
-      vertical_align(DefaultComputedStyle::DEFAULT_VERTICAL_ALIGN),
-      vertical_align_length(DefaultComputedStyle::DEFAULT_FLOAT),
-      text_indent(DefaultLayoutStyle::SL_DEFAULT_ZEROLENGTH()),
-      is_auto_font_size(DefaultComputedStyle::DEFAULT_AUTO_FONT_SIZE),
       auto_font_size_min_size(DefaultComputedStyle::DEFAULT_FLOAT),
       auto_font_size_max_size(DefaultComputedStyle::DEFAULT_FLOAT),
       auto_font_size_step_granularity(
           DefaultComputedStyle::DEFAULT_AUTO_FONT_SIZE_STEP_GRANULARITY),
-      hyphens(DefaultComputedStyle::DEFAULT_HYPHENS) {
+      text_stroke_color(DefaultColor::DEFAULT_COLOR),
+      color(DefaultColor::DEFAULT_TEXT_COLOR),
+      decoration_color(DefaultColor::DEFAULT_TEXT_COLOR),
+      text_decoration_color(DefaultColor::DEFAULT_COLOR),
+      text_decoration_style(
+          DefaultComputedStyle::DEFAULT_TEXT_DECORATION_STYLE),
+      white_space(DefaultComputedStyle::DEFAULT_WHITE_SPACE),
+      text_overflow(DefaultComputedStyle::DEFAULT_TEXT_OVERFLOW),
+      font_weight(DefaultComputedStyle::DEFAULT_FONT_WEIGHT),
+      font_style(DefaultComputedStyle::DEFAULT_FONT_STYLE),
+      vertical_align(DefaultComputedStyle::DEFAULT_VERTICAL_ALIGN),
+      text_align(DefaultComputedStyle::DEFAULT_TEXT_ALIGN),
+      word_break(DefaultComputedStyle::DEFAULT_WORD_BREAK),
+      hyphens(DefaultComputedStyle::DEFAULT_HYPHENS),
+      enable_font_scaling(DefaultComputedStyle::DEFAULT_BOOLEAN),
+      underline_decoration(DefaultComputedStyle::DEFAULT_BOOLEAN),
+      line_through_decoration(DefaultComputedStyle::DEFAULT_BOOLEAN),
+      is_auto_font_size(DefaultComputedStyle::DEFAULT_AUTO_FONT_SIZE) {
   text_shadow.reset();
   auto_font_size_preset_sizes.reset();
 }

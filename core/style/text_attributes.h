@@ -18,7 +18,7 @@
 namespace lynx {
 namespace starlight {
 
-enum TextPropertyID {
+enum class TextPropertyID : uint8_t {
   kTextProperIDFontSize = 1,
   kTextProperIDColor = 2,
   kTextProperIDWhiteSpace = 3,
@@ -49,39 +49,41 @@ class TextAttributes {
  public:
   TextAttributes(float default_font_size);
 
+  base::flex_optional<base::InlineVector<ShadowData, 1>> text_shadow;
+  base::flex_optional<base::InlineVector<float, 4>> auto_font_size_preset_sizes;
+  NLength text_indent;
+  double vertical_align_length;
   float font_size;
+  float computed_line_height;
+  float line_height_factor;
+  float letter_spacing;
+  float line_spacing;
+  float text_stroke_width;
+  float auto_font_size_min_size;
+  float auto_font_size_max_size;
+  float auto_font_size_step_granularity;
+
+  unsigned int text_stroke_color;
   unsigned int color;
   unsigned int decoration_color;
+  uint32_t text_decoration_color;
+  uint32_t text_decoration_style;
+  base::String font_family;
   lepus::Value text_gradient;
   // TODO(linxs) this type has changed.
   starlight::WhiteSpaceType white_space;
   starlight::TextOverflowType text_overflow;
   starlight::FontWeightType font_weight;
   starlight::FontStyleType font_style;
-  base::String font_family;
-  float computed_line_height;
-  float line_height_factor;
-  bool enable_font_scaling;
-  float letter_spacing;
-  float line_spacing;
+  starlight::VerticalAlignType vertical_align;
   starlight::TextAlignType text_align;
   starlight::WordBreakType word_break;
+  starlight::HyphensType hyphens;
+
+  bool enable_font_scaling;
   bool underline_decoration;
   bool line_through_decoration;
-  uint32_t text_decoration_color;
-  uint32_t text_decoration_style;
-  float text_stroke_width;
-  unsigned int text_stroke_color;
-  base::flex_optional<base::InlineVector<ShadowData, 1>> text_shadow;
-  starlight::VerticalAlignType vertical_align;
-  double vertical_align_length;
-  NLength text_indent;
   bool is_auto_font_size;
-  float auto_font_size_min_size;
-  float auto_font_size_max_size;
-  float auto_font_size_step_granularity;
-  base::flex_optional<base::InlineVector<float, 4>> auto_font_size_preset_sizes;
-  starlight::HyphensType hyphens;
 
   void Reset() {}
 

@@ -485,15 +485,15 @@ float ComputedCSSStyle::SAFE_AREA_INSET_RIGHT_ = 0;
 
 ComputedCSSStyle::ComputedCSSStyle(float layouts_unit_per_px,
                                    double physical_pixels_per_layout_unit)
-    : length_context_(0.f, layouts_unit_per_px, physical_pixels_per_layout_unit,
+    : layout_computed_style_(physical_pixels_per_layout_unit),
+      length_context_(0.f, layouts_unit_per_px, physical_pixels_per_layout_unit,
                       layouts_unit_per_px * DEFAULT_FONT_SIZE_DP,
                       layouts_unit_per_px * DEFAULT_FONT_SIZE_DP, LayoutUnit(),
-                      LayoutUnit()),
-      layout_computed_style_(physical_pixels_per_layout_unit) {}
+                      LayoutUnit()) {}
 
 ComputedCSSStyle::ComputedCSSStyle(const ComputedCSSStyle& o)
-    : length_context_(o.length_context_),
-      layout_computed_style_(o.layout_computed_style_) {}
+    : layout_computed_style_(o.layout_computed_style_),
+      length_context_(o.length_context_) {}
 
 void ComputedCSSStyle::Reset() {
   layout_computed_style_.Reset();

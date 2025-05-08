@@ -41,15 +41,14 @@ struct TransformRawData {
   NLength p0;
   NLength p1;
   NLength p2;
-  tasm::CSSValuePattern unit_type0 = tasm::CSSValuePattern::EMPTY;
-  tasm::CSSValuePattern unit_type1 = tasm::CSSValuePattern::EMPTY;
-  tasm::CSSValuePattern unit_type2 = tasm::CSSValuePattern::EMPTY;
-
   std::array<double, 16> matrix = {1, 0, 0, 0,   // {{1, 0, 0, 0}
                                    0, 1, 0, 0,   //  {0, 1, 0, 0}
                                    0, 0, 1, 0,   //  {0, 0, 1, 0}
                                    0, 0, 0, 1};  //  {0, 0, 0, 1}}
 
+  tasm::CSSValuePattern unit_type0 = tasm::CSSValuePattern::EMPTY;
+  tasm::CSSValuePattern unit_type1 = tasm::CSSValuePattern::EMPTY;
+  tasm::CSSValuePattern unit_type2 = tasm::CSSValuePattern::EMPTY;
   bool matrix_empty = true;
 
   bool operator==(const TransformRawData& rhs) const {

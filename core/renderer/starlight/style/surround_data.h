@@ -5,6 +5,7 @@
 #ifndef CORE_RENDERER_STARLIGHT_STYLE_SURROUND_DATA_H_
 #define CORE_RENDERER_STARLIGHT_STYLE_SURROUND_DATA_H_
 
+#include "base/include/flex_optional.h"
 #include "core/renderer/starlight/style/borders_data.h"
 #include "core/renderer/starlight/style/css_type.h"
 #include "core/renderer/starlight/types/nlength.h"
@@ -32,7 +33,7 @@ class SurroundData {
   NLength padding_top_;
   NLength padding_bottom_;
 
-  std::optional<BordersData> border_data_;
+  base::flex_optional<BordersData> border_data_;
 };
 
 }  // namespace starlight

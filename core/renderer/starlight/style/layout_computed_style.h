@@ -46,11 +46,6 @@ class LayoutComputedStyle {
   DisplayType GetDisplay(const LayoutConfigs& configs,
                          const AttributesMap& attributes) const;
 
-  BoxSizingType box_sizing_{DefaultLayoutStyle::SL_DEFAULT_BOX_SIZING};
-  DisplayType display_{DefaultLayoutStyle::SL_DEFAULT_DISPLAY};
-  PositionType position_{DefaultLayoutStyle::SL_DEFAULT_POSITION};
-  DirectionType direction_{DefaultLayoutStyle::SL_DEFAULT_DIRECTION};
-
   DataRef<BoxData> box_data_;
   DataRef<FlexData> flex_data_;
   DataRef<GridData> grid_data_;
@@ -61,6 +56,11 @@ class LayoutComputedStyle {
   // a 'list-version' grid-row-gap & grid-column-gap
   NLength list_main_axis_gap_{DefaultLayoutStyle::SL_DEFAULT_ZEROLENGTH()};
   NLength list_cross_axis_gap_{DefaultLayoutStyle::SL_DEFAULT_ZEROLENGTH()};
+
+  BoxSizingType box_sizing_{DefaultLayoutStyle::SL_DEFAULT_BOX_SIZING};
+  DisplayType display_{DefaultLayoutStyle::SL_DEFAULT_DISPLAY};
+  PositionType position_{DefaultLayoutStyle::SL_DEFAULT_POSITION};
+  DirectionType direction_{DefaultLayoutStyle::SL_DEFAULT_DIRECTION};
 
   // BoxData
   const NLength& GetWidth() const { return box_data_->width_; }
