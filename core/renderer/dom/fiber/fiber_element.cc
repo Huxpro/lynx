@@ -726,6 +726,9 @@ void FiberElement::SetBuiltinAttribute(ElementBuiltInAttributeEnum key,
     case ElementBuiltInAttributeEnum::DIRTY_ID:
       MarkPartElement(value.String());
       break;
+    case ElementBuiltInAttributeEnum::CONFIG:
+      config_ = value;
+      break;
     default:
       key_is_legal = false;
       break;

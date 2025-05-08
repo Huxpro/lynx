@@ -46,7 +46,8 @@ enum class ElementBuiltInAttributeEnum {
   COMPONENT_PATH,
   CSS_ID,
   NODE_INDEX,
-  DIRTY_ID
+  DIRTY_ID,
+  CONFIG
 };
 
 enum class ElementSectionEnum {

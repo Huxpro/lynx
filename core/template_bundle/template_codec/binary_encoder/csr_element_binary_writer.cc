@@ -373,11 +373,12 @@ void CSRElementBinaryWriter::EncodeElementTagSection(
 
 void CSRElementBinaryWriter::EncodeElementBuiltinAttrSection(
     const rapidjson::Value* element) {
-  if (!CheckJSONObjectValid(element, kElementBuiltinAttributes)) {
+  if (!CheckJSONObjectValid(element, kElementBuiltinAttributes) &&
+      !CheckJSONObjectValid(element, kElementConfig)) {
     return;
   }
-  auto builtin_attrs =
-      element->GetObject()[kElementBuiltinAttributes].GetObject();
+  auto& builtin_attrs = element->GetObject()[kElementBuiltinAttributes];
+  auto& config = element->GetObject()[kElementConfig];
 
   WriteU8(static_cast<uint8_t>(
       tasm::ElementSectionEnum::ELEMENT_BUILTIN_ATTRIBUTE));
@@ -395,19 +396,27 @@ void CSRElementBinaryWriter::EncodeElementBuiltinAttrSection(
   // Record the insert position of count.
   size_t count_insert_pos = Offset();
   size_t count = 0;
-  // Get the count of valid styles when traversal the inline styles.
-  for (const auto& pair : builtin_attrs) {
-    const auto& key = pair.name;
-    const auto& value = pair.value;
-    const auto& key_enum_iter =
-        kElementBuiltInAttributeMap->find(key.GetString());
-    // Can not recognize this key, skip this key.
-    if (key_enum_iter == kElementBuiltInAttributeMap->end()) {
-      continue;
+  if (builtin_attrs.IsObject() && builtin_attrs.GetObject().MemberCount() > 0) {
+    // Get the count of valid styles when traversal the inline styles.
+    for (const auto& pair : builtin_attrs.GetObject()) {
+      const auto& key = pair.name;
+      const auto& value = pair.value;
+      const auto& key_enum_iter =
+          kElementBuiltInAttributeMap->find(key.GetString());
+      // Can not recognize this key, skip this key.
+      if (key_enum_iter == kElementBuiltInAttributeMap->end()) {
+        continue;
+      }
+      ++count;
+      WriteCompactU32(static_cast<uint32_t>(key_enum_iter->second));
+      const auto& lepus_val = lepus::jsonValueTolepusValue(value);
+      EncodeValue(&lepus_val);
     }
+  }
+  if (config.IsObject() && config.GetObject().MemberCount() > 0) {
     ++count;
-    WriteCompactU32(static_cast<uint32_t>(key_enum_iter->second));
-    const auto& lepus_val = lepus::jsonValueTolepusValue(value);
+    WriteCompactU32(static_cast<uint32_t>(ElementBuiltInAttributeEnum::CONFIG));
+    const auto& lepus_val = lepus::jsonValueTolepusValue(config);
     EncodeValue(&lepus_val);
   }
   EncodeCountAndInsertAhead(count, count_insert_pos);
