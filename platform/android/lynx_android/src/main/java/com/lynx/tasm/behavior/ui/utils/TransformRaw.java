@@ -151,6 +151,19 @@ public class TransformRaw {
   public float[] getTransformRawData() {
     return transformRawData;
   }
+  @Nullable
+  public static TransformRaw createTransformRaw(
+      int transformType, float p0, int p0Unit, float p1, int p1Unit, float p2, int p2Unit) {
+    return new TransformRaw(transformType, p0, p0Unit, p1, p1Unit, p2, p2Unit);
+  }
+
+  @Nullable
+  public static TransformRaw createTransformRaw(int transformType, PlatformLength platformLengthP0,
+      int p0Unit, PlatformLength platformLengthP1, int p1Unit, PlatformLength platformLengthP2,
+      int p2Unit) {
+    return new TransformRaw(transformType, platformLengthP0, p0Unit, platformLengthP1, p1Unit,
+        platformLengthP2, p2Unit);
+  }
 
   @Nullable
   public static List<TransformRaw> toTransformRaw(ReadableArray items) {

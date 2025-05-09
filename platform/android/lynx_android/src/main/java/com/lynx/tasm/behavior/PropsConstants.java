@@ -196,6 +196,9 @@ public class PropsConstants {
   public static final String LIST = "list";
   public static final String HYPHENS = "hyphens";
   public static final String TEXT = "text";
+  public static final String OFFSET_DISTANCE = "offset-distance";
+  public static final String OFFSET_PATH = "offset-path";
+  public static final String OFFSET_ROTATE = "offset-rotate";
 
   // When using the boundingClientRect and requestUIInfo methods on iOS, the transform property is
   // taken into account when computing the area, but on Android it is not.

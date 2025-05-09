@@ -4889,6 +4889,10 @@ public class abstract com::lynx::tasm::behavior::LynxObserverManager :  {
   public void com.lynx.tasm.behavior.LynxObserverManager.destroy();
 }
 
+public class com::lynx::tasm::behavior::ui::shapes::LynxOffsetCalculator :  {
+  public static float[] com.lynx.tasm.behavior.ui.shapes.LynxOffsetCalculator.pointAtProgress(Path path, float progress);
+}
+
 public interface com::lynx::tasm::base::LynxPageLoadListener {
   public void com.lynx.tasm.base.LynxPageLoadListener.onFirstScreen();
   public void com.lynx.tasm.base.LynxPageLoadListener.onPageUpdate();
@@ -5632,6 +5636,7 @@ public class abstract com::lynx::tasm::behavior::ui::LynxUI : com.lynx.tasm.beha
   public void com.lynx.tasm.behavior.ui.LynxUI< T extends View >.handleLayout();
   public void com.lynx.tasm.behavior.ui.LynxUI< T extends View >.layout();
   public void com.lynx.tasm.behavior.ui.LynxUI< T extends View >.onAnimationNodeReady();
+  public void com.lynx.tasm.behavior.ui.LynxUI< T extends View >.applyOffsetAndRotate(float offsetX, float offsetY, float rotate);
   public int com.lynx.tasm.behavior.ui.LynxUI< T extends View >.getBackgroundColor();
   public BackgroundManager com.lynx.tasm.behavior.ui.LynxUI< T extends View >.getBackgroundManager();
   public ReadableMap com.lynx.tasm.behavior.ui.LynxUI< T extends View >.getKeyframes(String name);
@@ -5675,6 +5680,9 @@ public class abstract com::lynx::tasm::behavior::ui::LynxUI : com.lynx.tasm.beha
   public boolean com.lynx.tasm.behavior.ui.LynxUI< T extends View >.isUserInteractionEnabled();
   public void com.lynx.tasm.behavior.ui.LynxUI< T extends View >.updatePerspectiveToView();
   public void com.lynx.tasm.behavior.ui.LynxUI< T extends View >.setClipPath(@Nullable ReadableArray basicShape);
+  public void com.lynx.tasm.behavior.ui.LynxUI< T extends View >.setOffsetPath(@Nullable ReadableArray basicShape);
+  public void com.lynx.tasm.behavior.ui.LynxUI< T extends View >.setOffsetDistance(float offsetDistance);
+  public void com.lynx.tasm.behavior.ui.LynxUI< T extends View >.setOffsetRotate(float offsetRotate);
   public void com.lynx.tasm.behavior.ui.LynxUI< T extends View >.destroy();
   public void com.lynx.tasm.behavior.ui.LynxUI< T extends View >.onListCellDisAppear(String itemKey, LynxBaseUI list, boolean isExist);
   public void com.lynx.tasm.behavior.ui.LynxUI< T extends View >.onListCellAppear(String itemKey, UIList list);
@@ -7312,6 +7320,9 @@ public class com::lynx::tasm::behavior::PropsConstants :  {
   public final String com.lynx.tasm.behavior.PropsConstants.LIST LIST;
   public final String com.lynx.tasm.behavior.PropsConstants.HYPHENS HYPHENS;
   public final String com.lynx.tasm.behavior.PropsConstants.TEXT TEXT;
+  public final String com.lynx.tasm.behavior.PropsConstants.OFFSET_DISTANCE OFFSET_DISTANCE;
+  public final String com.lynx.tasm.behavior.PropsConstants.OFFSET_PATH OFFSET_PATH;
+  public final String com.lynx.tasm.behavior.PropsConstants.OFFSET_ROTATE OFFSET_ROTATE;
   public final String com.lynx.tasm.behavior.PropsConstants.ANDROID_ENABLE_TRANSFORM_PROPS ANDROID_ENABLE_TRANSFORM_PROPS;
   public final String com.lynx.tasm.behavior.PropsConstants.IMAGE_TRANSITION_STYLE IMAGE_TRANSITION_STYLE;
   public final String com.lynx.tasm.behavior.PropsConstants.X_AUTO_FONT_SIZE X_AUTO_FONT_SIZE;
@@ -8533,6 +8544,8 @@ public class com::lynx::tasm::behavior::ui::utils::TransformRaw :  {
   public boolean com.lynx.tasm.behavior.ui.utils.TransformRaw.isP2Percent();
   public boolean com.lynx.tasm.behavior.ui.utils.TransformRaw.hasPercent();
   public float[] com.lynx.tasm.behavior.ui.utils.TransformRaw.getTransformRawData();
+  public static TransformRaw com.lynx.tasm.behavior.ui.utils.TransformRaw.createTransformRaw(int transformType, float p0, int p0Unit, float p1, int p1Unit, float p2, int p2Unit);
+  public static TransformRaw com.lynx.tasm.behavior.ui.utils.TransformRaw.createTransformRaw(int transformType, PlatformLength platformLengthP0, int p0Unit, PlatformLength platformLengthP1, int p1Unit, PlatformLength platformLengthP2, int p2Unit);
   public static List< TransformRaw > com.lynx.tasm.behavior.ui.utils.TransformRaw.toTransformRaw(ReadableArray items);
   public static boolean com.lynx.tasm.behavior.ui.utils.TransformRaw.hasPercent(List< TransformRaw > transforms);
   public static float com.lynx.tasm.behavior.ui.utils.TransformRaw.hasZValue(List< TransformRaw > transforms);
