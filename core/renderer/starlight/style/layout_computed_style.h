@@ -163,6 +163,9 @@ class LayoutComputedStyle {
     return grid_data_->grid_column_gap_;
   }
   const NLength& GetGridRowGap() const { return grid_data_->grid_row_gap_; }
+  const NLength& GetFlowTolerance() const {
+    return grid_data_->flow_tolerance_;
+  }
   GridAutoFlowType GetGridAutoFlow() const {
     return grid_data_->grid_auto_flow_;
   }
@@ -305,7 +308,9 @@ class LayoutComputedStyle {
   V(MarginTop, NLength, surround_data_.margin_top_, MARGIN)              \
   V(MarginBottom, NLength, surround_data_.margin_bottom_, MARGIN)        \
   V(ColumnGap, NLength, grid_data_.Access()->grid_column_gap_, GRID_GAP) \
-  V(RowGap, NLength, grid_data_.Access()->grid_row_gap_, GRID_GAP)
+  V(RowGap, NLength, grid_data_.Access()->grid_row_gap_, GRID_GAP)       \
+  V(FlowTolerance, NLength, grid_data_.Access()->flow_tolerance_,        \
+    FLOW_TOLERANCE)
 
 #define SUPPORTED_ENUM_LAYOUT_PROPERTY(V)                                      \
   V(FlexDirection, FlexDirectionType, flex_data_.Access()->flex_direction_,    \

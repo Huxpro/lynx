@@ -1,3 +1,6 @@
+## 0.0.18
+- Add the experimental `display: grid-lanes` value and `flow-tolerance` CSS property.
+
 ## 0.0.17
 - Add compat_data for `box-shadow` animations and the `transition-property: box-shadow` keyword.
 
