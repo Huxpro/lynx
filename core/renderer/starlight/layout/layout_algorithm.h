@@ -62,6 +62,10 @@ class LayoutAlgorithm : public DirectionSelector {
   // Initialize layout environment,init some relevant parameters
   virtual void InitializeAlgorithmEnv() = 0;
 
+  // Absolute | Fixed
+  virtual void MeasureAbsoluteAndFixed();
+  virtual void AlignAbsoluteAndFixedItems();
+
   // TODO(zzz):unified handle process
   virtual void SizeDeterminationByAlgorithm() = 0;
 
@@ -79,10 +83,6 @@ class LayoutAlgorithm : public DirectionSelector {
 
   // relative
   void HandleRelativePosition();
-
-  // Absolute | Fixed
-  virtual void MeasureAbsoluteAndFixed();
-  virtual void AlignAbsoluteAndFixedItems();
 
   void ItemsUpdateAlignment();
 

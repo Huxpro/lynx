@@ -26,6 +26,18 @@ PATH="${RTF_PATH}" "${ROOT_DIR}/tools/env.sh" tools/rtf/rtf native-ut run \
   --disable-flutter-cxx
 "${ROOT_DIR}/tools/env.sh" pnpm \
   --filter @lynx-js/grid-lanes-conformance run install:browsers
+mkdir -p "${ROOT_DIR}/oliver/lynx-tasm/node_modules"
+ln -sfn \
+  "${ROOT_DIR}/node_modules/.pnpm/node-addon-api@7.1.0/node_modules/node-addon-api" \
+  "${ROOT_DIR}/oliver/lynx-tasm/node_modules/node-addon-api"
+"${ROOT_DIR}/tools/env.sh" python3 "${ROOT_DIR}/oliver/build_gn.py" \
+  --platform linux \
+  --type tasm \
+  --clean false
+mkdir -p "${ROOT_DIR}/oliver/lynx-tasm/build/linux/Release"
+cp \
+  "${ROOT_DIR}/out/Default/oliver/lepus.node" \
+  "${ROOT_DIR}/oliver/lynx-tasm/build/linux/Release/lepus.node"
 "${ROOT_DIR}/tools/env.sh" pnpm --filter @lynx-js/grid-lanes-conformance run build
 "${ROOT_DIR}/tools/env.sh" pnpm --filter @lynx-js/grid-lanes-conformance run test:unit
 "${ROOT_DIR}/tools/env.sh" pnpm --filter @lynx-js/grid-lanes-conformance run test:calibration
