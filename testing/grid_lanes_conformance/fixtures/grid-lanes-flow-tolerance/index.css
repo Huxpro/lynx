@@ -16,6 +16,12 @@
   row-gap: 8px;
   margin-bottom: 24px;
 }
+.zero {
+  flow-tolerance: 0;
+}
+.infinite {
+  flow-tolerance: infinite;
+}
 .item {
   min-width: 0;
   min-height: 0;
