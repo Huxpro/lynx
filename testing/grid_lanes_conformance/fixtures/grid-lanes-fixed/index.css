@@ -15,6 +15,7 @@
   width: 320px;
   grid-template-columns: repeat(3, 96px);
   gap: 12px;
+  flow-tolerance: 0;
 }
 
 .item {

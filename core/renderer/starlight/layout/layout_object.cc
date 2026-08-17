@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "core/renderer/starlight/layout/flex_layout_algorithm.h"
+#include "core/renderer/starlight/layout/grid_lanes_layout_algorithm.h"
 #include "core/renderer/starlight/layout/grid_layout_algorithm.h"
 #include "core/renderer/starlight/layout/layout_algorithm.h"
 #include "core/renderer/starlight/layout/linear_layout_algorithm.h"
@@ -727,7 +728,7 @@ FloatSize LayoutObject::UpdateMeasure(const Constraints& given_constraints,
       algorithm_ = new GridLayoutAlgorithm(this);
     } else if (type == DisplayType::kGridLanes) {
       SendLayoutEvent(LayoutEventType::FeatureCountOnGridLanesDisplay);
-      algorithm_ = new GridLayoutAlgorithm(this);
+      algorithm_ = new GridLanesLayoutAlgorithm(this);
     }
 
     DCHECK(algorithm_);

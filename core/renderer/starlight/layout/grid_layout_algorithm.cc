@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "core/renderer/starlight/layout/grid_layout_utils.h"
 #include "core/renderer/starlight/layout/layout_object.h"
 #include "core/renderer/starlight/layout/position_layout_utils.h"
 #include "core/renderer/starlight/layout/property_resolving_utils.h"
@@ -83,65 +84,15 @@ void GridLayoutAlgorithm::AlignInFlowItems() {
 }
 
 float GridLayoutAlgorithm::InlineAxisAlignment(const GridItemInfo& item_info) {
-  const LayoutComputedStyle* item_style = item_info.Item()->GetCSSStyle();
-  JustifyType justify_type = item_style->GetJustifySelfType();
-  if (justify_type == JustifyType::kAuto) {
-    justify_type = container_style_->GetJustifyItemsType();
-  }
-
-  const float available_space =
-      item_info.ContainingBlock()[InlineAxis()].Size() -
-      GetMarginBoundDimensionSize(item_info.Item(), InlineAxis());
-  float item_offset_inline = 0.f;
-  switch (justify_type) {
-    case JustifyType::kAuto:
-    case JustifyType::kStretch:
-    case JustifyType::kStart:
-      break;
-    case JustifyType::kCenter: {
-      item_offset_inline = available_space / 2;
-      break;
-    }
-    case JustifyType::kEnd: {
-      item_offset_inline = available_space;
-      break;
-    }
-  }
-
-  return item_offset_inline;
+  return grid_layout_utils::ItemAlignmentOffset(
+      item_info.Item(), container_style_, InlineAxis(),
+      item_info.ContainingBlock()[InlineAxis()].Size());
 }
 
 float GridLayoutAlgorithm::BlockAxisAlignment(const GridItemInfo& item_info) {
-  const LayoutComputedStyle* item_style = item_info.Item()->GetCSSStyle();
-  FlexAlignType align_type = item_style->GetAlignSelf();
-  if (align_type == FlexAlignType::kAuto) {
-    align_type = container_style_->GetAlignItems();
-  }
-
-  const float available_space =
-      item_info.ContainingBlock()[BlockAxis()].Size() -
-      GetMarginBoundDimensionSize(item_info.Item(), BlockAxis());
-  float item_offset_block = 0.f;
-  switch (align_type) {
-    case FlexAlignType::kFlexStart:
-    case FlexAlignType::kStart:
-    case FlexAlignType::kStretch:
-    case FlexAlignType::kAuto:
-    case FlexAlignType::kBaseline:
-      // do nothing
-      break;
-    case FlexAlignType::kCenter: {
-      item_offset_block = available_space / 2;
-      break;
-    }
-    case FlexAlignType::kEnd:
-    case FlexAlignType::kFlexEnd: {
-      item_offset_block = available_space;
-      break;
-    }
-  }
-
-  return item_offset_block;
+  return grid_layout_utils::ItemAlignmentOffset(
+      item_info.Item(), container_style_, BlockAxis(),
+      item_info.ContainingBlock()[BlockAxis()].Size());
 }
 
 // Special Handling for Absolute and Fixed in Grid
@@ -694,55 +645,9 @@ void GridLayoutAlgorithm::InitTrackSize(Dimension dimension,
     }
   }
 
-  // Initialize each track's base size and growth limit.
-  const size_t tracks_size = GridTrackCount(dimension);
-  base_size.resize(tracks_size);
-  grow_limit.resize(tracks_size);
-  for (size_t idx = 0; idx < tracks_size; ++idx) {
-    switch (min_track_sizing_function[idx].GetType()) {
-      case NLengthType::kNLengthUnit:
-      case NLengthType::kNLengthPercentage:
-      case NLengthType::kNLengthCalc: {
-        const auto resolved_unit = NLengthToLayoutUnit(
-            min_track_sizing_function[idx], PercentBase(dimension));
-        base_size[idx] =
-            resolved_unit.IsDefinite() ? resolved_unit.ToFloat() : 0.f;
-        break;
-      }
-      case NLengthType::kNLengthAuto:
-      case NLengthType::kNLengthMaxContent:
-      case NLengthType::kNLengthFitContent:
-      case NLengthType::kNLengthFr:
-        base_size[idx] = 0.f;
-        break;
-      default:
-        break;
-    }
-
-    switch (max_track_sizing_function[idx].GetType()) {
-      case NLengthType::kNLengthUnit:
-      case NLengthType::kNLengthPercentage:
-      case NLengthType::kNLengthCalc:
-        grow_limit[idx] = NLengthToLayoutUnit(max_track_sizing_function[idx],
-                                              PercentBase(dimension));
-        // In all cases, if the growth limit is less than the base size,
-        // increase the growth limit to match the base size.
-        if (grow_limit[idx].IsDefinite() &&
-            base::FloatsLarger(base_size[idx], grow_limit[idx].ToFloat())) {
-          grow_limit[idx] = LayoutUnit(base_size[idx]);
-        }
-        break;
-      case NLengthType::kNLengthAuto:
-      case NLengthType::kNLengthMaxContent:
-      case NLengthType::kNLengthFitContent:
-      case NLengthType::kNLengthFr: {
-        grow_limit[idx] = LayoutUnit::Indefinite();
-        break;
-      }
-      default:
-        break;
-    }
-  }
+  grid_layout_utils::InitializeTrackSizes(
+      min_track_sizing_function, max_track_sizing_function,
+      PercentBase(dimension), base_size, grow_limit);
 }
 
 void GridLayoutAlgorithm::CalcInlineAxisSizeContributions(
@@ -1886,35 +1791,7 @@ void GridLayoutAlgorithm::ExpandFlexibleTracksAndStretchAutoTracks(
 float GridLayoutAlgorithm::FindTheSizeOfAnFr(
     const std::vector<float>& base_size, const std::vector<float>& flex_factor,
     float space_to_fill) const {
-  std::vector<float> used_flex_factor(flex_factor);
-  while (true) {
-    float leftover_space = space_to_fill;
-    float flex_factor_sum = 0.f;
-    for (size_t idx = 0; idx < base_size.size(); ++idx) {
-      if (base::FloatsEqual(used_flex_factor[idx], 0)) {
-        leftover_space -= base_size[idx];
-      } else if (base::FloatsLarger(used_flex_factor[idx], 0)) {
-        flex_factor_sum += used_flex_factor[idx];
-      }
-    }
-    flex_factor_sum = std::max(flex_factor_sum, 1.0f);
-    const float hypothetical_fr_size = leftover_space / flex_factor_sum;
-    bool has_product_less_than_base_size = false;
-    for (size_t idx = 0; idx < base_size.size(); ++idx) {
-      // If the product of the hypothetical fr size and a flexible track’s
-      // flex factor is less than the track’s base size, restart this
-      // algorithm treating all such tracks as inflexible.
-      if (base::FloatsLarger(used_flex_factor[idx], 0) &&
-          base::FloatsLarger(base_size[idx],
-                             hypothetical_fr_size * used_flex_factor[idx])) {
-        has_product_less_than_base_size = true;
-        used_flex_factor[idx] = 0.f;
-      }
-    }
-    if (!has_product_less_than_base_size) {
-      return hypothetical_fr_size;
-    }
-  }
+  return grid_layout_utils::FindSizeOfFr(base_size, flex_factor, space_to_fill);
 }
 
 void GridLayoutAlgorithm::UpdateContainerSize(Dimension dimension,
@@ -1948,33 +1825,11 @@ void GridLayoutAlgorithm::UpdateContainerSize(Dimension dimension,
 void GridLayoutAlgorithm::MeasureGridItems() {
   for (const GridItemInfo& item_info : grid_item_infos_) {
     auto* child = item_info.Item();
-    auto* child_style = child->GetCSSStyle();
 
     const Constraints& container_constraints = item_info.ContainingBlock();
-    auto child_constraints = property_utils::GenerateDefaultConstraints(
-        *child, container_constraints);
-
-    if (IsSLAtMostMode(child_constraints[BlockAxis()].Mode()) &&
-        ((child_style->GetAlignSelf() == FlexAlignType::kAuto &&
-          container_style_->GetAlignItems() == FlexAlignType::kStretch) ||
-         (child_style->GetAlignSelf() == FlexAlignType::kStretch))) {
-      if (!GetMargin(child_style, BlockFront()).IsAuto() &&
-          !GetMargin(child_style, BlockBack()).IsAuto()) {
-        child_constraints[BlockAxis()] =
-            OneSideConstraint::Definite(child_constraints[BlockAxis()].Size());
-      }
-    }
-
-    if (IsSLAtMostMode(child_constraints[InlineAxis()].Mode()) &&
-        ((child_style->GetJustifySelfType() == JustifyType::kAuto &&
-          container_style_->GetJustifyItemsType() == JustifyType::kStretch) ||
-         (child_style->GetJustifySelfType() == JustifyType::kStretch))) {
-      if (!GetMargin(child_style, InlineFront()).IsAuto() &&
-          !GetMargin(child_style, InlineBack()).IsAuto()) {
-        child_constraints[InlineAxis()] =
-            OneSideConstraint::Definite(child_constraints[InlineAxis()].Size());
-      }
-    }
+    auto child_constraints = grid_layout_utils::GenerateItemConstraints(
+        child, container_style_, container_constraints, InlineFront(),
+        InlineBack(), BlockFront(), BlockBack());
 
     child->UpdateMeasure(child_constraints, true);
     //  resolve margin auto

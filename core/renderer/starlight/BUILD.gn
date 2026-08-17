@@ -21,8 +21,12 @@ starlight_layout_sources = [
   "layout/flex_layout_algorithm.h",
   "layout/grid_item_info.cc",
   "layout/grid_item_info.h",
+  "layout/grid_lanes_layout_algorithm.cc",
+  "layout/grid_lanes_layout_algorithm.h",
   "layout/grid_layout_algorithm.cc",
   "layout/grid_layout_algorithm.h",
+  "layout/grid_layout_utils.cc",
+  "layout/grid_layout_utils.h",
   "layout/layout_algorithm.cc",
   "layout/layout_algorithm.h",
   "layout/layout_global.cc",
@@ -163,6 +167,7 @@ unittest_set("starlight_geometry_testset") {
   sources = [
     "../../services/replay/layout_tree_testbench.cc",
     "layout/grid_geometry_unittest.cc",
+    "layout/grid_lanes_layout_algorithm_unittest.cc",
   ]
   public_deps = [
     ":starlight",
