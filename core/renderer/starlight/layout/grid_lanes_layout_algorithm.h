@@ -29,6 +29,7 @@ class GridLanesLayoutAlgorithm : public LayoutAlgorithm {
 
   size_t VirtualGroupCountForTesting() const { return virtual_group_count_; }
   size_t VirtualItemCountForTesting() const { return virtual_item_count_; }
+  size_t BookkeepingBytesForTesting() const;
 
  private:
   struct OccupiedInterval {

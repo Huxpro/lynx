@@ -1,0 +1,98 @@
+{
+  "compact": {
+    "grid-lanes-container": {
+      "x": 0,
+      "y": 0,
+      "width": 476,
+      "height": 615
+    },
+    "grid-lanes-item-1": {
+      "x": 0,
+      "y": 0,
+      "width": 150,
+      "height": 227
+    },
+    "grid-lanes-item-2": {
+      "x": 162,
+      "y": 0,
+      "width": 150,
+      "height": 133
+    },
+    "grid-lanes-item-3": {
+      "x": 324,
+      "y": 0,
+      "width": 150,
+      "height": 177
+    },
+    "grid-lanes-item-4": {
+      "x": 162,
+      "y": 189,
+      "width": 312,
+      "height": 187
+    }
+  },
+  "horizontal": {
+    "grid-lanes-container": {
+      "x": 0,
+      "y": 0,
+      "width": 940,
+      "height": 430
+    },
+    "grid-lanes-item-1": {
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 130
+    },
+    "grid-lanes-item-2": {
+      "x": 0,
+      "y": 142,
+      "width": 210,
+      "height": 130
+    },
+    "grid-lanes-item-3": {
+      "x": 0,
+      "y": 284,
+      "width": 260,
+      "height": 130
+    },
+    "grid-lanes-item-4": {
+      "x": 272,
+      "y": 142,
+      "width": 280,
+      "height": 272
+    }
+  },
+  "rtl": {
+    "grid-lanes-container": {
+      "x": 0,
+      "y": 0,
+      "width": 476,
+      "height": 665
+    },
+    "grid-lanes-item-1": {
+      "x": 0,
+      "y": 0,
+      "width": 150,
+      "height": 227
+    },
+    "grid-lanes-item-2": {
+      "x": 162,
+      "y": 0,
+      "width": 150,
+      "height": 133
+    },
+    "grid-lanes-item-3": {
+      "x": 324,
+      "y": 0,
+      "width": 150,
+      "height": 177
+    },
+    "grid-lanes-item-4": {
+      "x": 0,
+      "y": 239,
+      "width": 312,
+      "height": 187
+    }
+  }
+}
