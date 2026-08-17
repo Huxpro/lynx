@@ -3,6 +3,7 @@
 // LICENSE file in the root directory of this source tree.
 
 #include "base/include/value/array.h"
+#include "core/renderer/css/computed_css_style.h"
 #include "core/renderer/css/parser/four_sides_shorthand_handler.h"
 #include "core/renderer/css/unit_handler.h"
 #include "core/renderer/starlight/style/css_type.h"
@@ -425,6 +426,88 @@ TEST(CSSProperty, GridTemplateHandler_MinMax) {
             (int)tasm::CSSValuePattern::INTRINSIC);
   EXPECT_EQ(length_array->get(26).Number(), 2);
   EXPECT_EQ(length_array->get(27).Number(), (int)tasm::CSSValuePattern::FR);
+}
+
+TEST(CSSProperty, GridTemplateHandler_AutoRepeatStructured) {
+  auto id = CSSPropertyID::kPropertyIDGridTemplateColumns;
+  StyleMap output;
+  CSSParserConfigs configs;
+  auto impl = lepus::Value(
+      "12px repeat( auto-fit , minmax(min-content, 1fr) 80px ) 24px");
+
+  EXPECT_TRUE(UnitHandler::Process(id, impl, output, configs));
+  ASSERT_TRUE(output[id].IsArray());
+  auto values = output[id].GetArray();
+  ASSERT_EQ(values->size(), static_cast<size_t>(18));
+  EXPECT_EQ(values->get(0).Number(), 12);
+  EXPECT_EQ(values->get(1).Number(), (int)CSSValuePattern::PX);
+  EXPECT_EQ(values->get(2).Number(), (int)CSSFunctionType::AUTO_REPEAT);
+  EXPECT_EQ(values->get(3).Number(), (int)CSSValuePattern::ENUM);
+  EXPECT_EQ(values->get(4).Number(), 1);
+  EXPECT_EQ(values->get(5).Number(), (int)CSSValuePattern::NUMBER);
+  EXPECT_EQ(values->get(6).Number(), 8);
+  EXPECT_EQ(values->get(7).Number(), (int)CSSValuePattern::NUMBER);
+  EXPECT_EQ(values->get(8).Number(), (int)CSSFunctionType::MINMAX);
+  EXPECT_EQ(values->get(9).Number(), (int)CSSValuePattern::ENUM);
+  EXPECT_EQ(values->get(10).StringView(), "min-content");
+  EXPECT_EQ(values->get(11).Number(), (int)CSSValuePattern::INTRINSIC);
+  EXPECT_EQ(values->get(12).Number(), 1);
+  EXPECT_EQ(values->get(13).Number(), (int)CSSValuePattern::FR);
+  EXPECT_EQ(values->get(14).Number(), 80);
+  EXPECT_EQ(values->get(15).Number(), (int)CSSValuePattern::PX);
+  EXPECT_EQ(values->get(16).Number(), 24);
+  EXPECT_EQ(values->get(17).Number(), (int)CSSValuePattern::PX);
+}
+
+TEST(CSSProperty, GridTemplateHandler_RejectsMalformedRepeatCounts) {
+  auto id = CSSPropertyID::kPropertyIDGridTemplateColumns;
+  CSSParserConfigs configs;
+  for (const char* value :
+       {"repeat(0, 10px)", "repeat(-1, 10px)", "repeat(nope, 10px)",
+        "repeat(auto-fill, )", "repeat(auto-fill 10px)"}) {
+    StyleMap output;
+    EXPECT_FALSE(
+        UnitHandler::Process(id, lepus::Value(value), output, configs));
+  }
+}
+
+TEST(CSSProperty, GridTemplateHandler_PlainGridKeepsOnePatternFallback) {
+  auto id = CSSPropertyID::kPropertyIDGridTemplateColumns;
+  StyleMap output;
+  CSSParserConfigs configs;
+  ASSERT_TRUE(UnitHandler::Process(
+      id, lepus::Value("repeat(auto-fill, minmax(100px, 1fr))"), output,
+      configs));
+  ComputedCSSStyle style(1.f, 1.f);
+
+  EXPECT_TRUE(style.SetValue(id, output[id], false));
+  const auto* layout_style = style.GetLayoutComputedStyle();
+  ASSERT_EQ(layout_style->GetGridTemplateColumnsMinTrackingFunction().size(),
+            1u);
+  EXPECT_FLOAT_EQ(layout_style->GetGridTemplateColumnsMinTrackingFunction()[0]
+                      .GetRawValue(),
+                  100.f);
+  EXPECT_TRUE(
+      layout_style->GetGridTemplateColumnsMaxTrackingFunction()[0].IsFr());
+  EXPECT_TRUE(layout_style->GetGridTemplateColumnsAutoRepeat().enabled);
+}
+
+TEST(CSSProperty, GridTemplateHandler_RejectsMalformedStructuredEncoding) {
+  auto values = lepus::CArray::Create();
+  values->emplace_back(static_cast<int32_t>(CSSFunctionType::AUTO_REPEAT));
+  values->emplace_back(static_cast<int32_t>(CSSValuePattern::ENUM));
+  values->emplace_back(0);
+  values->emplace_back(static_cast<int32_t>(CSSValuePattern::NUMBER));
+  values->emplace_back(1000);
+  values->emplace_back(static_cast<int32_t>(CSSValuePattern::NUMBER));
+  CSSValue malformed(lepus::Value(values), CSSValuePattern::ARRAY);
+  ComputedCSSStyle style(1.f, 1.f);
+
+  EXPECT_FALSE(style.SetValue(CSSPropertyID::kPropertyIDGridTemplateColumns,
+                              malformed, false));
+  EXPECT_TRUE(style.GetLayoutComputedStyle()
+                  ->GetGridTemplateColumnsMinTrackingFunction()
+                  .empty());
 }
 }  // namespace test
 }  // namespace tasm

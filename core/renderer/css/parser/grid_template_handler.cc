@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/include/debug/lynx_assert.h"
+#include "base/include/string/string_number_convert.h"
 #include "base/include/string/string_utils.h"
 #include "base/include/value/array.h"
 #include "core/renderer/css/parser/length_handler.h"
@@ -25,6 +26,8 @@ constexpr size_t kRepeatFunMinSize = 8;
 constexpr size_t kMinmaxFunMinSize = 8;
 constexpr const char* kValueRepeat = "repeat";
 constexpr const char* kValueMinmax = "minmax";
+constexpr const char* kValueAutoFill = "auto-fill";
+constexpr const char* kValueAutoFit = "auto-fit";
 constexpr const char* kValueErrorMessage =
     "value must be a string or percentage array:%d";
 
@@ -64,8 +67,9 @@ bool ParserTrackListValue(const std::string& len_arr_str,
       array->emplace_back(static_cast<int32_t>(CSSFunctionType::MINMAX));
       array->emplace_back(static_cast<int32_t>(CSSValuePattern::ENUM));
 
-      if (content_arr.size() != 2 || !ParserLengthValue(content_arr[0]) ||
-          !ParserLengthValue(content_arr[1])) {
+      if (content_arr.size() != 2 ||
+          !ParserLengthValue(base::TrimString(content_arr[0])) ||
+          !ParserLengthValue(base::TrimString(content_arr[1]))) {
         return false;
       }
     } else {
@@ -91,9 +95,35 @@ bool ResolveRepeatFunc(const std::string& repeat_func,
   if (comma_pos == std::string::npos) {
     return false;
   }
-  const std::string& repeat_size_string = content_str.substr(0, comma_pos);
-  const std::string& track_list_string = content_str.substr(comma_pos + 1);
-  const int32_t repeat_size = std::max(atoi(repeat_size_string.c_str()), 0);
+  const std::string repeat_size_string =
+      base::TrimString(content_str.substr(0, comma_pos));
+  const std::string track_list_string =
+      base::TrimString(content_str.substr(comma_pos + 1));
+  if (repeat_size_string == kValueAutoFill ||
+      repeat_size_string == kValueAutoFit) {
+    auto track_list = lepus::CArray::Create();
+    if (!ParserTrackListValue(track_list_string, track_list, configs) ||
+        track_list->size() == 0) {
+      return false;
+    }
+    array->emplace_back(static_cast<int32_t>(CSSFunctionType::AUTO_REPEAT));
+    array->emplace_back(static_cast<int32_t>(CSSValuePattern::ENUM));
+    array->emplace_back(repeat_size_string == kValueAutoFit ? 1 : 0);
+    array->emplace_back(static_cast<int32_t>(CSSValuePattern::NUMBER));
+    array->emplace_back(static_cast<int32_t>(track_list->size()));
+    array->emplace_back(static_cast<int32_t>(CSSValuePattern::NUMBER));
+    for (size_t index = 0; index < track_list->size(); ++index) {
+      array->emplace_back(track_list->get(index));
+    }
+    return true;
+  }
+  int32_t repeat_size = 0;
+  int parsed_repeat_size = 0;
+  if (!base::StringToInt(repeat_size_string, &parsed_repeat_size, 10) ||
+      parsed_repeat_size <= 0) {
+    return false;
+  }
+  repeat_size = parsed_repeat_size;
   for (int32_t idx = 0; idx < repeat_size; ++idx) {
     if (!ParserTrackListValue(track_list_string, array, configs)) {
       return false;

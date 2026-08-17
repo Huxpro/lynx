@@ -35,6 +35,7 @@ TEST(CSSKeywords, TokenTypeCheck) {
       {"sp", TokenType::SP},
       {"ppx", TokenType::PPX},
       {"fr", TokenType::FR},
+      {"min-content", TokenType::MIN_CONTENT},
       {"max-content", TokenType::MAX_CONTENT},
       {"deg", TokenType::DEG},
       {"grad", TokenType::GRAD},

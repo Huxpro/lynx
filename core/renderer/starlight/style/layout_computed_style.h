@@ -147,6 +147,12 @@ class LayoutComputedStyle {
   const std::vector<NLength>& GetGridTemplateRowsMaxTrackingFunction() const {
     return grid_data_->grid_template_rows_max_track_sizing_function_;
   }
+  const GridAutoRepeatData& GetGridTemplateColumnsAutoRepeat() const {
+    return grid_data_->grid_template_columns_auto_repeat_;
+  }
+  const GridAutoRepeatData& GetGridTemplateRowsAutoRepeat() const {
+    return grid_data_->grid_template_rows_auto_repeat_;
+  }
   const std::vector<NLength>& GetGridAutoColumnsMinTrackingFunction() const {
     return grid_data_->grid_auto_columns_min_track_sizing_function_;
   }

@@ -16,6 +16,24 @@
 namespace lynx {
 namespace starlight {
 
+struct GridAutoRepeatData {
+  bool enabled = false;
+  bool auto_fit = false;
+  size_t insertion_index = 0;
+  std::vector<NLength> min_track_sizing_functions;
+  std::vector<NLength> max_track_sizing_functions;
+
+  bool operator==(const GridAutoRepeatData& other) const {
+    return enabled == other.enabled && auto_fit == other.auto_fit &&
+           insertion_index == other.insertion_index &&
+           min_track_sizing_functions == other.min_track_sizing_functions &&
+           max_track_sizing_functions == other.max_track_sizing_functions;
+  }
+  bool operator!=(const GridAutoRepeatData& other) const {
+    return !(*this == other);
+  }
+};
+
 class GridData : public fml::RefCountedThreadSafeStorage {
  public:
   void ReleaseSelf() const override { delete this; }
@@ -35,6 +53,8 @@ class GridData : public fml::RefCountedThreadSafeStorage {
   std::vector<NLength> grid_template_columns_max_track_sizing_function_;
   std::vector<NLength> grid_template_rows_min_track_sizing_function_;
   std::vector<NLength> grid_template_rows_max_track_sizing_function_;
+  GridAutoRepeatData grid_template_columns_auto_repeat_;
+  GridAutoRepeatData grid_template_rows_auto_repeat_;
   std::vector<NLength> grid_auto_columns_min_track_sizing_function_;
   std::vector<NLength> grid_auto_columns_max_track_sizing_function_;
   std::vector<NLength> grid_auto_rows_min_track_sizing_function_;

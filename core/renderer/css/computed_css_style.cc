@@ -1645,7 +1645,9 @@ bool ComputedCSSStyle::SetGridTemplateColumns(const tasm::CSSValue& value,
       layout_computed_style_.grid_data_.Access()
           ->grid_template_columns_max_track_sizing_function_,
       DefaultLayoutStyle::SL_DEFAULT_GRID_TRACK(),
-      "grid-template-columns must be an array!", parser_configs_);
+      "grid-template-columns must be an array!", parser_configs_,
+      &layout_computed_style_.grid_data_.Access()
+           ->grid_template_columns_auto_repeat_);
 }
 
 bool ComputedCSSStyle::SetGridTemplateRows(const tasm::CSSValue& value,
@@ -1657,7 +1659,9 @@ bool ComputedCSSStyle::SetGridTemplateRows(const tasm::CSSValue& value,
       layout_computed_style_.grid_data_.Access()
           ->grid_template_rows_max_track_sizing_function_,
       DefaultLayoutStyle::SL_DEFAULT_GRID_TRACK(),
-      "grid-template-rows must be an array!", parser_configs_);
+      "grid-template-rows must be an array!", parser_configs_,
+      &layout_computed_style_.grid_data_.Access()
+           ->grid_template_rows_auto_repeat_);
 }
 
 bool ComputedCSSStyle::SetGridAutoColumns(const tasm::CSSValue& value,

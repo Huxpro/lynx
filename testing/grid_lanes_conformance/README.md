@@ -17,6 +17,14 @@ Calibration cases are a hard gate and must pass both browser oracles.
 Grid-lanes cases are expected to remain red until the implementation
 milestones land, but each case must render successfully in every runtime.
 
+M3 track sizing collapses auto-placed items into virtual item groups keyed by
+grid-axis span, placement eligibility, and baseline group. Measuring real items
+is linear in item count; the reused Grid L2 sizing pipeline processes
+`distinct groups × candidate starts`, rather than every item at every lane.
+`grid_lanes_benchmark` covers homogeneous 100- and 1,000-item corpora and the
+unit suite asserts that both produce one group and four virtual items for four
+lanes.
+
 ## Fixture format
 
 Each directory under `fixtures/` contains:

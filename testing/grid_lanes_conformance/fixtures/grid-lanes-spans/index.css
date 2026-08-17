@@ -20,7 +20,7 @@
 }
 .item1 {
   height: 72px;
-  grid-column-span: 2;
+  grid-column-start: span 2;
 }
 .item2 {
   height: 110px;
@@ -30,7 +30,7 @@
 }
 .item4 {
   height: 88px;
-  grid-column-span: 2;
+  grid-column-start: span 2;
 }
 .item5 {
   height: 64px;
