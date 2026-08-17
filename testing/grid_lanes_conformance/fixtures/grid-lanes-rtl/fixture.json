@@ -3,6 +3,10 @@
   "suite": "grid-lanes",
   "expectation": "fail",
   "source": "Adapted from WPT css/css-grid/masonry RTL placement",
+  "expectedFail": {
+    "section": "CSS Grid 3 section 4.4.2",
+    "reason": "Chromium 147 and WebKit 26.4 auto-place grid-lanes items from the physical left in RTL. The specification requires right-to-left placement, which Lynx implements."
+  },
   "viewport": {
     "width": 380,
     "height": 440,
