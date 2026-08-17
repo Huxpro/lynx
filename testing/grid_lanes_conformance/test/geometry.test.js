@@ -6,6 +6,7 @@ const {
   normalizeBoxModel,
   roundToLayoutAccuracy,
 } = require('../scripts/geometry');
+const { readFixtures } = require('../scripts/fixtures');
 
 const quad = [0, 0, 10, 0, 10, 20, 0, 20];
 
@@ -50,4 +51,15 @@ test('compareGeometry reports actionable tag and field', () => {
       actual: 3.5,
     },
   ]);
+});
+
+test('every expected failure is individually justified', () => {
+  for (const fixture of readFixtures()) {
+    if (fixture.expectation === 'fail') {
+      assert.ok(fixture.expectedFail.section);
+      assert.ok(fixture.expectedFail.reason);
+    } else {
+      assert.strictEqual(fixture.expectedFail, undefined);
+    }
+  }
 });

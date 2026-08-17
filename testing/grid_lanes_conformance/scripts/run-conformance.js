@@ -44,6 +44,30 @@ async function runFixture(fixture) {
       `${fixture.name}: stale oracleDisagreement annotation; browser oracles now agree`
     );
   }
+  if (fixture.oracleDisagreement) {
+    const specCorrectOracle = fixture.oracleDisagreement.specCorrectOracle;
+    const differences = compareGeometry(
+      oracleResults[specCorrectOracle].geometry,
+      native.geometry
+    );
+    const browserDisagreementFields = new Set(
+      oracleDifferences.map(
+        (difference) => `${difference.tag}:${difference.field}`
+      )
+    );
+    const incorrectDifferences = differences.filter((difference) =>
+      browserDisagreementFields.has(`${difference.tag}:${difference.field}`)
+    );
+    if (incorrectDifferences.length > 0) {
+      throw new Error(
+        `${fixture.name}: Lynx does not match declared spec-correct ${specCorrectOracle} geometry\n` +
+          incorrectDifferences
+            .slice(0, 20)
+            .map(formatDifference)
+            .join('\n')
+      );
+    }
+  }
 
   const comparisons = {};
   for (const oracle of ORACLES) {
@@ -61,6 +85,7 @@ async function runFixture(fixture) {
     name: fixture.name,
     suite: fixture.suite,
     expectation: fixture.expectation,
+    expectedFail: fixture.expectedFail || null,
     passed,
     expectedOutcome: fixture.expectation === (passed ? 'pass' : 'fail'),
     viewport: fixture.viewport,
@@ -87,6 +112,7 @@ function buildSummary(results) {
       suite === 'all'
         ? results
         : results.filter((result) => result.suite === suite);
+    const scoredCases = cases.filter((result) => result.expectation === 'pass');
     suites[suite] = {
       total: cases.length,
       passed: cases.filter((result) => result.passed).length,
@@ -94,6 +120,14 @@ function buildSummary(results) {
         cases.filter((result) => result.passed).length,
         cases.length
       ),
+      scoredTotal: scoredCases.length,
+      scoredPassed: scoredCases.filter((result) => result.passed).length,
+      releaseConformancePercent: percent(
+        scoredCases.filter((result) => result.passed).length,
+        scoredCases.length
+      ),
+      expectedFails: cases.filter((result) => result.expectation === 'fail')
+        .length,
       expectedOutcomes: cases.filter((result) => result.expectedOutcome).length,
     };
   }
@@ -124,6 +158,13 @@ function table(results, summary) {
       `(${summary['grid-lanes'].conformancePercent}%)`
   );
   lines.push(
+    `Grid lanes release conformance: ${
+      summary['grid-lanes'].scoredPassed
+    }/${summary['grid-lanes'].scoredTotal} ` +
+      `(${summary['grid-lanes'].releaseConformancePercent}%; ` +
+      `${summary['grid-lanes'].expectedFails} justified expected-fail)`
+  );
+  lines.push(
     `Overall: ${summary.all.passed}/${summary.all.total} ` +
       `(${summary.all.conformancePercent}%)`
   );
@@ -144,6 +185,15 @@ function printDifferences(results) {
       if (differences.length > 20) {
         console.log(`  ... ${differences.length - 20} more differences`);
       }
+    }
+  }
+  for (const result of results) {
+    if (result.expectedFail) {
+      console.log(
+        `
+${result.name} expected-fail (${result.expectedFail.section}): ` +
+          result.expectedFail.reason
+      );
     }
   }
 }

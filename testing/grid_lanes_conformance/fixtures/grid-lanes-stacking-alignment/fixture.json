@@ -1,0 +1,19 @@
+{
+  "name": "grid-lanes-stacking-alignment",
+  "suite": "grid-lanes",
+  "expectation": "fail",
+  "source": "CSS Grid 3 sections 6.3 and 6.4 stacking-range content distribution, adjacent-gap self alignment, and auto margins",
+  "expectedFail": {
+    "section": "CSS Grid 3 section 6.4",
+    "reason": "Chromium 147 and WebKit 26.4 do not redistribute an item's adjacent stacking-axis gap for align-self. Lynx implements the specified adjacent-gap alignment container."
+  },
+  "oracleDisagreement": {
+    "specCorrectOracle": "webkit",
+    "reason": "WebKit 26.4 resolves the grid-axis auto margins; Chromium 147 centers the border box but reports zero used auto margins."
+  },
+  "viewport": {
+    "width": 260,
+    "height": 360,
+    "devicePixelRatio": 1
+  }
+}

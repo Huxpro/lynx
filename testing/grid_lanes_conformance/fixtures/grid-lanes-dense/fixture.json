@@ -1,0 +1,15 @@
+{
+  "name": "grid-lanes-dense",
+  "suite": "grid-lanes",
+  "expectation": "fail",
+  "source": "Adapted from CSS Grid 3 section 4.3 dense placement with a compatible no-relayout gap",
+  "expectedFail": {
+    "section": "CSS Grid 3 sections 4.3 and 4.4",
+    "reason": "Chromium 147 and WebKit 26.4 ignore grid-auto-flow:dense for grid-lanes. Lynx backfills only compatible gaps whose lane-window size matches the normal placement, preserving the no-relayout constraint."
+  },
+  "viewport": {
+    "width": 380,
+    "height": 420,
+    "devicePixelRatio": 1
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "grid-lanes-horizontal-abspos",
+  "suite": "grid-lanes",
+  "expectation": "pass",
+  "source": "CSS Grid 3 sections 2.3 and 8 horizontal stacking, explicit rows, and absolute positioning",
+  "viewport": {
+    "width": 300,
+    "height": 300,
+    "devicePixelRatio": 1
+  }
+}

@@ -1,7 +1,7 @@
 {
   "name": "grid-lanes-alignment",
   "suite": "grid-lanes",
-  "expectation": "fail",
+  "expectation": "pass",
   "source": "Adapted from WPT css/css-grid/masonry grid-axis alignment",
   "viewport": {
     "width": 400,

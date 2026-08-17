@@ -1,0 +1,11 @@
+{
+  "name": "grid-lanes-placement",
+  "suite": "grid-lanes",
+  "expectation": "pass",
+  "source": "Adapted from CSS Grid 3 section 4.1 explicit and negative grid-axis line placement",
+  "viewport": {
+    "width": 380,
+    "height": 420,
+    "devicePixelRatio": 1
+  }
+}
