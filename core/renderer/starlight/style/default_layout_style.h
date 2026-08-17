@@ -137,6 +137,10 @@ struct DefaultLayoutStyle {
 
   static const NLength SL_DEFAULT_GRID_GAP() { return SL_DEFAULT_ZEROLENGTH(); }
 
+  static const NLength SL_DEFAULT_FLOW_TOLERANCE() {
+    return NLength::MakeUnitNLength(14.f);
+  }
+
   static std::vector<NLength> SL_DEFAULT_GRID_TRACK() {
     static base::NoDestructor<std::vector<NLength>> l{std::vector<NLength>()};
     return *l;
