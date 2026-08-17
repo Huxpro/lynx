@@ -34,6 +34,13 @@ TEST(CSSStringScanner, Consume) {
   EXPECT_TRUE(scanner.IsAtEnd());
 }
 
+TEST(CSSStringScanner, MinContentIsIntrinsicKeyword) {
+  std::string input = "min-content";
+  Scanner scanner(input.c_str(), static_cast<uint32_t>(input.size()));
+  EXPECT_EQ(scanner.ScanToken().type, TokenType::MIN_CONTENT);
+  EXPECT_TRUE(scanner.IsAtEnd());
+}
+
 TEST(CSSStringScanner, ConsumeMultipleTokens) {
   std::string input = "A 1";
   Scanner scanner(input.c_str(), static_cast<uint32_t>(input.size()));

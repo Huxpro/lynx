@@ -1,0 +1,27 @@
+* {
+  box-sizing: border-box;
+}
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 380px;
+  height: 540px;
+  padding: 20px;
+}
+.lanes {
+  display: grid-lanes;
+  width: 340px;
+  column-gap: 10px;
+  row-gap: 12px;
+}
+.item {
+  width: 100px;
+  min-width: 0;
+  min-height: 0;
+}
+.item1 { height: 50px; }
+.item2 { height: 90px; }
+.item3 { height: 60px; }
+.item4 { height: 70px; }
+.item5 { height: 40px; }
+.item6 { height: 80px; }

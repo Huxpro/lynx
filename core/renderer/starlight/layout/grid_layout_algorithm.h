@@ -64,21 +64,6 @@ class GridLayoutAlgorithm : public LayoutAlgorithm {
                      std::vector<LayoutUnit>& grow_limit);
   void CalcInlineAxisSizeContributions(MeasureItemCache& item_size_infos);
   void CalcBlockAxisSizeContributions(MeasureItemCache& item_size_infos);
-  void ResolveIntrinsicTrackSizes(Dimension dimension,
-                                  MeasureItemCache& item_size_infos,
-                                  std::vector<float>& base_size,
-                                  std::vector<LayoutUnit>& grow_limit);
-  void DistributeExtraSpace(
-      const MeasureItemCache& item_size_infos, std::vector<float>& base_size,
-      std::vector<LayoutUnit>& grow_limit,
-      const std::vector<float>& fit_content_argument_value,
-      std::vector<bool>& infinitely_growable, Dimension dimension,
-      bool whether_affect_base_sizes,
-      const std::vector<size_t>& considered_items_index_vec,
-      const std::vector<size_t>& affected_track_index_vec,
-      const std::vector<float>& size_contribution);
-  void MaximizeTracks(Dimension dimension, std::vector<float>& base_size,
-                      const std::vector<LayoutUnit>& grow_limit) const;
   void ExpandFlexibleTracksAndStretchAutoTracks(
       Dimension dimension, const MeasureItemCache& item_size_infos,
       std::vector<float>& base_size);

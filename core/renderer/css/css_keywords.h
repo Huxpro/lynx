@@ -53,6 +53,7 @@ enum class TokenType {
   FR,               // fr
   SP,               // sp
   MAX_CONTENT,      // max-content
+  MIN_CONTENT,      // min-content
   DEG,              // deg
   GRAD,             // GRAD
   RAD,              // rad

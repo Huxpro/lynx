@@ -58,6 +58,7 @@ enum class CSSFunctionType : uint8_t {
   DEFAULT = 0,
   REPEAT = 1,
   MINMAX = 2,
+  AUTO_REPEAT = 3,
 };
 
 class CSSValue;

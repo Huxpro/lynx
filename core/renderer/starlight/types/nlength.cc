@@ -42,6 +42,10 @@ NLength NLength::MakeAutoNLength() {
   return NLength(NLengthType::kNLengthAuto);
 }
 
+NLength NLength::MakeMinContentNLength() {
+  return NLength(NLengthType::kNLengthMinContent);
+}
+
 NLength NLength::MakeMaxContentNLength() {
   return NLength(NLengthType::kNLengthMaxContent);
 }
@@ -90,6 +94,9 @@ std::string NLength::ToString() const {
     } break;
     case NLengthType::kNLengthCalc: {
       result = "calc(" + NumericLengthToString(numeric_length_) + ")";
+    } break;
+    case NLengthType::kNLengthMinContent: {
+      result = "min-content";
     } break;
     case NLengthType::kNLengthMaxContent: {
       result = "max-content";

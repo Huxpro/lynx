@@ -1,0 +1,28 @@
+* {
+  box-sizing: border-box;
+}
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 600px;
+  height: 320px;
+  padding: 20px;
+}
+.lanes {
+  display: grid-lanes;
+  width: 560px;
+  height: 104px;
+  grid-template-columns: repeat(auto-fit, 100px);
+  column-gap: 10px;
+  row-gap: 12px;
+}
+.item {
+  min-width: 0;
+  min-height: 0;
+}
+.item1 {
+  height: 72px;
+}
+.item2 {
+  height: 104px;
+}

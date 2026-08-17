@@ -1,6 +1,25 @@
 const fs = require('fs/promises');
+const fsSync = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+
+const localAddonPath = path.resolve(
+  __dirname,
+  '..',
+  '..',
+  '..',
+  'oliver',
+  'node-lynx',
+  'platform',
+  `${process.platform}-${process.arch}`,
+  'node_lynx.node'
+);
+if (
+  !process.env.LYNX_NODE_LYNX_NATIVE_ADDON_PATH &&
+  fsSync.existsSync(localAddonPath)
+) {
+  process.env.LYNX_NODE_LYNX_NATIVE_ADDON_PATH = localAddonPath;
+}
 
 const { HeadlessLynxView, LynxEnv } = require('@lynx-js/node-lynx');
 const {
