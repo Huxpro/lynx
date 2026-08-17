@@ -1,7 +1,7 @@
 {
   "name": "grid-lanes-rtl",
   "suite": "grid-lanes",
-  "expectation": "fail",
+  "expectation": "pass",
   "source": "Adapted from WPT css/css-grid/masonry RTL placement",
   "viewport": {
     "width": 380,

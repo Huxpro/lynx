@@ -35,6 +35,8 @@ const pluginGridLanes = () => ({
                 async (args) => {
                   args.encodeData.compilerOptions.enableGridLanes = true;
                   args.encodeData.sourceContent.config.enableGridLanes = true;
+                  args.encodeData.sourceContent.config.enableCSSInheritance =
+                    true;
                   return args;
                 }
               );

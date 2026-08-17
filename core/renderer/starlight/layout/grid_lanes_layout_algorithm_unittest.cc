@@ -151,6 +151,65 @@ std::vector<ExpectedPlacement> PlaceSpansWithNaiveOracle(
   return placements;
 }
 
+std::vector<ExpectedPlacement> PlaceExplicitWithNaiveOracle(
+    size_t lane_count, const std::vector<float>& item_sizes,
+    const std::vector<size_t>& spans, const std::vector<int32_t>& starts,
+    float gap, float* content_size) {
+  std::vector<float> running_positions(lane_count, 0.f);
+  std::vector<ExpectedPlacement> placements;
+  placements.reserve(item_sizes.size());
+  size_t cursor = 0;
+  for (size_t item_index = 0; item_index < item_sizes.size(); ++item_index) {
+    const size_t span = std::min(spans[item_index], lane_count);
+    const auto window_position = [&](size_t lane) {
+      return *std::max_element(running_positions.begin() + lane,
+                               running_positions.begin() + lane + span);
+    };
+    size_t lane = 0;
+    if (starts[item_index] >= 0) {
+      lane = static_cast<size_t>(starts[item_index]);
+    } else {
+      const size_t candidate_count = lane_count - span + 1;
+      float shortest = window_position(0);
+      for (size_t candidate = 1; candidate < candidate_count; ++candidate) {
+        shortest = std::min(shortest, window_position(candidate));
+      }
+      size_t first_possible = 0;
+      bool found_after_cursor = false;
+      for (size_t candidate = 0; candidate < candidate_count; ++candidate) {
+        if (!base::FloatsEqual(window_position(candidate), shortest)) {
+          continue;
+        }
+        if (!found_after_cursor && candidate >= cursor) {
+          lane = candidate;
+          found_after_cursor = true;
+        }
+      }
+      if (!found_after_cursor) {
+        for (size_t candidate = 0; candidate < candidate_count; ++candidate) {
+          if (base::FloatsEqual(window_position(candidate), shortest)) {
+            first_possible = candidate;
+            break;
+          }
+        }
+        lane = first_possible;
+      }
+      cursor = lane + span;
+    }
+    const float stacking_offset = window_position(lane);
+    placements.push_back({lane, stacking_offset});
+    const float next_position = stacking_offset + item_sizes[item_index] + gap;
+    std::fill(running_positions.begin() + lane,
+              running_positions.begin() + lane + span, next_position);
+  }
+  *content_size = item_sizes.empty()
+                      ? 0.f
+                      : *std::max_element(running_positions.begin(),
+                                          running_positions.end()) -
+                            gap;
+  return placements;
+}
+
 class GridLanesLayoutAlgorithmTest : public ::testing::Test {
  protected:
   void SetUp() override { configs_.SetQuirksMode(base::Version(3, 1)); }
@@ -172,6 +231,19 @@ class GridLanesLayoutAlgorithmTest : public ::testing::Test {
         NLength::MakeUnitNLength(height));
     auto* node = CreateNode(style);
     context->size = FloatSize(0.f, height);
+    node->SetContext(context);
+    node->SetSLMeasureFunc(CountingMeasure);
+    return node;
+  }
+
+  LayoutObject* CreateMeasuredBox(float width, float height,
+                                  MeasureContext* context) {
+    auto* style = CreateStyle();
+    style->GetLayoutComputedStyle()->SetWidth(NLength::MakeUnitNLength(width));
+    style->GetLayoutComputedStyle()->SetHeight(
+        NLength::MakeUnitNLength(height));
+    auto* node = CreateNode(style);
+    context->size = FloatSize(width, height);
     node->SetContext(context);
     node->SetSLMeasureFunc(CountingMeasure);
     return node;
@@ -349,7 +421,7 @@ TEST_F(GridLanesLayoutAlgorithmTest, HonorsStackingAxisConstraintModes) {
   EXPECT_FLOAT_EQ(200.f, definite_root->GetBorderBoundHeight());
 }
 
-TEST_F(GridLanesLayoutAlgorithmTest, RowOnlyTemplateUsesOneColumnFallback) {
+TEST_F(GridLanesLayoutAlgorithmTest, RowOnlyTemplateCreatesHorizontalStacking) {
   auto* style = CreateStyle();
   auto* layout_style = style->GetLayoutComputedStyle();
   layout_style->SetDisplay(DisplayType::kGridLanes);
@@ -376,11 +448,13 @@ TEST_F(GridLanesLayoutAlgorithmTest, RowOnlyTemplateUsesOneColumnFallback) {
   root->ReLayout();
 
   EXPECT_FLOAT_EQ(100.f, root->GetBorderBoundWidth());
-  EXPECT_FLOAT_EQ(190.f, root->GetBorderBoundHeight());
+  EXPECT_FLOAT_EQ(90.f, root->GetBorderBoundHeight());
   EXPECT_FLOAT_EQ(0.f, items[0]->GetBorderBoundTopFromParentPaddingBound());
-  EXPECT_FLOAT_EQ(60.f, items[1]->GetBorderBoundTopFromParentPaddingBound());
-  EXPECT_FLOAT_EQ(150.f, items[2]->GetBorderBoundTopFromParentPaddingBound());
-  EXPECT_FLOAT_EQ(0.f, items[2]->GetBorderBoundLeftFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(50.f, items[1]->GetBorderBoundTopFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(0.f, items[2]->GetBorderBoundTopFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(100.f, items[2]->GetBorderBoundLeftFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(50.f, items[0]->GetBorderBoundHeight());
+  EXPECT_FLOAT_EQ(80.f, items[1]->GetBorderBoundHeight());
 }
 
 TEST_F(GridLanesLayoutAlgorithmTest, ColumnsWinWhenBothTemplatesAreSpecified) {
@@ -549,6 +623,286 @@ TEST_F(GridLanesLayoutAlgorithmTest, SpanningItemsUseContiguousLaneWindows) {
   EXPECT_FLOAT_EQ(240.f, second->GetBorderBoundLeftFromParentPaddingBound());
   EXPECT_FLOAT_EQ(80.f, third->GetBorderBoundTopFromParentPaddingBound());
   EXPECT_FLOAT_EQ(80.f, fourth->GetBorderBoundTopFromParentPaddingBound());
+}
+
+TEST_F(GridLanesLayoutAlgorithmTest,
+       ExplicitAndNegativeGridAxisLinesPinItemsToLanes) {
+  std::vector<MeasureContext> contexts(3);
+  auto* root = CreateGridLanes(340.f, {100.f, 100.f, 100.f}, 20.f, 10.f);
+  auto* last_lane = CreateMeasuredItem(60.f, &contexts[0]);
+  last_lane->GetCSSMutableStyle()->grid_data_.Access()->grid_column_start_ = -2;
+  auto* spanning = CreateMeasuredItem(40.f, &contexts[1]);
+  auto* spanning_data = spanning->GetCSSMutableStyle()->grid_data_.Access();
+  spanning_data->grid_column_start_ = -3;
+  spanning_data->grid_column_end_ = -1;
+  auto* automatic = CreateMeasuredItem(30.f, &contexts[2]);
+  root->AppendChild(last_lane);
+  root->AppendChild(spanning);
+  root->AppendChild(automatic);
+
+  root->ReLayout();
+
+  EXPECT_FLOAT_EQ(240.f, last_lane->GetBorderBoundLeftFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(120.f, spanning->GetBorderBoundLeftFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(220.f, spanning->GetBorderBoundWidth());
+  EXPECT_FLOAT_EQ(70.f, spanning->GetBorderBoundTopFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(0.f, automatic->GetBorderBoundLeftFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(0.f, automatic->GetBorderBoundTopFromParentPaddingBound());
+}
+
+TEST_F(GridLanesLayoutAlgorithmTest,
+       DenseBackfillsCompatibleGapWithoutRemeasuring) {
+  const auto run = [this](bool dense) {
+    std::vector<MeasureContext> contexts(4);
+    auto* root = CreateGridLanes(340.f, {100.f, 100.f, 100.f}, 20.f, 10.f);
+    if (dense) {
+      root->GetCSSMutableStyle()->grid_data_.Access()->grid_auto_flow_ =
+          GridAutoFlowType::kDense;
+    }
+    auto* first = CreateMeasuredItem(100.f, &contexts[0]);
+    auto* second = CreateMeasuredItem(30.f, &contexts[1]);
+    auto* spanning = CreateMeasuredItem(60.f, &contexts[2]);
+    spanning->GetCSSMutableStyle()->grid_data_.Access()->grid_column_span_ = 2;
+    auto* candidate = CreateMeasuredItem(20.f, &contexts[3]);
+    root->AppendChild(first);
+    root->AppendChild(second);
+    root->AppendChild(spanning);
+    root->AppendChild(candidate);
+    root->ReLayout();
+    return std::tuple<float, float, int>{
+        candidate->GetBorderBoundLeftFromParentPaddingBound(),
+        candidate->GetBorderBoundTopFromParentPaddingBound(),
+        contexts[3].final_count};
+  };
+
+  const auto [sparse_left, sparse_top, sparse_measures] = run(false);
+  const auto [dense_left, dense_top, dense_measures] = run(true);
+
+  EXPECT_FLOAT_EQ(0.f, sparse_left);
+  EXPECT_FLOAT_EQ(110.f, sparse_top);
+  EXPECT_FLOAT_EQ(240.f, dense_left);
+  EXPECT_FLOAT_EQ(0.f, dense_top);
+  EXPECT_EQ(1, sparse_measures);
+  EXPECT_EQ(1, dense_measures);
+}
+
+TEST_F(GridLanesLayoutAlgorithmTest, RtlMirrorsColumnLanes) {
+  std::vector<MeasureContext> contexts(3);
+  auto* root = CreateGridLanes(340.f, {100.f, 100.f, 100.f}, 20.f, 10.f);
+  root->GetCSSMutableStyle()->SetDirection(DirectionType::kRtl);
+  auto* first = CreateMeasuredItem(40.f, &contexts[0]);
+  auto* second = CreateMeasuredItem(50.f, &contexts[1]);
+  auto* explicit_middle = CreateMeasuredItem(30.f, &contexts[2]);
+  explicit_middle->GetCSSMutableStyle()
+      ->grid_data_.Access()
+      ->grid_column_start_ = 2;
+  root->AppendChild(first);
+  root->AppendChild(second);
+  root->AppendChild(explicit_middle);
+
+  root->ReLayout();
+
+  EXPECT_FLOAT_EQ(240.f, first->GetBorderBoundLeftFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(120.f, second->GetBorderBoundLeftFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(120.f,
+                  explicit_middle->GetBorderBoundLeftFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(60.f,
+                  explicit_middle->GetBorderBoundTopFromParentPaddingBound());
+}
+
+TEST_F(GridLanesLayoutAlgorithmTest, RowLanesStackHorizontallyAndMirrorInRtl) {
+  auto* style = CreateStyle();
+  auto* layout_style = style->GetLayoutComputedStyle();
+  layout_style->SetDisplay(DisplayType::kGridLanes);
+  layout_style->SetWidth(NLength::MakeUnitNLength(240.f));
+  layout_style->SetDirection(DirectionType::kRtl);
+  layout_style->SetColumnGap(NLength::MakeUnitNLength(10.f));
+  layout_style->SetRowGap(NLength::MakeUnitNLength(20.f));
+  for (int index = 0; index < 2; ++index) {
+    layout_style->grid_data_.Access()
+        ->grid_template_rows_min_track_sizing_function_.push_back(
+            NLength::MakeUnitNLength(50.f));
+    layout_style->grid_data_.Access()
+        ->grid_template_rows_max_track_sizing_function_.push_back(
+            NLength::MakeUnitNLength(50.f));
+  }
+  auto* root = CreateNode(style);
+  std::vector<MeasureContext> contexts(3);
+  auto* first = CreateMeasuredBox(60.f, 20.f, &contexts[0]);
+  auto* second = CreateMeasuredBox(80.f, 20.f, &contexts[1]);
+  auto* third = CreateMeasuredBox(40.f, 20.f, &contexts[2]);
+  root->AppendChild(first);
+  root->AppendChild(second);
+  root->AppendChild(third);
+
+  root->ReLayout();
+
+  EXPECT_FLOAT_EQ(180.f, first->GetBorderBoundLeftFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(160.f, second->GetBorderBoundLeftFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(130.f, third->GetBorderBoundLeftFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(0.f, first->GetBorderBoundTopFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(70.f, second->GetBorderBoundTopFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(0.f, third->GetBorderBoundTopFromParentPaddingBound());
+}
+
+TEST_F(GridLanesLayoutAlgorithmTest, AlignsLaneTracksItemsAndStackingRange) {
+  auto* root = CreateGridLanes(300.f, {100.f, 100.f}, 0.f, 10.f);
+  root->GetCSSMutableStyle()->SetHeight(NLength::MakeUnitNLength(300.f));
+  root->GetCSSMutableStyle()->SetJustifyContent(
+      JustifyContentType::kSpaceBetween);
+  root->GetCSSMutableStyle()->grid_data_.Access()->justify_items_ =
+      JustifyType::kCenter;
+  root->GetCSSMutableStyle()->SetAlignContent(AlignContentType::kCenter);
+  std::vector<MeasureContext> contexts(2);
+  auto* first = CreateMeasuredBox(40.f, 50.f, &contexts[0]);
+  first->GetCSSMutableStyle()->SetMarginLeft(NLength::MakeAutoNLength());
+  first->GetCSSMutableStyle()->SetMarginRight(NLength::MakeAutoNLength());
+  auto* second = CreateMeasuredBox(60.f, 50.f, &contexts[1]);
+  second->GetCSSMutableStyle()->grid_data_.Access()->justify_self_ =
+      JustifyType::kEnd;
+  root->AppendChild(first);
+  root->AppendChild(second);
+
+  root->ReLayout();
+
+  EXPECT_FLOAT_EQ(30.f, first->GetBorderBoundLeftFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(240.f, second->GetBorderBoundLeftFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(125.f, first->GetBorderBoundTopFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(125.f, second->GetBorderBoundTopFromParentPaddingBound());
+}
+
+TEST_F(GridLanesLayoutAlgorithmTest,
+       StackingSelfAlignmentRedistributesOnlyAdjacentGap) {
+  auto* root = CreateGridLanes(220.f, {100.f, 100.f}, 20.f, 10.f);
+  std::vector<MeasureContext> contexts(3);
+  auto* first = CreateMeasuredItem(40.f, &contexts[0]);
+  first->GetCSSMutableStyle()->SetAlignSelf(FlexAlignType::kEnd);
+  auto* second = CreateMeasuredItem(100.f, &contexts[1]);
+  auto* spanning = CreateMeasuredItem(20.f, &contexts[2]);
+  spanning->GetCSSMutableStyle()->grid_data_.Access()->grid_column_span_ = 2;
+  root->AppendChild(first);
+  root->AppendChild(second);
+  root->AppendChild(spanning);
+
+  root->ReLayout();
+
+  EXPECT_FLOAT_EQ(60.f, first->GetBorderBoundTopFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(0.f, second->GetBorderBoundTopFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(110.f, spanning->GetBorderBoundTopFromParentPaddingBound());
+}
+
+TEST_F(GridLanesLayoutAlgorithmTest,
+       AbsoluteItemsResolveLaneAndStackingRangeLines) {
+  auto* root = CreateGridLanes(340.f, {100.f, 100.f, 100.f}, 20.f, 10.f);
+  MeasureContext inflow_context;
+  MeasureContext absolute_context;
+  root->AppendChild(CreateMeasuredItem(80.f, &inflow_context));
+  auto* absolute = CreateMeasuredBox(30.f, 20.f, &absolute_context);
+  absolute->GetCSSMutableStyle()->SetPosition(PositionType::kAbsolute);
+  auto* data = absolute->GetCSSMutableStyle()->grid_data_.Access();
+  data->grid_column_start_ = 2;
+  data->grid_column_end_ = 3;
+  data->grid_row_start_ = 1;
+  data->grid_row_end_ = 2;
+  root->AppendChild(absolute);
+
+  root->ReLayout();
+
+  EXPECT_FLOAT_EQ(120.f, absolute->GetBorderBoundLeftFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(0.f, absolute->GetBorderBoundTopFromParentPaddingBound());
+  EXPECT_EQ(1, absolute_context.final_count);
+}
+
+TEST_F(GridLanesLayoutAlgorithmTest,
+       AbsoluteItemsMirrorInRtlForBothOrientations) {
+  {
+    auto* root = CreateGridLanes(340.f, {100.f, 100.f, 100.f}, 20.f, 10.f);
+    root->GetCSSMutableStyle()->SetDirection(DirectionType::kRtl);
+    MeasureContext inflow_context;
+    MeasureContext absolute_context;
+    root->AppendChild(CreateMeasuredItem(80.f, &inflow_context));
+    auto* absolute = CreateMeasuredBox(30.f, 20.f, &absolute_context);
+    absolute->GetCSSMutableStyle()->SetPosition(PositionType::kAbsolute);
+    auto* data = absolute->GetCSSMutableStyle()->grid_data_.Access();
+    data->grid_column_start_ = 2;
+    data->grid_column_end_ = 3;
+    root->AppendChild(absolute);
+
+    root->ReLayout();
+
+    EXPECT_FLOAT_EQ(190.f,
+                    absolute->GetBorderBoundLeftFromParentPaddingBound());
+    EXPECT_FLOAT_EQ(0.f, absolute->GetBorderBoundTopFromParentPaddingBound());
+  }
+
+  auto* style = CreateStyle();
+  auto* layout_style = style->GetLayoutComputedStyle();
+  layout_style->SetDisplay(DisplayType::kGridLanes);
+  layout_style->SetWidth(NLength::MakeUnitNLength(260.f));
+  layout_style->SetDirection(DirectionType::kRtl);
+  layout_style->SetColumnGap(NLength::MakeUnitNLength(10.f));
+  layout_style->SetRowGap(NLength::MakeUnitNLength(20.f));
+  for (int index = 0; index < 2; ++index) {
+    layout_style->grid_data_.Access()
+        ->grid_template_rows_min_track_sizing_function_.push_back(
+            NLength::MakeUnitNLength(50.f));
+    layout_style->grid_data_.Access()
+        ->grid_template_rows_max_track_sizing_function_.push_back(
+            NLength::MakeUnitNLength(50.f));
+  }
+  auto* root = CreateNode(style);
+  MeasureContext inflow_context;
+  MeasureContext absolute_context;
+  root->AppendChild(CreateMeasuredBox(60.f, 20.f, &inflow_context));
+  auto* absolute = CreateMeasuredBox(30.f, 20.f, &absolute_context);
+  absolute->GetCSSMutableStyle()->SetPosition(PositionType::kAbsolute);
+  auto* data = absolute->GetCSSMutableStyle()->grid_data_.Access();
+  data->grid_row_start_ = 2;
+  data->grid_row_end_ = 3;
+  data->grid_column_start_ = 1;
+  data->grid_column_end_ = 2;
+  root->AppendChild(absolute);
+
+  root->ReLayout();
+
+  EXPECT_FLOAT_EQ(230.f, absolute->GetBorderBoundLeftFromParentPaddingBound());
+  EXPECT_FLOAT_EQ(70.f, absolute->GetBorderBoundTopFromParentPaddingBound());
+}
+
+TEST_F(GridLanesLayoutAlgorithmTest,
+       NormalToleranceReresolvesAfterFontSizeRelayout) {
+  auto* style = CreateStyle();
+  style->SetFontSize(4.f, 4.f);
+  auto* layout_style = style->GetLayoutComputedStyle();
+  layout_style->SetDisplay(DisplayType::kGridLanes);
+  layout_style->SetWidth(NLength::MakeUnitNLength(340.f));
+  layout_style->SetColumnGap(NLength::MakeUnitNLength(20.f));
+  for (int index = 0; index < 3; ++index) {
+    layout_style->grid_data_.Access()
+        ->grid_template_columns_min_track_sizing_function_.push_back(
+            NLength::MakeUnitNLength(100.f));
+    layout_style->grid_data_.Access()
+        ->grid_template_columns_max_track_sizing_function_.push_back(
+            NLength::MakeUnitNLength(100.f));
+  }
+  auto* root = CreateNode(style);
+  std::vector<MeasureContext> contexts(4);
+  std::vector<LayoutObject*> items;
+  constexpr float kHeights[] = {100.f, 90.f, 95.f, 20.f};
+  for (size_t index = 0; index < contexts.size(); ++index) {
+    items.push_back(CreateMeasuredItem(kHeights[index], &contexts[index]));
+    root->AppendChild(items.back());
+  }
+
+  root->ReLayout();
+  EXPECT_FLOAT_EQ(120.f, items[3]->GetBorderBoundLeftFromParentPaddingBound());
+
+  style->SetFontSize(15.f, 15.f);
+  EXPECT_EQ(layout_style->GetFlowTolerance(), NLength::MakeUnitNLength(15.f));
+  root->MarkDirtyAndRequestLayout(true);
+  root->ReLayout();
+
+  EXPECT_FLOAT_EQ(0.f, items[3]->GetBorderBoundLeftFromParentPaddingBound());
 }
 
 TEST_F(GridLanesLayoutAlgorithmTest,
@@ -735,6 +1089,127 @@ TEST_F(GridLanesLayoutAlgorithmTest,
       EXPECT_FLOAT_EQ(
           spans[item_index] * lane_size + (spans[item_index] - 1) * column_gap,
           items[item_index]->GetBorderBoundWidth());
+    }
+  }
+}
+
+TEST_F(GridLanesLayoutAlgorithmTest,
+       FuzzesExplicitPlacementRtlAndBothOrientations) {
+  std::mt19937 random(8620);
+  std::uniform_int_distribution<int> lane_count_distribution(1, 5);
+  std::uniform_int_distribution<int> item_count_distribution(1, 16);
+  std::uniform_int_distribution<int> item_size_distribution(1, 120);
+  std::uniform_int_distribution<int> gap_distribution(0, 20);
+  std::bernoulli_distribution boolean_distribution(0.5);
+  std::bernoulli_distribution explicit_distribution(0.35);
+
+  for (int case_index = 0; case_index < 1000; ++case_index) {
+    const size_t lane_count = lane_count_distribution(random);
+    const size_t item_count = item_count_distribution(random);
+    const float lane_size = 60.f;
+    const float grid_gap = 10.f;
+    const float stacking_gap = gap_distribution(random);
+    const bool row_lanes = boolean_distribution(random);
+    const bool rtl = boolean_distribution(random);
+    std::uniform_int_distribution<int> span_distribution(
+        1, static_cast<int>(lane_count));
+    std::vector<float> item_sizes(item_count);
+    std::vector<size_t> spans(item_count);
+    std::vector<int32_t> starts(item_count, -1);
+    for (size_t index = 0; index < item_count; ++index) {
+      item_sizes[index] = item_size_distribution(random);
+      spans[index] = span_distribution(random);
+      if (explicit_distribution(random)) {
+        std::uniform_int_distribution<int> start_distribution(
+            0, static_cast<int>(lane_count - spans[index]));
+        starts[index] = start_distribution(random);
+      }
+    }
+    float expected_content_size = 0.f;
+    const auto expected =
+        PlaceExplicitWithNaiveOracle(lane_count, item_sizes, spans, starts,
+                                     stacking_gap, &expected_content_size);
+
+    auto* style = CreateStyle();
+    auto* layout_style = style->GetLayoutComputedStyle();
+    layout_style->SetDisplay(DisplayType::kGridLanes);
+    layout_style->SetDirection(rtl ? DirectionType::kRtl
+                                   : DirectionType::kNormal);
+    layout_style->SetFlowTolerance(NLength::MakeUnitNLength(0.f));
+    if (row_lanes) {
+      layout_style->SetWidth(NLength::MakeUnitNLength(600.f));
+      layout_style->SetColumnGap(NLength::MakeUnitNLength(stacking_gap));
+      layout_style->SetRowGap(NLength::MakeUnitNLength(grid_gap));
+    } else {
+      layout_style->SetWidth(NLength::MakeUnitNLength(
+          lane_count * lane_size + (lane_count - 1) * grid_gap));
+      layout_style->SetColumnGap(NLength::MakeUnitNLength(grid_gap));
+      layout_style->SetRowGap(NLength::MakeUnitNLength(stacking_gap));
+    }
+    for (size_t lane = 0; lane < lane_count; ++lane) {
+      auto* data = layout_style->grid_data_.Access();
+      auto& minimums =
+          row_lanes ? data->grid_template_rows_min_track_sizing_function_
+                    : data->grid_template_columns_min_track_sizing_function_;
+      auto& maximums =
+          row_lanes ? data->grid_template_rows_max_track_sizing_function_
+                    : data->grid_template_columns_max_track_sizing_function_;
+      minimums.push_back(NLength::MakeUnitNLength(lane_size));
+      maximums.push_back(NLength::MakeUnitNLength(lane_size));
+    }
+    auto* root = CreateNode(style);
+    std::vector<MeasureContext> contexts(item_count);
+    std::vector<LayoutObject*> items;
+    for (size_t index = 0; index < item_count; ++index) {
+      LayoutObject* item =
+          row_lanes
+              ? CreateMeasuredBox(item_sizes[index], 20.f, &contexts[index])
+              : CreateMeasuredItem(item_sizes[index], &contexts[index]);
+      auto* data = item->GetCSSMutableStyle()->grid_data_.Access();
+      if (row_lanes) {
+        data->grid_row_span_ = spans[index];
+        if (starts[index] >= 0) {
+          data->grid_row_start_ = starts[index] + 1;
+        }
+      } else {
+        data->grid_column_span_ = spans[index];
+        if (starts[index] >= 0) {
+          data->grid_column_start_ = starts[index] + 1;
+        }
+      }
+      items.push_back(item);
+      root->AppendChild(item);
+    }
+
+    root->ReLayout();
+
+    SCOPED_TRACE(case_index);
+    for (size_t index = 0; index < item_count; ++index) {
+      const float grid_offset = expected[index].lane * (lane_size + grid_gap);
+      const float grid_window_size =
+          spans[index] * lane_size + (spans[index] - 1) * grid_gap;
+      if (row_lanes) {
+        const float expected_left =
+            rtl ? 600.f - expected[index].stacking_offset - item_sizes[index]
+                : expected[index].stacking_offset;
+        EXPECT_FLOAT_EQ(
+            expected_left,
+            items[index]->GetBorderBoundLeftFromParentPaddingBound());
+        EXPECT_FLOAT_EQ(
+            grid_offset,
+            items[index]->GetBorderBoundTopFromParentPaddingBound());
+      } else {
+        const float expected_left = rtl ? lane_count * lane_size +
+                                              (lane_count - 1) * grid_gap -
+                                              grid_offset - grid_window_size
+                                        : grid_offset;
+        EXPECT_FLOAT_EQ(
+            expected_left,
+            items[index]->GetBorderBoundLeftFromParentPaddingBound());
+        EXPECT_FLOAT_EQ(
+            expected[index].stacking_offset,
+            items[index]->GetBorderBoundTopFromParentPaddingBound());
+      }
     }
   }
 }

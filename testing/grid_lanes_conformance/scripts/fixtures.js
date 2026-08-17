@@ -29,6 +29,28 @@ function readFixtures(suite = 'all') {
         `${metadataPath} has invalid expectation ${metadata.expectation}`
       );
     }
+    if (
+      metadata.expectation === 'fail' &&
+      (!metadata.expectedFail?.section || !metadata.expectedFail?.reason)
+    ) {
+      throw new Error(
+        `${metadataPath} must justify expected failures with expectedFail.section and expectedFail.reason`
+      );
+    }
+    if (metadata.expectation === 'pass' && metadata.expectedFail) {
+      throw new Error(`${metadataPath} has stale expectedFail metadata`);
+    }
+    if (
+      metadata.oracleDisagreement &&
+      (!['chromium', 'webkit'].includes(
+        metadata.oracleDisagreement.specCorrectOracle
+      ) ||
+        !metadata.oracleDisagreement.reason)
+    ) {
+      throw new Error(
+        `${metadataPath} must identify a spec-correct oracle and reason`
+      );
+    }
     return {
       ...metadata,
       directory,
