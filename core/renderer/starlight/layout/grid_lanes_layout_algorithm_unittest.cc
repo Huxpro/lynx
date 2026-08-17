@@ -5,6 +5,7 @@
 #include "core/renderer/starlight/layout/grid_lanes_layout_algorithm.h"
 
 #include <algorithm>
+#include <cstdlib>
 #include <limits>
 #include <memory>
 #include <random>
@@ -21,6 +22,23 @@ namespace lynx {
 namespace starlight {
 namespace {
 
+int FuzzCaseCount(int default_count) {
+  const char* value = std::getenv("GRID_LANES_FUZZ_MULTIPLIER");
+  if (value == nullptr) {
+    return default_count;
+  }
+  const int multiplier = std::atoi(value);
+  return multiplier > 0 ? default_count * multiplier : default_count;
+}
+
+uint32_t FuzzSeed(uint32_t default_seed) {
+  const char* value = std::getenv("GRID_LANES_FUZZ_SEED_OFFSET");
+  if (value == nullptr) {
+    return default_seed;
+  }
+  return default_seed + static_cast<uint32_t>(std::strtoul(value, nullptr, 10));
+}
+
 struct MeasureContext {
   FloatSize size;
   float min_content_width = 0.f;
@@ -29,6 +47,18 @@ struct MeasureContext {
   int final_count = 0;
   Constraints last_constraints;
   std::vector<Constraints> constraints;
+};
+
+class FeatureCountHandler : public LayoutEventHandler {
+ public:
+  void OnLayoutEvent(const LayoutObject*, LayoutEventType type,
+                     const LayoutEventData&) override {
+    if (type == LayoutEventType::FeatureCountOnGridLanesDisplay) {
+      ++grid_lanes_count;
+    }
+  }
+
+  int grid_lanes_count = 0;
 };
 
 FloatSize CountingMeasure(void* context, const Constraints& constraints,
@@ -330,6 +360,18 @@ TEST_F(GridLanesLayoutAlgorithmTest, FixedColumnsGeometrySnapshot) {
   EXPECT_EQ(
       R"({"width":320.0,"height":242.0,"offset_top":0.0,"offset_left":0.0,"content":[0.0,0.0,320.0,0.0,320.0,242.0,0.0,242.0],"padding":[0.0,0.0,320.0,0.0,320.0,242.0,0.0,242.0],"border":[0.0,0.0,320.0,0.0,320.0,242.0,0.0,242.0],"margin":[0.0,0.0,320.0,0.0,320.0,242.0,0.0,242.0],"children":[{"width":96.0,"height":72.0,"offset_top":0.0,"offset_left":0.0,"content":[0.0,0.0,96.0,0.0,96.0,72.0,0.0,72.0],"padding":[0.0,0.0,96.0,0.0,96.0,72.0,0.0,72.0],"border":[0.0,0.0,96.0,0.0,96.0,72.0,0.0,72.0],"margin":[0.0,0.0,96.0,0.0,96.0,72.0,0.0,72.0]},{"width":96.0,"height":120.0,"offset_top":0.0,"offset_left":108.0,"content":[108.0,0.0,204.0,0.0,204.0,120.0,108.0,120.0],"padding":[108.0,0.0,204.0,0.0,204.0,120.0,108.0,120.0],"border":[108.0,0.0,204.0,0.0,204.0,120.0,108.0,120.0],"margin":[108.0,0.0,204.0,0.0,204.0,120.0,108.0,120.0]},{"width":96.0,"height":56.0,"offset_top":0.0,"offset_left":216.0,"content":[216.0,0.0,312.0,0.0,312.0,56.0,216.0,56.0],"padding":[216.0,0.0,312.0,0.0,312.0,56.0,216.0,56.0],"border":[216.0,0.0,312.0,0.0,312.0,56.0,216.0,56.0],"margin":[216.0,0.0,312.0,0.0,312.0,56.0,216.0,56.0]},{"width":96.0,"height":90.0,"offset_top":68.0,"offset_left":216.0,"content":[216.0,68.0,312.0,68.0,312.0,158.0,216.0,158.0],"padding":[216.0,68.0,312.0,68.0,312.0,158.0,216.0,158.0],"border":[216.0,68.0,312.0,68.0,312.0,158.0,216.0,158.0],"margin":[216.0,68.0,312.0,68.0,312.0,158.0,216.0,158.0]},{"width":96.0,"height":44.0,"offset_top":84.0,"offset_left":0.0,"content":[0.0,84.0,96.0,84.0,96.0,128.0,0.0,128.0],"padding":[0.0,84.0,96.0,84.0,96.0,128.0,0.0,128.0],"border":[0.0,84.0,96.0,84.0,96.0,128.0,0.0,128.0],"margin":[0.0,84.0,96.0,84.0,96.0,128.0,0.0,128.0]},{"width":96.0,"height":110.0,"offset_top":132.0,"offset_left":108.0,"content":[108.0,132.0,204.0,132.0,204.0,242.0,108.0,242.0],"padding":[108.0,132.0,204.0,132.0,204.0,242.0,108.0,242.0],"border":[108.0,132.0,204.0,132.0,204.0,242.0,108.0,242.0],"margin":[108.0,132.0,204.0,132.0,204.0,242.0,108.0,242.0]}]})", Layout(
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                root));
+}
+
+TEST_F(GridLanesLayoutAlgorithmTest, DispatchesGridLanesFeatureCount) {
+  MeasureContext context;
+  FeatureCountHandler handler;
+  auto* root = CreateGridLanes(100, {100}, 0, 0);
+  root->SetEventHandler(&handler);
+  root->AppendChild(CreateMeasuredItem(40, &context));
+
+  root->ReLayout();
+
+  EXPECT_EQ(1, handler.grid_lanes_count);
 }
 
 TEST_F(GridLanesLayoutAlgorithmTest, InfiniteToleranceUsesDocumentOrder) {
@@ -981,14 +1023,14 @@ TEST_F(GridLanesLayoutAlgorithmTest,
 }
 
 TEST_F(GridLanesLayoutAlgorithmTest, MatchesNaiveOracleFor1000SeededCases) {
-  std::mt19937 random(8618);
+  std::mt19937 random(FuzzSeed(8618));
   std::uniform_int_distribution<int> lane_count_distribution(1, 6);
   std::uniform_int_distribution<int> item_count_distribution(1, 20);
   std::uniform_int_distribution<int> lane_size_distribution(20, 150);
   std::uniform_int_distribution<int> item_size_distribution(1, 240);
   std::uniform_int_distribution<int> gap_distribution(0, 30);
 
-  for (int case_index = 0; case_index < 1000; ++case_index) {
+  for (int case_index = 0; case_index < FuzzCaseCount(1000); ++case_index) {
     const size_t lane_count = lane_count_distribution(random);
     const size_t item_count = item_count_distribution(random);
     const float lane_size = lane_size_distribution(random);
@@ -1037,13 +1079,13 @@ TEST_F(GridLanesLayoutAlgorithmTest, MatchesNaiveOracleFor1000SeededCases) {
 
 TEST_F(GridLanesLayoutAlgorithmTest,
        FuzzesSpanningPlacementAgainstNaiveOracle) {
-  std::mt19937 random(8619);
+  std::mt19937 random(FuzzSeed(8619));
   std::uniform_int_distribution<int> lane_count_distribution(1, 6);
   std::uniform_int_distribution<int> item_count_distribution(1, 24);
   std::uniform_int_distribution<int> item_size_distribution(1, 180);
   std::uniform_int_distribution<int> gap_distribution(0, 24);
 
-  for (int case_index = 0; case_index < 2000; ++case_index) {
+  for (int case_index = 0; case_index < FuzzCaseCount(2000); ++case_index) {
     const size_t lane_count = lane_count_distribution(random);
     const size_t item_count = item_count_distribution(random);
     const float lane_size = 80.f;
@@ -1095,7 +1137,7 @@ TEST_F(GridLanesLayoutAlgorithmTest,
 
 TEST_F(GridLanesLayoutAlgorithmTest,
        FuzzesExplicitPlacementRtlAndBothOrientations) {
-  std::mt19937 random(8620);
+  std::mt19937 random(FuzzSeed(8620));
   std::uniform_int_distribution<int> lane_count_distribution(1, 5);
   std::uniform_int_distribution<int> item_count_distribution(1, 16);
   std::uniform_int_distribution<int> item_size_distribution(1, 120);
@@ -1103,7 +1145,7 @@ TEST_F(GridLanesLayoutAlgorithmTest,
   std::bernoulli_distribution boolean_distribution(0.5);
   std::bernoulli_distribution explicit_distribution(0.35);
 
-  for (int case_index = 0; case_index < 1000; ++case_index) {
+  for (int case_index = 0; case_index < FuzzCaseCount(1000); ++case_index) {
     const size_t lane_count = lane_count_distribution(random);
     const size_t item_count = item_count_distribution(random);
     const float lane_size = 60.f;

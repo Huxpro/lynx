@@ -32,6 +32,12 @@ const ITEMS: ItemProps[] = [
     url: 'file://lynx?local://showcase/layout/grid.lynx.bundle',
   },
   {
+    title: 'Grid Lanes',
+    description:
+      'A masonry feed with spans, flow tolerance, RTL, and horizontal stacking.',
+    url: 'file://lynx?local://showcase/grid-lanes/main.lynx.bundle',
+  },
+  {
     title: 'Linear',
     description: 'An example shows a linear direction container',
     url: 'file://lynx?local://showcase/layout/linear.lynx.bundle',

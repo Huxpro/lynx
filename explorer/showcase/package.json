@@ -5,7 +5,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "pnpm --filter @showcase/menu run build"
+    "build": "pnpm --filter @showcase/menu --filter @showcase/grid-lanes run build"
   },
   "dependencies": {
     "@lynx-example/animation": "0.3.0",

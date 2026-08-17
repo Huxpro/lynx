@@ -13,6 +13,7 @@ packages:
   - explorer/lib
   - explorer/homepage
   - explorer/showcase
+  - explorer/showcase/grid-lanes
   - explorer/showcase/menu
   # base devtool
   - 'lynx/devtool/base_devtool/js_libraries/logbox'

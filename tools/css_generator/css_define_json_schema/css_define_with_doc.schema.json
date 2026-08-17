@@ -16,8 +16,10 @@
               "pattern": "^targetSdkVersion \\d+(\\.\\d+)*$"
             },
             {
-              "type": "boolean",
-              "nullable": true
+              "type": "boolean"
+            },
+            {
+              "type": "null"
             }
           ],
           "tsType": "VersionValue"
@@ -191,7 +193,9 @@
         "enum": [
           "ios",
           "android",
+          "harmony",
           "clay_android",
+          "clay_ios",
           "clay_macos",
           "clay_windows",
           "web_lynx"
