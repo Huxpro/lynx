@@ -2,6 +2,7 @@
 # Copyright 2025 The Lynx Authors. All rights reserved.
 # Licensed under the Apache License Version 2.0 that can be found in the
 # LICENSE file in the root directory of this source tree.
+import glob
 import os
 import shutil
 import subprocess
@@ -20,6 +21,66 @@ LYNX_EXAMPLE_DIR_NAME = "@lynx-example"
 # Get the showcase root directory
 showcase_root_dir = os.path.dirname(os.path.abspath(__file__))
 explorer_dir = os.path.dirname(showcase_root_dir)
+
+
+def ensure_grid_lanes_encoder():
+    tasm_dir = os.path.join(root_dir, "oliver", "lynx-tasm")
+    build_script = os.path.join(root_dir, "oliver", "build_gn.py")
+    if sys.platform == "win32":
+        encoder_path = os.path.join(tasm_dir, "lepus.js")
+        command = [
+            sys.executable,
+            build_script,
+            "--type",
+            "tasm",
+            "--wasm",
+            "true",
+            "--clean",
+            "false",
+        ]
+    else:
+        platform_name = "darwin" if sys.platform == "darwin" else "linux"
+        encoder_path = os.path.join(tasm_dir, "build", platform_name, "Release",
+                                    "lepus.node")
+        node_addon_source = os.path.join(
+            root_dir,
+            "node_modules",
+            ".pnpm",
+            "node-addon-api@*",
+            "node_modules",
+            "node-addon-api"
+        )
+        node_addon_sources = glob.glob(node_addon_source)
+        if len(node_addon_sources) != 1:
+            raise RuntimeError(
+                f"Expected one node-addon-api package, found {node_addon_sources}"
+            )
+        node_addon_source = node_addon_sources[0]
+        node_addon_target = os.path.join(tasm_dir, "node_modules",
+                                         "node-addon-api")
+        if not os.path.exists(node_addon_target):
+            if os.path.lexists(node_addon_target):
+                os.remove(node_addon_target)
+            os.makedirs(os.path.dirname(node_addon_target), exist_ok=True)
+            os.symlink(node_addon_source, node_addon_target,
+                       target_is_directory=True)
+        command = [
+            sys.executable,
+            build_script,
+            "--platform",
+            platform_name,
+            "--type",
+            "tasm",
+            "--clean",
+            "false",
+        ]
+        if platform_name == "darwin":
+            command.extend(["--local", "true"])
+    if not os.path.exists(encoder_path):
+        subprocess.check_call(command, cwd=root_dir)
+    if not os.path.exists(encoder_path):
+        raise RuntimeError(f"Grid Lanes encoder was not generated: {encoder_path}")
+
 
 # Define Android and iOS asset directories
 android_assets_dir = os.path.join(explorer_dir, "android", "lynx_explorer",
@@ -77,6 +138,7 @@ os.chdir(showcase_root_dir)
 # Install dependencies and build
 # no need to install dependencies because they are already installed when executing hab sync
 # run_pnpm_command(["pnpm", "install", "--frozen-lockfile"], os.getcwd())
+ensure_grid_lanes_encoder()
 run_pnpm_command(["pnpm", "run", "build"], os.getcwd())
 
 print("========== copy showcase resource ==========")
@@ -106,12 +168,18 @@ for path in os.listdir(node_modules_example_dir):
 
 # Copy menu resources
 menu_dist_dir = os.path.join(showcase_root_dir, "menu", "dist")
+grid_lanes_dist_dir = os.path.join(showcase_root_dir, "grid-lanes", "dist")
 
 menu_android = os.path.join(showcase_android, "menu")
 menu_ios = os.path.join(showcase_ios, "menu")
 menu_harmony = os.path.join(showcase_harmony, "menu")
 menu_windows = os.path.join(showcase_windows, "menu")
 menu_macos = os.path.join(showcase_macos, "menu")
+grid_lanes_android = os.path.join(showcase_android, "grid-lanes")
+grid_lanes_ios = os.path.join(showcase_ios, "grid-lanes")
+grid_lanes_harmony = os.path.join(showcase_harmony, "grid-lanes")
+grid_lanes_windows = os.path.join(showcase_windows, "grid-lanes")
+grid_lanes_macos = os.path.join(showcase_macos, "grid-lanes")
 
 print(f"Creating menu directories")
 os.makedirs(menu_android)
@@ -119,6 +187,11 @@ os.makedirs(menu_ios)
 os.makedirs(menu_harmony)
 os.makedirs(menu_windows)
 os.makedirs(menu_macos)
+os.makedirs(grid_lanes_android)
+os.makedirs(grid_lanes_ios)
+os.makedirs(grid_lanes_harmony)
+os.makedirs(grid_lanes_windows)
+os.makedirs(grid_lanes_macos)
 for filename in os.listdir(menu_dist_dir):
     if filename.endswith(".lynx.bundle"):
         shutil.copy(os.path.join(menu_dist_dir, filename), menu_android)
@@ -126,3 +199,15 @@ for filename in os.listdir(menu_dist_dir):
         shutil.copy(os.path.join(menu_dist_dir, filename), menu_harmony)
         shutil.copy(os.path.join(menu_dist_dir, filename), menu_windows)
         shutil.copy(os.path.join(menu_dist_dir, filename), menu_macos)
+for filename in os.listdir(grid_lanes_dist_dir):
+    if filename.endswith(".lynx.bundle"):
+        shutil.copy(os.path.join(grid_lanes_dist_dir, filename),
+                    grid_lanes_android)
+        shutil.copy(os.path.join(grid_lanes_dist_dir, filename),
+                    grid_lanes_ios)
+        shutil.copy(os.path.join(grid_lanes_dist_dir, filename),
+                    grid_lanes_harmony)
+        shutil.copy(os.path.join(grid_lanes_dist_dir, filename),
+                    grid_lanes_windows)
+        shutil.copy(os.path.join(grid_lanes_dist_dir, filename),
+                    grid_lanes_macos)

@@ -8,7 +8,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 RTF_PATH="${PATH}"
-if ! command -v sysctl >/dev/null 2>&1; then
+if ! command -v sysctl >/dev/null 2>&1 ||
+  ! sysctl -w "kernel.core_pattern=core.%p" >/dev/null 2>&1; then
   RTF_TOOLS="$(mktemp -d)"
   trap 'rm -rf "${RTF_TOOLS}"' EXIT
   printf '#!/usr/bin/env sh\nexit 0\n' > "${RTF_TOOLS}/sysctl"

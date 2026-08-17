@@ -5,6 +5,52 @@ on:
     - cron: '0 19 * * *'
   workflow_dispatch:
 jobs:
+  grid-lanes-conformance:
+    runs-on: lynx-ubuntu-22.04-large
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: lynx
+    steps:
+      - name: Download Source
+        uses: actions/checkout@v6
+        with:
+          path: lynx
+      - name: Python Setup
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Install Common Dependencies
+        uses: ./lynx/.github/actions/common-deps
+        with:
+          target: clay
+      - name: Run Extended Grid Lanes Conformance
+        env:
+          GRID_LANES_FUZZ_MULTIPLIER: 10
+          GRID_LANES_FUZZ_SEED_OFFSET: ${{ github.run_number }}
+        run: |
+          testing/grid_lanes_conformance/run.sh
+      - name: Run Grid Lanes Performance Budgets
+        run: |
+          tools/env.sh ninja -C out/Default grid_lanes_benchmark
+          out/Default/grid_lanes_benchmark \
+            --benchmark_repetitions=10 \
+            --benchmark_min_time=0.05 \
+            --benchmark_report_aggregates_only=true \
+            --benchmark_out=out/grid-lanes-conformance/benchmark.json \
+            --benchmark_out_format=json
+          tools/env.sh python3 \
+            testing/grid_lanes_conformance/scripts/check-benchmark.py \
+            out/grid-lanes-conformance/benchmark.json
+      - name: Upload Grid Lanes Results
+        if: ${{ always() }}
+        uses: lynx-infra/upload-artifact@332ec52e99f7cbf1fbbdc9bcc09280d49147d092
+        with:
+          name: grid-lanes-nightly-${{ github.run_number }}
+          path: |
+            lynx/out/grid-lanes-conformance/results.json
+            lynx/out/grid-lanes-conformance/benchmark.json
+
   windows-explorer-build-x86:
     runs-on: lynx-windows-2022-large
     steps:
@@ -26,7 +72,7 @@ jobs:
       - name: Install Common Dependencies
         uses: ./lynx/.github/actions/windows-common-deps
         with:
-          target: 'clay'
+          target: 'clay,tasm'
       - name: Build windows Explorer
         uses: ./lynx/.github/actions/windows-explorer-build
         with:

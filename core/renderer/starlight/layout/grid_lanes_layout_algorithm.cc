@@ -26,6 +26,24 @@ using namespace logic_direction_utils;  // NOLINT
 GridLanesLayoutAlgorithm::GridLanesLayoutAlgorithm(LayoutObject* container)
     : LayoutAlgorithm(container) {}
 
+size_t GridLanesLayoutAlgorithm::BookkeepingBytesForTesting() const {
+  size_t bytes =
+      lane_min_track_sizing_functions_.capacity() * sizeof(NLength) +
+      lane_max_track_sizing_functions_.capacity() * sizeof(NLength) +
+      lane_sizes_.capacity() * sizeof(float) +
+      lane_offsets_.capacity() * sizeof(float) +
+      running_positions_.capacity() * sizeof(float) +
+      occupied_intervals_.capacity() * sizeof(std::vector<OccupiedInterval>) +
+      item_infos_.capacity() * sizeof(ItemInfo) +
+      absolute_item_infos_.capacity() * sizeof(AbsoluteItemInfo) +
+      contributions_.capacity() * sizeof(Contribution) +
+      virtual_grid_items_.capacity() * sizeof(GridItemInfo);
+  for (const auto& intervals : occupied_intervals_) {
+    bytes += intervals.capacity() * sizeof(OccupiedInterval);
+  }
+  return bytes;
+}
+
 void GridLanesLayoutAlgorithm::InitializeAxes() {
   const bool has_columns =
       !container_style_->GetGridTemplateColumnsMinTrackingFunction().empty();
@@ -650,6 +668,15 @@ void GridLanesLayoutAlgorithm::ResolveStackingContentAlignment() {
 }
 
 void GridLanesLayoutAlgorithm::ResolveStackingAlignmentRanges() {
+  if (dense_) {
+    for (auto& intervals : occupied_intervals_) {
+      std::sort(
+          intervals.begin(), intervals.end(),
+          [](const OccupiedInterval& left, const OccupiedInterval& right) {
+            return left.start < right.start;
+          });
+    }
+  }
   for (ItemInfo& item_info : item_infos_) {
     float next_start = stacking_range_size_;
     bool has_next = false;
@@ -657,12 +684,20 @@ void GridLanesLayoutAlgorithm::ResolveStackingAlignmentRanges() {
         item_info.stacking_offset + item_info.outer_stacking_size;
     for (size_t lane = item_info.lane; lane < item_info.lane + item_info.span;
          ++lane) {
-      for (const OccupiedInterval& occupied : occupied_intervals_[lane]) {
-        if (base::FloatsLarger(occupied.start, item_end) &&
-            (!has_next || base::FloatsLarger(next_start, occupied.start))) {
-          next_start = occupied.start;
-          has_next = true;
-        }
+      const auto& intervals = occupied_intervals_[lane];
+      auto next =
+          std::upper_bound(intervals.begin(), intervals.end(), item_end,
+                           [](float end, const OccupiedInterval& occupied) {
+                             return end < occupied.start;
+                           });
+      while (next != intervals.end() &&
+             !base::FloatsLarger(next->start, item_end)) {
+        ++next;
+      }
+      if (next != intervals.end() &&
+          (!has_next || base::FloatsLarger(next_start, next->start))) {
+        next_start = next->start;
+        has_next = true;
       }
     }
     const float gap =

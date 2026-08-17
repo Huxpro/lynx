@@ -629,7 +629,7 @@ jobs:
       - name: Install Common Dependencies
         uses: ./lynx/.github/actions/windows-common-deps
         with:
-          target: 'clay'
+          target: 'clay,tasm'
       - name: Build windows Explorer
         uses: ./lynx/.github/actions/windows-explorer-build
         with:

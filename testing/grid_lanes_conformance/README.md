@@ -22,9 +22,16 @@ M3 track sizing collapses auto-placed items into virtual item groups keyed by
 grid-axis span, placement eligibility, and baseline group. Measuring real items
 is linear in item count; the reused Grid L2 sizing pipeline processes
 `distinct groups × candidate starts`, rather than every item at every lane.
-`grid_lanes_benchmark` covers homogeneous 100- and 1,000-item corpora and the
-unit suite asserts that both produce one group and four virtual items for four
-lanes.
+`grid_lanes_benchmark` compares Grid Lanes with the non-virtualized waterfall
+layout at 50, 200, and 1,000 items for initial layout, resize, prepend, and
+font-size invalidation. The release budgets and reference results are in
+[`RELEASE.md`](./RELEASE.md).
+
+The nightly job runs the full browser corpus, rotates the deterministic fuzz
+seed, multiplies the Ring 0 fuzz cases by ten, enforces the benchmark budgets,
+and uploads both JSON reports. Browser version changes are intentionally
+observable in `results.json`; stale oracle-disagreement annotations fail the
+run instead of silently accepting oracle drift.
 
 ## Fixture format
 
@@ -72,6 +79,13 @@ alignment, RTL, and absolute positioning.
   its default display. Authors needing a controlled fallback should provide a
   `<list type="waterfall">` or flex layout; on web-compatible bundles they can
   also declare `display: grid` before `display: grid-lanes`.
+
+## Release guidance
+
+Grid Lanes is a composable, non-virtualized layout for bounded content.
+`<list type="waterfall">` remains the correct choice for unbounded feeds that
+need recycling. See [`RELEASE.md`](./RELEASE.md) for the decision matrix,
+performance budgets, feature-flag rollout, and compatibility policy.
 
 ## WPT triage
 
