@@ -24,6 +24,7 @@
 #include "core/renderer/css/parser/length_handler.h"
 #include "core/renderer/css/unit_handler.h"
 #include "core/renderer/starlight/style/default_layout_style.h"
+#include "core/renderer/starlight/style/grid_data.h"
 #include "core/renderer/starlight/types/nlength.h"
 #include "core/renderer/ui_wrapper/layout/layout_context.h"
 #include "core/renderer/utils/value_utils.h"
@@ -69,7 +70,9 @@ struct CalcValue {
 std::pair<NLength, bool> TryMakeIntrinsicNLength(
     const std::string& value_str, const tasm::CssMeasureContext& context,
     const tasm::CSSParserConfigs& configs) {
-  if (value_str == "max-content") {
+  if (value_str == "min-content") {
+    return std::pair<NLength, bool>(NLength::MakeMinContentNLength(), true);
+  } else if (value_str == "max-content") {
     return std::pair<NLength, bool>(NLength::MakeMaxContentNLength(), true);
   } else if (value_str == "fit-content") {
     return std::pair<NLength, bool>(NLength::MakeFitContentNLength(), true);
@@ -672,18 +675,28 @@ bool CSSStyleUtils::ComputeGridTrackSizing(
     const tasm::CSSValue& value, const bool reset,
     const tasm::CssMeasureContext& context, std::vector<NLength>& min_dest,
     std::vector<NLength>& max_dest, const std::vector<NLength>& default_value,
-    const char* msg, const tasm::CSSParserConfigs& configs) {
+    const char* msg, const tasm::CSSParserConfigs& configs,
+    GridAutoRepeatData* auto_repeat) {
   auto old_min_value = min_dest;
   auto old_max_value = max_dest;
+  const GridAutoRepeatData old_auto_repeat =
+      auto_repeat ? *auto_repeat : GridAutoRepeatData();
   if (reset) {
     min_dest = default_value;
     max_dest = default_value;
+    if (auto_repeat) {
+      *auto_repeat = GridAutoRepeatData();
+    }
   } else {
     CSS_HANDLER_FAIL_IF_NOT(value.IsArray(), configs.enable_css_strict_mode,
                             msg)
     auto length_array = value.GetArray();
+    if (length_array->size() % 2 != 0) {
+      return false;
+    }
     std::vector<NLength> length_arr_min_result;
     std::vector<NLength> length_arr_max_result;
+    GridAutoRepeatData auto_repeat_result;
 
     for (size_t idx = 0; idx < length_array->size(); idx += 2) {
       tasm::CSSValue css_value(length_array->get(idx),
@@ -705,25 +718,124 @@ bool CSSStyleUtils::ComputeGridTrackSizing(
                                      length_array->get(idx + 1).Number()));
         std::pair<NLength, bool> result =
             CSSStyleUtils::ToLength(css_value, context, configs);
+        if (!result.second) {
+          return false;
+        }
         length_arr_min_result.emplace_back(result.first);
         idx += 2;
         css_value = tasm::CSSValue(length_array->get(idx),
                                    static_cast<tasm::CSSValuePattern>(
                                        length_array->get(idx + 1).Number()));
         result = CSSStyleUtils::ToLength(css_value, context, configs);
+        if (!result.second) {
+          return false;
+        }
         length_arr_max_result.emplace_back(result.first);
+      } else if (css_value.IsEnum() &&
+                 css_value.GetEnum<tasm::CSSFunctionType>() ==
+                     tasm::CSSFunctionType::AUTO_REPEAT) {
+        if (!auto_repeat || auto_repeat_result.enabled ||
+            idx + 5 >= length_array->size()) {
+          return false;
+        }
+        if (static_cast<tasm::CSSValuePattern>(
+                length_array->get(idx + 3).Number()) !=
+                tasm::CSSValuePattern::NUMBER ||
+            static_cast<tasm::CSSValuePattern>(
+                length_array->get(idx + 5).Number()) !=
+                tasm::CSSValuePattern::NUMBER) {
+          return false;
+        }
+        const double auto_fit_value = length_array->get(idx + 2).Number();
+        const double encoded_size_value = length_array->get(idx + 4).Number();
+        if ((auto_fit_value != 0 && auto_fit_value != 1) ||
+            encoded_size_value <= 0 ||
+            encoded_size_value >
+                static_cast<double>(length_array->size() - idx - 6) ||
+            std::floor(encoded_size_value) != encoded_size_value) {
+          return false;
+        }
+        auto_repeat_result.enabled = true;
+        auto_repeat_result.insertion_index = length_arr_min_result.size();
+        auto_repeat_result.auto_fit = auto_fit_value != 0;
+        const size_t encoded_size = static_cast<size_t>(encoded_size_value);
+        if (encoded_size % 2 != 0 ||
+            encoded_size > length_array->size() - idx - 6) {
+          return false;
+        }
+        const size_t end = idx + 6 + encoded_size;
+        for (idx += 6; idx < end; idx += 2) {
+          tasm::CSSValue repeated_value(
+              length_array->get(idx), static_cast<tasm::CSSValuePattern>(
+                                          length_array->get(idx + 1).Number()));
+          if (repeated_value.IsEnum() &&
+              repeated_value.GetEnum<tasm::CSSFunctionType>() ==
+                  tasm::CSSFunctionType::MINMAX) {
+            if (idx + 5 >= end) {
+              return false;
+            }
+            idx += 2;
+            tasm::CSSValue minimum(length_array->get(idx),
+                                   static_cast<tasm::CSSValuePattern>(
+                                       length_array->get(idx + 1).Number()));
+            auto minimum_result =
+                CSSStyleUtils::ToLength(minimum, context, configs);
+            if (!minimum_result.second) {
+              return false;
+            }
+            auto_repeat_result.min_track_sizing_functions.emplace_back(
+                minimum_result.first);
+            idx += 2;
+            tasm::CSSValue maximum(length_array->get(idx),
+                                   static_cast<tasm::CSSValuePattern>(
+                                       length_array->get(idx + 1).Number()));
+            auto maximum_result =
+                CSSStyleUtils::ToLength(maximum, context, configs);
+            if (!maximum_result.second) {
+              return false;
+            }
+            auto_repeat_result.max_track_sizing_functions.emplace_back(
+                maximum_result.first);
+          } else {
+            auto result =
+                CSSStyleUtils::ToLength(repeated_value, context, configs);
+            if (!result.second) {
+              return false;
+            }
+            auto_repeat_result.min_track_sizing_functions.emplace_back(
+                result.first);
+            auto_repeat_result.max_track_sizing_functions.emplace_back(
+                result.first);
+          }
+        }
+        length_arr_min_result.insert(
+            length_arr_min_result.end(),
+            auto_repeat_result.min_track_sizing_functions.begin(),
+            auto_repeat_result.min_track_sizing_functions.end());
+        length_arr_max_result.insert(
+            length_arr_max_result.end(),
+            auto_repeat_result.max_track_sizing_functions.begin(),
+            auto_repeat_result.max_track_sizing_functions.end());
+        idx = end - 2;
       } else {
         std::pair<NLength, bool> result =
             CSSStyleUtils::ToLength(css_value, context, configs);
+        if (!result.second) {
+          return false;
+        }
         length_arr_min_result.emplace_back(result.first);
         length_arr_max_result.emplace_back(result.first);
       }
     }
     min_dest = std::move(length_arr_min_result);
     max_dest = std::move(length_arr_max_result);
+    if (auto_repeat) {
+      *auto_repeat = std::move(auto_repeat_result);
+    }
   }
 
-  return old_min_value != min_dest || old_max_value != max_dest;
+  return old_min_value != min_dest || old_max_value != max_dest ||
+         (auto_repeat && old_auto_repeat != *auto_repeat);
 }
 
 bool CSSStyleUtils::ComputeLengthStyle(const tasm::CSSValue& value,

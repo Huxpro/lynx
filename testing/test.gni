@@ -175,8 +175,8 @@ template("benchmark_set") {
     if (defined(configs_to_exclude)) {
       configs -= configs_to_exclude
     }
+    libs = [ "pthread" ]
   }
-  libs = [ "pthread" ]
 }
 
 template("benchmark_test") {

@@ -96,17 +96,24 @@ class GridItemInfo {
 
 // For item span size sort
 struct ItemInfoEntry {
-  GridItemInfo* item_info;
+  GridItemInfo* item_info = nullptr;
   float inline_axis_max_content_border_size_ = 0.f;
   float inline_axis_min_content_border_size_ = 0.f;
   float block_axis_max_content_border_size_ = 0.f;
   float block_axis_min_content_border_size_ = 0.f;
+  float direct_max_content_contribution_ = 0.f;
+  float direct_min_content_contribution_ = 0.f;
+  float direct_minimum_contribution_ = 0.f;
+  bool has_direct_contributions_ = false;
 
   int32_t SpanSize(Dimension dimension) const {
     return item_info->SpanSize(dimension);
   }
   // Intrinsic size contributions are based on the outer size of the box.
   float MaxContentContribution(Dimension dimension) const {
+    if (has_direct_contributions_) {
+      return direct_max_content_contribution_;
+    }
     return dimension == kHorizontal
                ? item_info->Item()->GetOuterWidthFromBorderBoxWidth(
                      inline_axis_max_content_border_size_)
@@ -114,6 +121,9 @@ struct ItemInfoEntry {
                      block_axis_max_content_border_size_);
   }
   float MinContentContribution(Dimension dimension) const {
+    if (has_direct_contributions_) {
+      return direct_min_content_contribution_;
+    }
     return dimension == kHorizontal
                ? item_info->Item()->GetOuterWidthFromBorderBoxWidth(
                      inline_axis_min_content_border_size_)
@@ -133,6 +143,13 @@ struct ItemInfoEntry {
     } else {
       block_axis_min_content_border_size_ = size;
     }
+  }
+  void SetDirectContributions(float minimum, float min_content,
+                              float max_content) {
+    direct_minimum_contribution_ = minimum;
+    direct_min_content_contribution_ = min_content;
+    direct_max_content_contribution_ = max_content;
+    has_direct_contributions_ = true;
   }
 };
 }  // namespace starlight

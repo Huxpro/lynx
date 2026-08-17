@@ -1,0 +1,11 @@
+{
+  "name": "grid-lanes-intrinsic",
+  "suite": "grid-lanes",
+  "expectation": "pass",
+  "source": "CSS Grid Level 3 min-content and fit-content lane sizing",
+  "viewport": {
+    "width": 420,
+    "height": 380,
+    "devicePixelRatio": 1
+  }
+}

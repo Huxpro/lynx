@@ -43,6 +43,7 @@ base::flex_optional<tasm::CSSValue> ConvertLengthToTransitionCSSValue(
                               tasm::CSSValuePattern::PERCENT);
       }
       return {};
+    case starlight::NLengthType::kNLengthMinContent:
     case starlight::NLengthType::kNLengthMaxContent:
     case starlight::NLengthType::kNLengthFitContent:
     case starlight::NLengthType::kNLengthFr:
@@ -98,6 +99,7 @@ ConvertComputedTransformLengthToRawComponent(const starlight::NLength& length) {
       }
       return {};
     case starlight::NLengthType::kNLengthAuto:
+    case starlight::NLengthType::kNLengthMinContent:
     case starlight::NLengthType::kNLengthMaxContent:
     case starlight::NLengthType::kNLengthFitContent:
     case starlight::NLengthType::kNLengthFr:

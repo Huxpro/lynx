@@ -67,3 +67,22 @@ unittest_exec("css_parser_test_exec") {
     "../../dom:dom",
   ]
 }
+
+unittest_set("grid_template_handler_testset") {
+  public_deps = [
+    "..:css",
+    "../../../../third_party/rapidjson",
+  ]
+  sources = [
+    "css_string_scanner_unittest.cc",
+    "grid_template_handler_unittest.cc",
+  ]
+}
+
+unittest_exec("grid_template_handler_test_exec") {
+  sources = []
+  deps = [
+    ":grid_template_handler_testset",
+    "../../dom:dom",
+  ]
+}

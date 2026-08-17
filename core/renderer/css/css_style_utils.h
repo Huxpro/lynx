@@ -38,6 +38,7 @@ namespace starlight {
 struct AnimationData;
 struct TimingFunctionData;
 struct FilterData;
+struct GridAutoRepeatData;
 
 class NLength;
 
@@ -116,7 +117,8 @@ class CSSStyleUtils {
       const tasm::CSSValue& value, const bool reset,
       const tasm::CssMeasureContext& context, std::vector<NLength>& min_dest,
       std::vector<NLength>& max_dest, const std::vector<NLength>& default_value,
-      const char* msg, const tasm::CSSParserConfigs& configs);
+      const char* msg, const tasm::CSSParserConfigs& configs,
+      GridAutoRepeatData* auto_repeat = nullptr);
 
   template <typename T>
   static bool ComputeEnumStyle(const tasm::CSSValue& value, bool reset, T& dest,

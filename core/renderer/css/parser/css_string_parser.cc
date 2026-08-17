@@ -2226,6 +2226,7 @@ bool CSSStringParser::LengthOrPercentageValue(Token &token) {
   if (ConsumeAndSave(TokenType::CALC, token) ||
       ConsumeAndSave(TokenType::ENV, token) ||
       ConsumeAndSave(TokenType::FIT_CONTENT, token) ||
+      ConsumeAndSave(TokenType::MIN_CONTENT, token) ||
       ConsumeAndSave(TokenType::MAX_CONTENT, token) ||
       ConsumeAndSave(TokenType::AUTO, token)) {
     return true;
@@ -2443,6 +2444,7 @@ uint32_t CSSStringParser::TokenTypeToENUM(TokenType token_type) {
       return static_cast<uint32_t>(CSSValuePattern::CALC);
     case TokenType::ENV:
       return static_cast<uint32_t>(CSSValuePattern::ENV);
+    case TokenType::MIN_CONTENT:
     case TokenType::MAX_CONTENT:
     case TokenType::FIT_CONTENT:
       return static_cast<uint32_t>(CSSValuePattern::INTRINSIC);

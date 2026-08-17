@@ -1,0 +1,11 @@
+{
+  "name": "grid-lanes-default-template",
+  "suite": "grid-lanes",
+  "expectation": "pass",
+  "source": "CSS Grid Level 3 default repeat(auto-fill, auto) lane template",
+  "viewport": {
+    "width": 380,
+    "height": 540,
+    "devicePixelRatio": 1
+  }
+}

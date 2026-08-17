@@ -48,6 +48,9 @@ GridData::GridData(const GridData& data)
           data.grid_template_rows_min_track_sizing_function_),
       grid_template_rows_max_track_sizing_function_(
           data.grid_template_rows_max_track_sizing_function_),
+      grid_template_columns_auto_repeat_(
+          data.grid_template_columns_auto_repeat_),
+      grid_template_rows_auto_repeat_(data.grid_template_rows_auto_repeat_),
       grid_auto_columns_min_track_sizing_function_(
           data.grid_auto_columns_min_track_sizing_function_),
       grid_auto_columns_max_track_sizing_function_(
@@ -79,6 +82,8 @@ void GridData::Reset() {
       DefaultLayoutStyle::SL_DEFAULT_GRID_TRACK();
   grid_template_rows_max_track_sizing_function_ =
       DefaultLayoutStyle::SL_DEFAULT_GRID_TRACK();
+  grid_template_columns_auto_repeat_ = GridAutoRepeatData();
+  grid_template_rows_auto_repeat_ = GridAutoRepeatData();
   grid_auto_columns_min_track_sizing_function_ =
       DefaultLayoutStyle::SL_DEFAULT_GRID_TRACK();
   grid_auto_columns_max_track_sizing_function_ =

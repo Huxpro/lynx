@@ -185,3 +185,17 @@ unittest_exec("starlight_geometry_unittest_exec") {
   sources = []
   deps = [ ":starlight_geometry_testset" ]
 }
+
+benchmark_set("grid_lanes_benchmark_set") {
+  public_configs = [ "../../:lynx_public_config" ]
+  sources = [ "layout/grid_lanes_layout_algorithm_benchmark.cc" ]
+  public_deps = [
+    ":starlight",
+    "../dom:dom",
+  ]
+}
+
+benchmark_test("grid_lanes_benchmark") {
+  sources = []
+  deps = [ ":grid_lanes_benchmark_set" ]
+}

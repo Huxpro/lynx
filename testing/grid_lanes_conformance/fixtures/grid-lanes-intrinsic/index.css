@@ -1,0 +1,28 @@
+* {
+  box-sizing: border-box;
+}
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 420px;
+  height: 380px;
+  padding: 20px;
+}
+.lanes {
+  display: grid-lanes;
+  width: 380px;
+  grid-template-columns: min-content fit-content(110px) minmax(80px, 1fr);
+  column-gap: 10px;
+  row-gap: 12px;
+}
+.item {
+  width: 80px;
+  min-width: 0;
+  min-height: 0;
+}
+.item1 { height: 54px; }
+.item2 { height: 86px; }
+.item3 { height: 46px; }
+.item4 { height: 74px; }
+.item5 { height: 62px; }
+.item6 { height: 94px; }

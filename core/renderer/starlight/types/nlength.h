@@ -25,6 +25,7 @@ enum NLengthType : uint8_t {
   kNLengthMaxContent,
   kNLengthFitContent,
   kNLengthFr,
+  kNLengthMinContent,
 };
 
 class __attribute__((packed, aligned(4))) NLength {
@@ -83,6 +84,7 @@ class __attribute__((packed, aligned(4))) NLength {
   };
 
   LYNX_EXPORT static NLength MakeAutoNLength();
+  LYNX_EXPORT static NLength MakeMinContentNLength();
   LYNX_EXPORT static NLength MakeMaxContentNLength();
   LYNX_EXPORT static NLength MakeFitContentNLength() {
     return NLength(kNLengthFitContent);
@@ -123,12 +125,17 @@ class __attribute__((packed, aligned(4))) NLength {
   bool IsMaxContent() const {
     return GetType() == NLengthType::kNLengthMaxContent;
   }
+  bool IsMinContent() const {
+    return GetType() == NLengthType::kNLengthMinContent;
+  }
   bool IsFr() const { return GetType() == NLengthType::kNLengthFr; }
   bool IsFitContent() const {
     return GetType() == NLengthType::kNLengthFitContent;
   }
 
-  bool IsIntrinsic() const { return IsFitContent() || IsMaxContent(); }
+  bool IsIntrinsic() const {
+    return IsFitContent() || IsMinContent() || IsMaxContent();
+  }
   // Including Percentage/Calc Type, e.g., width:calc(10% + 1px), width:10%
   bool ContainsPercentage() const {
     return numeric_length_.ContainsPercentage();

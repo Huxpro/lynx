@@ -1,0 +1,11 @@
+{
+  "name": "grid-lanes-auto-fit",
+  "suite": "grid-lanes",
+  "expectation": "pass",
+  "source": "CSS Grid Level 3 repeat(auto-fit) empty-lane collapse",
+  "viewport": {
+    "width": 600,
+    "height": 320,
+    "devicePixelRatio": 1
+  }
+}
